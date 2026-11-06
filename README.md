@@ -25,7 +25,6 @@ work.html           Series index + category filters
 about.html
 contact.html        mailto form → vanwuuuu@gmail.com
 series/             Series pages (four images each: cover + 02–04)
-images/series/      Local JPG copies (kept for verification; series images load from Cloudinary CDN in HTML)
 styles.css          Layout + components
 tokens.css          Design tokens
 i18n.js             中 | EN (localStorage)
@@ -40,10 +39,14 @@ main.js             Filters + mailto
 
 ## Update content
 
-- Add series: upload assets to Cloudinary under `dafan/series/<slug>/` (public ids `cover`, `02`, `03`, `04` — delivery URLs use `f_auto,q_auto` in `index.html` / `work.html` / `series/*.html`); keep a matching folder under `images/series/<slug>/` locally if you want repo copies, new `series/<slug>.html`, and link from `index.html` / `work.html`.
+- Add series: upload assets to Cloudinary under `dafan/series/<slug>/` (public ids `cover`, `02`, `03`, `04` — delivery URLs use `f_auto,q_auto` in `index.html` / `work.html` / `series/*.html`); add `series/<slug>.html`, and link from `index.html` / `work.html`. This repo does not store photo binaries; use Cloudinary (or your own backup) for source files.
 - UI strings (nav, taglines, alt text, series titles): edit `i18n.js` for `zh` / `en`.
 - Language preference: `localStorage` key `dafan-lang`; legacy `vanwu-lang` is read once and migrated.
 
 ## Fonts
 
 Inter is loaded from Google Fonts in each HTML `<head>` (weights 400 / 500 / 600).
+
+## Collaborators (history rewrite)
+
+`main` was rewritten to remove all committed files under `images/` from every revision. If you have an old clone, run `git fetch origin` and `git reset --hard origin/main`, or delete the folder and **clone again** — do not merge old branches that still contain the removed blobs.
