@@ -212,7 +212,8 @@ button {
 .hero-tagline {
   font-family: var(--font-sans);
   font-size: var(--text-hero);
-  font-weight: var(--weight-semibold);
+  font-weight: 700;
+  max-width: 8em;
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-tight);
   margin: 0 0 var(--space-4);
@@ -225,13 +226,6 @@ button {
   font-size: var(--text-lg);
   color: var(--color-text-muted);
   line-height: var(--leading-snug);
-}
-
-.hero-meta {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-  letter-spacing: var(--tracking-nav);
 }
 
 /* Home work stack */
@@ -249,20 +243,22 @@ button {
 
 .work-home-media {
   width: 100%;
+  aspect-ratio: 16 / 10;
   overflow: hidden;
   background: var(--color-photo-matte);
 }
 
 .work-home-media img {
   width: 100%;
-  height: auto;
-  vertical-align: middle;
+  height: 100%;
+  object-fit: cover;
+  display: block;
   transform: scale(1);
   transition: transform var(--duration-normal) var(--ease-out);
 }
 
 .work-home-meta {
-  margin-top: var(--index-title-gap);
+  margin-top: 1rem;
   display: grid;
   grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
@@ -273,11 +269,16 @@ button {
 .work-home-title {
   grid-column: 1;
   grid-row: 1;
-  font-size: var(--type-index-title);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-series);
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.1;
   margin: 0;
   color: var(--color-text);
+}
+
+html[lang="en"] .work-home-title {
+  letter-spacing: -0.02em;
 }
 
 .work-home-year {
@@ -322,12 +323,16 @@ button {
 
 .home-statement {
   margin: clamp(4rem, 10vw, 7rem) 0 0;
-  font-size: var(--text-lg);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-series);
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  font-weight: 600;
+  letter-spacing: 0;
   color: var(--color-text);
   max-width: 40rem;
-  line-height: var(--leading-snug);
+  line-height: 1.15;
+}
+
+html[lang="en"] .home-statement {
+  letter-spacing: -0.02em;
 }
 
 /* Work page + series cards */
@@ -344,13 +349,16 @@ button {
 
 .series-card-media {
   width: 100%;
+  aspect-ratio: 16 / 10;
   overflow: hidden;
   background: var(--color-photo-matte);
 }
 
 .series-card-media img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
+  display: block;
   transform: scale(1);
   transition: transform var(--duration-normal) var(--ease-out);
 }
@@ -367,12 +375,17 @@ button {
 .series-card-title {
   grid-column: 1;
   grid-row: 1;
-  font-size: var(--type-index-title);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-series);
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.1;
   margin: 0;
   transition: color var(--duration-fast) var(--ease-out);
   color: var(--color-text);
+}
+
+html[lang="en"] .series-card-title {
+  letter-spacing: -0.02em;
 }
 
 .series-card-year {
@@ -667,9 +680,9 @@ button {
 @media (max-width: 767.98px), (hover: none) {
   .work-home-cta,
   .series-card-cta {
-    opacity: 1;
+    opacity: 0.45;
     transform: none;
-    font-size: var(--type-meta);
+    font-size: var(--text-xs);
   }
 }
 
