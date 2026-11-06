@@ -8,20 +8,58 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/home.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="header-inner">
-      <a class="wordmark" href="./index.html" data-i18n-aria="aria.wordmark">
+      <a class="wordmark" href="./" data-i18n-aria="aria.wordmark">
         <span class="lang-zh-only" data-i18n="wordmark.zh">大樊</span>
         <span class="lang-en-only" data-i18n="wordmark.en">DaFan</span>
       </a>
       <div class="header-cluster">
         <nav class="site-nav" aria-label="Primary">
-          <a href="./work.html" data-i18n="nav.work">作品</a>
-          <a href="./about.html" data-i18n="nav.about">关于</a>
-          <a href="./contact.html" data-i18n="nav.contact">联络</a>
+          <a class="nav-link nav-link--stack" href="./works/">
+            <span class="nav-decor" aria-hidden="true">
+              <span class="nav-decor__layer nav-decor__layer--a lang-zh-only" data-i18n="nav.work">作品</span>
+              <span class="nav-decor__layer nav-decor__layer--b lang-zh-only" data-i18n="nav.work">作品</span>
+              <span class="nav-decor__layer nav-decor__layer--a lang-en-only" data-i18n="nav.work">Work</span>
+              <span class="nav-decor__layer nav-decor__layer--b lang-en-only" data-i18n="nav.work">Work</span>
+            </span>
+            <span class="nav-link-label lang-zh-only" data-i18n="nav.work">作品</span>
+            <span class="nav-link-label lang-en-only" data-i18n="nav.work">Work</span>
+          </a>
+          <a class="nav-link nav-link--stack" href="./photography/">
+            <span class="nav-decor" aria-hidden="true">
+              <span class="nav-decor__layer nav-decor__layer--a lang-zh-only" data-i18n="nav.photography">摄影</span>
+              <span class="nav-decor__layer nav-decor__layer--b lang-zh-only" data-i18n="nav.photography">摄影</span>
+              <span class="nav-decor__layer nav-decor__layer--a lang-en-only" data-i18n="nav.photography">Photography</span>
+              <span class="nav-decor__layer nav-decor__layer--b lang-en-only" data-i18n="nav.photography">Photography</span>
+            </span>
+            <span class="nav-link-label lang-zh-only" data-i18n="nav.photography">摄影</span>
+            <span class="nav-link-label lang-en-only" data-i18n="nav.photography">Photography</span>
+          </a>
+          <a class="nav-link nav-link--stack" href="./about/">
+            <span class="nav-decor" aria-hidden="true">
+              <span class="nav-decor__layer nav-decor__layer--a lang-zh-only" data-i18n="nav.about">关于</span>
+              <span class="nav-decor__layer nav-decor__layer--b lang-zh-only" data-i18n="nav.about">关于</span>
+              <span class="nav-decor__layer nav-decor__layer--a lang-en-only" data-i18n="nav.about">About</span>
+              <span class="nav-decor__layer nav-decor__layer--b lang-en-only" data-i18n="nav.about">About</span>
+            </span>
+            <span class="nav-link-label lang-zh-only" data-i18n="nav.about">关于</span>
+            <span class="nav-link-label lang-en-only" data-i18n="nav.about">About</span>
+          </a>
+          <a class="nav-link nav-link--stack" href="./contact/">
+            <span class="nav-decor" aria-hidden="true">
+              <span class="nav-decor__layer nav-decor__layer--a lang-zh-only" data-i18n="nav.contact">联络</span>
+              <span class="nav-decor__layer nav-decor__layer--b lang-zh-only" data-i18n="nav.contact">联络</span>
+              <span class="nav-decor__layer nav-decor__layer--a lang-en-only" data-i18n="nav.contact">Contact</span>
+              <span class="nav-decor__layer nav-decor__layer--b lang-en-only" data-i18n="nav.contact">Contact</span>
+            </span>
+            <span class="nav-link-label lang-zh-only" data-i18n="nav.contact">联络</span>
+            <span class="nav-link-label lang-en-only" data-i18n="nav.contact">Contact</span>
+          </a>
         </nav>
         <div class="lang-toggle" role="group" aria-label="Language">
           <button type="button" class="lang-btn is-active" data-set-lang="zh" aria-pressed="true">中</button>
@@ -33,59 +71,119 @@
   </header>
 
   <main class="site-main">
-    <section class="hero">
-      <h1 class="hero-tagline" data-i18n="home.tagline">摄一瞬，记一程</h1>
-      <p class="hero-lede" data-i18n="home.lede">风景与旅途，以系列慢慢展开。</p>
+    <div class="hero-stack" data-hero-root>
+      <div class="hero-visual" data-hero-visual>
+        <div class="hero-slides" aria-hidden="true">
+          <div class="hero-slide is-active" data-hero-slide="0">
+            <img
+              src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:9,w_2400,f_auto,q_auto/dafan/series/bipenggou/cover.jpg"
+              alt=""
+              data-i18n-alt="home.alt.bipenggou"
+              width="2400"
+              height="1350"
+              fetchpriority="high"
+              decoding="async"
+            />
+          </div>
+          <div class="hero-slide" data-hero-slide="1">
+            <img
+              src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:9,w_2400,f_auto,q_auto/dafan/series/emeishan/cover.jpg"
+              alt=""
+              data-i18n-alt="home.alt.emeishan"
+              width="2400"
+              height="1350"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <div class="hero-slide" data-hero-slide="2">
+            <img
+              src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:9,w_2400,f_auto,q_auto/dafan/series/qingdao/cover.jpg"
+              alt=""
+              data-i18n-alt="home.alt.qingdao"
+              width="2400"
+              height="1350"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="hero-scrim" aria-hidden="true"></div>
+        <div class="hero-content">
+          <h1 class="hero-tagline" data-i18n="home.tagline">摄一瞬，记一程</h1>
+          <p class="hero-lede" data-i18n="home.lede">风景与旅途，以系列慢慢展开。</p>
+          <p class="hero-meta" data-i18n="home.meta">成都 · Chengdu</p>
+          <div class="hero-pills" role="tablist" aria-label="Hero">
+            <button type="button" class="hero-pill" role="tab" aria-selected="true" data-hero-pill="0" data-i18n="s1.title">毕棚沟</button>
+            <button type="button" class="hero-pill" role="tab" aria-selected="false" data-hero-pill="1" data-i18n="s2.title">峨眉山</button>
+            <button type="button" class="hero-pill" role="tab" aria-selected="false" data-hero-pill="2" data-i18n="s3.title">青岛</button>
+          </div>
+          <div class="hero-controls">
+            <button type="button" class="hero-pause" data-hero-pause data-i18n="home.hero.pause" data-i18n-aria="home.hero.pauseAria" aria-pressed="false">暂停</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="home-featured" aria-labelledby="home-featured-label">
+      <h2 id="home-featured-label" class="visually-hidden" data-i18n="home.workHeading">精选系列</h2>
+      <div class="featured-grid">
+        <a class="featured-panel" href="./works/bipenggou/">
+          <div class="featured-panel-media">
+            <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/dafan/series/bipenggou/cover.jpg" alt="" data-i18n-alt="home.alt.bipenggou" width="2400" height="1500" loading="lazy" decoding="async" data-cloud-fallback />
+          </div>
+          <div class="featured-panel-meta">
+            <h3 class="featured-panel-title" data-i18n="s1.title">毕棚沟</h3>
+            <p class="featured-panel-year"><span data-i18n="s1.year">2024</span></p>
+            <span class="featured-panel-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
+          </div>
+        </a>
+        <a class="featured-panel" href="./works/emeishan/">
+          <div class="featured-panel-media">
+            <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/dafan/series/emeishan/cover.jpg" alt="" data-i18n-alt="home.alt.emeishan" width="2400" height="1500" loading="lazy" decoding="async" data-cloud-fallback />
+          </div>
+          <div class="featured-panel-meta">
+            <h3 class="featured-panel-title" data-i18n="s2.title">峨眉山</h3>
+            <p class="featured-panel-year"><span data-i18n="s2.year">2024</span></p>
+            <span class="featured-panel-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
+          </div>
+        </a>
+        <a class="featured-panel" href="./works/qingdao/">
+          <div class="featured-panel-media">
+            <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/dafan/series/qingdao/cover.jpg" alt="" data-i18n-alt="home.alt.qingdao" width="2400" height="1500" loading="lazy" decoding="async" data-cloud-fallback />
+          </div>
+          <div class="featured-panel-meta">
+            <h3 class="featured-panel-title" data-i18n="s3.title">青岛</h3>
+            <p class="featured-panel-year"><span data-i18n="s3.year">2024</span></p>
+            <span class="featured-panel-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
+          </div>
+        </a>
+      </div>
     </section>
 
-    <section class="work-home" aria-labelledby="work-home-label">
-      <h2 id="work-home-label" class="visually-hidden" data-i18n="home.workHeading">作品</h2>
-
-      <a class="work-home-row" href="./series/bipenggou.html">
-        <div class="work-home-media">
-          <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/dafan/series/bipenggou/cover.jpg" alt="" data-i18n-alt="home.alt.bipenggou" loading="eager" decoding="async" />
-        </div>
-        <div class="work-home-meta">
-          <h3 class="work-home-title" data-i18n="s1.title">毕棚沟</h3>
-          <p class="work-home-year"><span data-i18n="s1.year">2024</span></p>
-          <span class="work-home-cta"><span data-i18n="card.view">查看</span> <span class="work-home-arrow" aria-hidden="true">→</span></span>
-        </div>
-      </a>
-
-      <a class="work-home-row" href="./series/emeishan.html">
-        <div class="work-home-media">
-          <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/dafan/series/emeishan/cover.jpg" alt="" data-i18n-alt="home.alt.emeishan" loading="lazy" decoding="async" />
-        </div>
-        <div class="work-home-meta">
-          <h3 class="work-home-title" data-i18n="s2.title">峨眉山</h3>
-          <p class="work-home-year"><span data-i18n="s2.year">2024</span></p>
-          <span class="work-home-cta"><span data-i18n="card.view">查看</span> <span class="work-home-arrow" aria-hidden="true">→</span></span>
-        </div>
-      </a>
-
-      <a class="work-home-row" href="./series/qingdao.html">
-        <div class="work-home-media">
-          <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/dafan/series/qingdao/cover.jpg" alt="" data-i18n-alt="home.alt.qingdao" loading="lazy" decoding="async" />
-        </div>
-        <div class="work-home-meta">
-          <h3 class="work-home-title" data-i18n="s3.title">青岛</h3>
-          <p class="work-home-year"><span data-i18n="s3.year">2024</span></p>
-          <span class="work-home-cta"><span data-i18n="card.view">查看</span> <span class="work-home-arrow" aria-hidden="true">→</span></span>
-        </div>
-      </a>
+    <section class="home-closing" aria-labelledby="home-tagline-repeat">
+      <h2 id="home-tagline-repeat" class="home-tagline-repeat" data-i18n="home.tagline">摄一瞬，记一程</h2>
     </section>
-
-    <p class="home-statement" data-i18n="home.statement">慢下来，让照片替路程说话。</p>
   </main>
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <span><span class="lang-zh-only" data-i18n="footer.copy.zh">© 2026 大樊</span><span class="lang-en-only" data-i18n="footer.copy.en">© 2026 DaFan</span></span>
-      <a href="https://www.instagram.com/van_wuuuu/" target="_blank" rel="noopener noreferrer" aria-label="Instagram @van_wuuuu">Instagram</a>
+      <span class="footer-meta">
+        <span><span class="lang-zh-only" data-i18n="footer.copy.zh">© 2026 大樊</span><span class="lang-en-only" data-i18n="footer.copy.en">© 2026 DaFan</span></span>
+        <span class="footer-divider" aria-hidden="true">·</span>
+        <span data-i18n="footer.city">成都</span>
+        <span class="footer-divider" aria-hidden="true">·</span>
+        <a href="mailto:vanwuuuu@gmail.com">vanwuuuu@gmail.com</a>
+        <span class="footer-divider" aria-hidden="true">·</span>
+        <span class="lang-zh-only" data-i18n="footer.igLabel">Instagram @van_wuuuu</span>
+        <span class="lang-en-only" data-i18n="footer.igLabel">Instagram @van_wuuuu</span>
+      </span>
+      <a href="https://www.instagram.com/van_wuuuu/" target="_blank" rel="noopener noreferrer" data-i18n-aria="footer.igLabel">Instagram</a>
     </div>
   </footer>
 
-  <script src="./i18n.js"></script>
-  <script src="./main.js"></script>
+  <script src="./assets/js/i18n.js"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/hero.js"></script>
 </body>
 </html>

@@ -6,6 +6,7 @@
   const dict = {
     zh: {
       "nav.work": "作品",
+      "nav.photography": "摄影",
       "nav.about": "关于",
       "nav.contact": "联络",
       "wordmark.zh": "大樊",
@@ -13,19 +14,27 @@
       "aria.wordmark": "大樊 / DaFan",
       "footer.copy.zh": "© 2026 大樊",
       "footer.copy.en": "© 2026 DaFan",
+      "footer.city": "成都",
+      "footer.igLabel": "Instagram @van_wuuuu",
       "home.tagline": "摄一瞬，记一程",
       "home.lede": "风景与旅途，以系列慢慢展开。",
       "home.meta": "成都 · Chengdu",
-      "home.workHeading": "作品",
-      "home.statement": "慢下来，让照片替路程说话。",
+      "home.workHeading": "精选系列",
+      "home.hero.pause": "暂停",
+      "home.hero.play": "继续",
+      "home.hero.pauseAria": "暂停首页作品轮播",
+      "home.hero.playAria": "继续首页作品轮播",
       "home.alt.bipenggou": "毕棚沟系列作品封面",
       "home.alt.emeishan": "峨眉山系列作品封面",
       "home.alt.qingdao": "青岛系列作品封面",
       "work.title": "作品",
+      "work.lede": "三个系列，以途为序。",
       "work.filter.all": "全部",
       "work.filter.travel": "旅行",
       "work.filter.landscape": "风景",
       "work.empty": "该分类暂无系列。",
+      "photography.title": "摄影",
+      "photography.lede": "以系列为单位的风景与旅途片段。",
       "card.view": "查看",
       "about.title": "关于",
       "about.p1": "大樊是一名风景摄影师，现居成都。",
@@ -59,6 +68,7 @@
     },
     en: {
       "nav.work": "Work",
+      "nav.photography": "Photography",
       "nav.about": "About",
       "nav.contact": "Contact",
       "wordmark.zh": "大樊",
@@ -66,19 +76,27 @@
       "aria.wordmark": "DaFan / 大樊",
       "footer.copy.zh": "© 2026 大樊",
       "footer.copy.en": "© 2026 DaFan",
+      "footer.city": "Chengdu",
+      "footer.igLabel": "Instagram @van_wuuuu",
       "home.tagline": "Capture a moment, record a journey",
       "home.lede": "Landscapes and journeys, unfolding as series.",
       "home.meta": "Chengdu · 成都",
-      "home.workHeading": "Work",
-      "home.statement": "Slow down—let the pictures speak for the miles.",
+      "home.workHeading": "Featured series",
+      "home.hero.pause": "Pause",
+      "home.hero.play": "Play",
+      "home.hero.pauseAria": "Pause the home hero rotation",
+      "home.hero.playAria": "Resume the home hero rotation",
       "home.alt.bipenggou": "Bipenggou series cover photograph",
       "home.alt.emeishan": "Mount Emei series cover photograph",
       "home.alt.qingdao": "Qingdao series cover photograph",
       "work.title": "Work",
+      "work.lede": "Three series, ordered by the road.",
       "work.filter.all": "All",
       "work.filter.travel": "Travel",
       "work.filter.landscape": "Landscape",
       "work.empty": "No series in this category yet.",
+      "photography.title": "Photography",
+      "photography.lede": "Fragments of landscape and travel, told as series.",
       "card.view": "View",
       "about.title": "About",
       "about.p1": "DaFan is a landscape photographer based in Chengdu.",
@@ -147,6 +165,11 @@
     document.querySelectorAll("[data-i18n-aria]").forEach(function (el) {
       const key = el.getAttribute("data-i18n-aria");
       if (pack[key] != null) el.setAttribute("aria-label", pack[key]);
+    });
+
+    document.querySelectorAll("[data-i18n-title]").forEach(function (el) {
+      const key = el.getAttribute("data-i18n-title");
+      if (pack[key] != null) el.setAttribute("title", pack[key]);
     });
 
     document.querySelectorAll(".lang-btn").forEach(function (btn) {
