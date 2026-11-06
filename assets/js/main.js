@@ -42,17 +42,26 @@
       const email = (form.querySelector('[name="email"]') || {}).value || "";
       const message = (form.querySelector('[name="message"]') || {}).value || "";
       const subject = encodeURIComponent("DaFan / 大樊 — contact from " + (name || "website"));
-      const body = encodeURIComponent(
-        "Name: " + name + "\nEmail: " + email + "\n\n" + message
-      );
-      window.location.href =
-        "mailto:vanwuuuu@gmail.com?subject=" + subject + "&body=" + body;
+      const body = encodeURIComponent("Name: " + name + "\nEmail: " + email + "\n\n" + message);
+      window.location.href = "mailto:vanwuuuu@gmail.com?subject=" + subject + "&body=" + body;
+    });
+  }
+
+  function initImageFallback() {
+    document.querySelectorAll("img[data-cloud-fallback]").forEach(function (img) {
+      img.addEventListener("error", function () {
+        img.removeAttribute("src");
+        img.setAttribute("data-broken", "true");
+        var fig = img.closest(".series-figure");
+        if (fig) fig.classList.add("is-placeholder");
+      });
     });
   }
 
   function init() {
     initFilters();
     initMailtoForm();
+    initImageFallback();
   }
 
   if (document.readyState === "loading") {

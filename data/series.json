@@ -1,0 +1,23 @@
+{
+  "cloudName": "no7rdn4w",
+  "series": [
+    {
+      "slug": "bipenggou",
+      "category": "landscape",
+      "publicPrefix": "dafan/series/bipenggou",
+      "frames": ["cover", "02", "03", "04"]
+    },
+    {
+      "slug": "emeishan",
+      "category": "landscape",
+      "publicPrefix": "dafan/series/emeishan",
+      "frames": ["cover", "02", "03", "04"]
+    },
+    {
+      "slug": "qingdao",
+      "category": "travel",
+      "publicPrefix": "dafan/series/qingdao",
+      "frames": ["cover", "02", "03", "04"]
+    }
+  ]
+}

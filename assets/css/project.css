@@ -1,0 +1,201 @@
+/* Inner pages — titles, prose, contact, series project layout */
+
+.page-title {
+  font-family: var(--type-series-title-font);
+  font-size: var(--text-series);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-series);
+  margin: 0 0 var(--space-6);
+}
+
+.page-title--display {
+  font-size: var(--text-page);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.page-lede {
+  margin: calc(var(--space-4) * -1) 0 var(--space-8);
+  max-width: 36rem;
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-muted);
+}
+
+.prose {
+  max-width: var(--measure-body);
+  font-size: var(--type-body);
+  line-height: var(--leading-relaxed);
+}
+
+.prose p {
+  margin: 0 0 var(--space-5);
+}
+
+.prose a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: var(--underline-thickness);
+}
+
+.contact-list {
+  list-style: none;
+  margin: 0 0 var(--space-8);
+  padding: 0;
+  max-width: var(--measure-body);
+}
+
+.contact-list li {
+  margin-bottom: var(--space-4);
+  font-size: var(--type-body);
+}
+
+.contact-list .label {
+  display: block;
+  font-size: var(--type-meta);
+  color: var(--color-text-muted);
+  letter-spacing: var(--tracking-nav);
+  margin-bottom: var(--space-1);
+}
+
+.contact-form {
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-field label {
+  font-size: var(--type-meta);
+  color: var(--color-text-muted);
+  letter-spacing: var(--tracking-nav);
+}
+
+.form-field input,
+.form-field textarea {
+  font: inherit;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-none);
+  padding: var(--space-3) 0;
+  min-height: 44px;
+  width: 100%;
+}
+
+.form-field textarea {
+  min-height: 8rem;
+  resize: vertical;
+  line-height: var(--leading-normal);
+}
+
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-bottom-color: var(--color-text);
+}
+
+.form-submit {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0 var(--space-1);
+  font-size: var(--type-nav);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-nav);
+  border-bottom: 1px solid var(--color-text);
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.form-submit:hover {
+  opacity: 0.7;
+}
+
+.form-note {
+  margin: var(--space-3) 0 0;
+  font-size: var(--type-meta);
+  color: var(--color-text-muted);
+}
+
+.series-header {
+  margin-bottom: var(--space-4);
+}
+
+.series-intro {
+  margin: 0 0 var(--series-title-to-first);
+  max-width: var(--measure-body);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-muted);
+}
+
+.series-header h1 {
+  font-family: var(--type-series-title-font);
+  font-size: var(--text-series);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-series);
+  margin: 0 0 var(--space-3);
+}
+
+.series-header .meta {
+  margin: 0;
+  font-size: var(--type-meta);
+  color: var(--color-text-muted);
+  letter-spacing: var(--tracking-nav);
+}
+
+.series-images {
+  display: flex;
+  flex-direction: column;
+  gap: var(--series-image-gap);
+  margin-bottom: var(--series-end-gap);
+}
+
+.series-figure {
+  margin: 0;
+  width: 100%;
+}
+
+.series-figure img {
+  width: 100%;
+  height: auto;
+}
+
+.series-figure--narrow {
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.series-figure.is-placeholder {
+  aspect-ratio: 3 / 2;
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--color-text) 6%, transparent),
+    color-mix(in srgb, var(--color-text) 6%, transparent) 12px,
+    transparent 12px,
+    transparent 24px
+  );
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--type-nav);
+  color: var(--color-text-muted);
+  letter-spacing: var(--tracking-nav);
+  margin-bottom: var(--space-6);
+}
+
+.back-link:hover {
+  color: var(--color-text);
+}
