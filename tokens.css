@@ -89,6 +89,12 @@
   --focus-ring-width: 1px;
 }
 
+/* Chinese pages: avoid tight/negative tracking inherited by UI Latin vars */
+html[lang="zh-Hans"] {
+  --tracking-tight: 0;
+  --tracking-series: 0;
+}
+
 @media (max-width: 767.98px) {
   :root {
     --text-sm: 0.75rem;
