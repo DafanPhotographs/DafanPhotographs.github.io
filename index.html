@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>小五 / Van Wu</title>
+  <meta name="description" content="摄一瞬，记一程 — 风景摄影师小五，现居成都。" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="wordmark" href="./index.html" data-i18n="wordmark">小五</a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="./work.html" data-i18n="nav.work">作品</a>
+        <a href="./about.html" data-i18n="nav.about">关于</a>
+        <a href="./contact.html" data-i18n="nav.contact">联络</a>
+      </nav>
+      <div class="header-actions">
+        <div class="lang-toggle" role="group" aria-label="Language">
+          <button type="button" class="lang-btn is-active" data-set-lang="zh" aria-pressed="true">中</button>
+          <span class="lang-sep" aria-hidden="true">|</span>
+          <button type="button" class="lang-btn" data-set-lang="en" aria-pressed="false">EN</button>
+        </div>
+        <a class="ig-link" href="https://www.instagram.com/van_wuuuu/" target="_blank" rel="noopener noreferrer" data-i18n="nav.ig">Instagram</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="site-main">
+    <section class="hero">
+      <h1 class="hero-tagline" data-i18n="home.tagline">摄一瞬，记一程</h1>
+      <p class="hero-meta" data-i18n="home.meta">风景摄影师 · 成都</p>
+    </section>
+
+    <p class="section-label" data-i18n="home.selected">精选系列</p>
+    <div class="series-grid home-grid">
+      <a class="series-card" href="./series/north-woods.html">
+        <div class="series-card-media" aria-hidden="true"></div>
+        <div class="series-card-meta">
+          <h2 class="series-card-title" data-i18n="s1.title">北境疏林</h2>
+          <span class="series-card-year" data-i18n="s1.year">2024</span>
+        </div>
+      </a>
+      <a class="series-card" href="./series/coast-road.html">
+        <div class="series-card-media" aria-hidden="true"></div>
+        <div class="series-card-meta">
+          <h2 class="series-card-title" data-i18n="s2.title">海边公路</h2>
+          <span class="series-card-year" data-i18n="s2.year">2023</span>
+        </div>
+      </a>
+      <a class="series-card" href="./series/window-notes.html">
+        <div class="series-card-media" aria-hidden="true"></div>
+        <div class="series-card-meta">
+          <h2 class="series-card-title" data-i18n="s3.title">窗边日记</h2>
+          <span class="series-card-year" data-i18n="s3.year">2025</span>
+        </div>
+      </a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span data-i18n="footer.copy">© 2026 小五</span>
+      <a href="https://www.instagram.com/van_wuuuu/" target="_blank" rel="noopener noreferrer">Instagram</a>
+    </div>
+  </footer>
+
+  <script src="./i18n.js"></script>
+  <script src="./main.js"></script>
+</body>
+</html>
