@@ -25,7 +25,7 @@ work.html           Series index + category filters
 about.html
 contact.html        mailto form → vanwuuuu@gmail.com
 series/             Series pages (four images each: cover + 02–04)
-images/series/      JPG assets per slug
+images/series/      Local JPG copies (kept for verification; series images load from Cloudinary CDN in HTML)
 styles.css          Layout + components
 tokens.css          Design tokens
 i18n.js             中 | EN (localStorage)
@@ -40,7 +40,7 @@ main.js             Filters + mailto
 
 ## Update content
 
-- Add series: new folder under `images/series/<slug>/` (`cover.jpg`, `02.jpg`, `03.jpg`, `04.jpg`), new `series/<slug>.html`, and link from `index.html` / `work.html`.
+- Add series: upload assets to Cloudinary under `dafan/series/<slug>/` (public ids `cover`, `02`, `03`, `04` — delivery URLs use `f_auto,q_auto` in `index.html` / `work.html` / `series/*.html`); keep a matching folder under `images/series/<slug>/` locally if you want repo copies, new `series/<slug>.html`, and link from `index.html` / `work.html`.
 - UI strings (nav, taglines, alt text, series titles): edit `i18n.js` for `zh` / `en`.
 - Language preference: `localStorage` key `dafan-lang`; legacy `vanwu-lang` is read once and migrated.
 
