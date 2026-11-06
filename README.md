@@ -43,7 +43,7 @@ main.js             Filters + mailto
 - Copy / edit HTML under `series/` for new work; link cards from `index.html` and `work.html`.
 - Replace CSS photo placeholders (`.photo-block`, `.series-card-media`) with `<img>` when finals are ready.
 - Chrome strings (nav, taglines, series titles): edit `i18n.js` dict for `zh` / `en`.
-- Language preference persists in `localStorage` key `vanwu-lang`.
+- Language preference persists in `localStorage` key `vanwu-lang`. 
 
 ## Public fields used
 
