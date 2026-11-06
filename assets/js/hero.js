@@ -4,6 +4,7 @@
     var pills = root.querySelectorAll("[data-hero-pill]");
     var pauseBtn = root.querySelector("[data-hero-pause]");
     var visual = root.querySelector("[data-hero-visual]");
+    var pillBar = root.querySelector(".hero-pills");
     if (!slides.length) return;
 
     var index = 0;
@@ -27,15 +28,27 @@
       return userPaused || hoverPaused || focusPaused || document.visibilityState === "hidden" || reducedMotion;
     }
 
+    function pillIndexOf(el) {
+      for (var p = 0; p < pills.length; p++) {
+        if (pills[p] === el) return p;
+      }
+      return -1;
+    }
+
     function setSlide(i) {
+      var focusWasOnPill = pillIndexOf(document.activeElement) !== -1;
       index = (i + slides.length) % slides.length;
       slides.forEach(function (el, idx) {
-        el.classList.toggle("is-active", idx === index);
+        var on = idx === index;
+        el.classList.toggle("is-active", on);
+        el.setAttribute("aria-hidden", on ? "false" : "true");
       });
       pills.forEach(function (el, idx) {
         var on = idx === index;
         el.setAttribute("aria-selected", on ? "true" : "false");
+        el.setAttribute("tabindex", on ? "0" : "-1");
       });
+      if (focusWasOnPill && pills[index]) pills[index].focus();
     }
 
     function clearTimer() {
@@ -78,6 +91,23 @@
       });
     });
 
+    if (pillBar) {
+      pillBar.addEventListener("keydown", function (e) {
+        var key = e.key;
+        if (key !== "ArrowLeft" && key !== "ArrowRight" && key !== "Home" && key !== "End") return;
+        var cur = pillIndexOf(document.activeElement);
+        if (cur === -1) return;
+        e.preventDefault();
+        var next = cur;
+        if (key === "ArrowRight") next = cur + 1;
+        else if (key === "ArrowLeft") next = cur - 1;
+        else if (key === "Home") next = 0;
+        else if (key === "End") next = pills.length - 1;
+        setSlide(next);
+        startTimer();
+      });
+    }
+
     if (pauseBtn) {
       pauseBtn.addEventListener("click", function () {
         userPaused = !userPaused;
@@ -97,7 +127,6 @@
 
     var focusScopes = [];
     if (visual) focusScopes.push(visual);
-    var pillBar = root.querySelector(".hero-pills");
     if (pillBar) focusScopes.push(pillBar);
     if (pauseBtn) focusScopes.push(pauseBtn);
 

@@ -144,7 +144,8 @@
 
   function applyLang(lang) {
     const pack = dict[lang] || dict.zh;
-    document.documentElement.lang = lang === "en" ? "en" : "zh-Hans";
+    /* Use BCP47 `zh` so CSS lang selectors (e.g. [lang^="zh"]) and legacy `zh` matches stay aligned */
+    document.documentElement.lang = lang === "en" ? "en" : "zh";
 
     document.querySelectorAll("[data-i18n]").forEach(function (el) {
       const key = el.getAttribute("data-i18n");
