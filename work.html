@@ -4,61 +4,74 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>作品 / Work — 大樊 / DaFan</title>
-  <meta name="description" content="摄影系列索引 — 大樊 / DaFan" />
+  <meta name="description" content="摄影系列 — 大樊 / DaFan" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="header-inner">
-      <a class="wordmark" href="./index.html" data-i18n="wordmark">大樊</a>
-      <nav class="site-nav" aria-label="Primary">
-        <a href="./work.html" aria-current="page" data-i18n="nav.work">作品</a>
-        <a href="./about.html" data-i18n="nav.about">关于</a>
-        <a href="./contact.html" data-i18n="nav.contact">联络</a>
-      </nav>
-      <div class="header-actions">
+      <a class="wordmark" href="./index.html" data-i18n-aria="aria.wordmark">
+        <span class="lang-zh-only" data-i18n="wordmark.zh">大樊</span>
+        <span class="lang-en-only" data-i18n="wordmark.en">DaFan</span>
+      </a>
+      <div class="header-cluster">
+        <nav class="site-nav" aria-label="Primary">
+          <a href="./work.html" aria-current="page" data-i18n="nav.work">作品</a>
+          <a href="./about.html" data-i18n="nav.about">关于</a>
+          <a href="./contact.html" data-i18n="nav.contact">联络</a>
+        </nav>
         <div class="lang-toggle" role="group" aria-label="Language">
           <button type="button" class="lang-btn is-active" data-set-lang="zh" aria-pressed="true">中</button>
           <span class="lang-sep" aria-hidden="true">|</span>
           <button type="button" class="lang-btn" data-set-lang="en" aria-pressed="false">EN</button>
         </div>
-        <a class="ig-link" href="https://www.instagram.com/van_wuuuu/" target="_blank" rel="noopener noreferrer" data-i18n="nav.ig">Instagram</a>
       </div>
     </div>
   </header>
 
   <main class="site-main">
-    <h1 class="page-title" data-i18n="work.title">作品</h1>
+    <h1 class="page-title page-title--display" data-i18n="work.title">作品</h1>
 
     <div class="filters" data-filter-root role="group" aria-label="Filter">
       <button type="button" class="filter-btn is-active" data-filter="all" aria-pressed="true" data-i18n="work.filter.all">全部</button>
       <button type="button" class="filter-btn" data-filter="travel" aria-pressed="false" data-i18n="work.filter.travel">旅行</button>
       <button type="button" class="filter-btn" data-filter="landscape" aria-pressed="false" data-i18n="work.filter.landscape">风景</button>
-      <button type="button" class="filter-btn" data-filter="personal" aria-pressed="false" data-i18n="work.filter.personal">个人</button>
     </div>
 
     <p class="empty-filter" data-filter-empty data-i18n="work.empty">该分类暂无系列。</p>
 
-    <div class="series-grid">
-      <a class="series-card" href="./series/north-woods.html" data-category="landscape">
-        <div class="series-card-media" aria-hidden="true"></div>
+    <div class="series-grid work-series">
+      <a class="series-card" href="./series/bipenggou.html" data-category="landscape">
+        <div class="series-card-media">
+          <img src="./images/series/bipenggou/cover.jpg" alt="" data-i18n-alt="home.alt.bipenggou" loading="eager" decoding="async" />
+        </div>
         <div class="series-card-meta">
-          <h2 class="series-card-title" data-i18n="s1.title">北境疏林</h2>
+          <h2 class="series-card-title" data-i18n="s1.title">毕棚沟</h2>
           <span class="series-card-year"><span data-i18n="s1.year">2024</span> · <span data-i18n="s1.cat">风景</span></span>
+          <span class="series-card-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
         </div>
       </a>
-      <a class="series-card" href="./series/coast-road.html" data-category="travel">
-        <div class="series-card-media" aria-hidden="true"></div>
+      <a class="series-card" href="./series/emeishan.html" data-category="landscape">
+        <div class="series-card-media">
+          <img src="./images/series/emeishan/cover.jpg" alt="" data-i18n-alt="home.alt.emeishan" loading="lazy" decoding="async" />
+        </div>
         <div class="series-card-meta">
-          <h2 class="series-card-title" data-i18n="s2.title">海边公路</h2>
-          <span class="series-card-year"><span data-i18n="s2.year">2023</span> · <span data-i18n="s2.cat">旅行</span></span>
+          <h2 class="series-card-title" data-i18n="s2.title">峨眉山</h2>
+          <span class="series-card-year"><span data-i18n="s2.year">2024</span> · <span data-i18n="s2.cat">风景</span></span>
+          <span class="series-card-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
         </div>
       </a>
-      <a class="series-card" href="./series/window-notes.html" data-category="personal">
-        <div class="series-card-media" aria-hidden="true"></div>
+      <a class="series-card" href="./series/qingdao.html" data-category="travel">
+        <div class="series-card-media">
+          <img src="./images/series/qingdao/cover.jpg" alt="" data-i18n-alt="home.alt.qingdao" loading="lazy" decoding="async" />
+        </div>
         <div class="series-card-meta">
-          <h2 class="series-card-title" data-i18n="s3.title">窗边日记</h2>
-          <span class="series-card-year"><span data-i18n="s3.year">2025</span> · <span data-i18n="s3.cat">个人</span></span>
+          <h2 class="series-card-title" data-i18n="s3.title">青岛</h2>
+          <span class="series-card-year"><span data-i18n="s3.year">2024</span> · <span data-i18n="s3.cat">旅行</span></span>
+          <span class="series-card-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
         </div>
       </a>
     </div>
@@ -66,8 +79,8 @@
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <span data-i18n="footer.copy">© 2026 大樊</span>
-      <a href="https://www.instagram.com/van_wuuuu/" target="_blank" rel="noopener noreferrer">Instagram</a>
+      <span><span class="lang-zh-only" data-i18n="footer.copy.zh">© 2026 大樊</span><span class="lang-en-only" data-i18n="footer.copy.en">© 2026 DaFan</span></span>
+      <a href="https://www.instagram.com/van_wuuuu/" target="_blank" rel="noopener noreferrer" aria-label="Instagram @van_wuuuu">Instagram</a>
     </div>
   </footer>
 

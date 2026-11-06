@@ -4,25 +4,30 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>关于 / About — 大樊 / DaFan</title>
-  <meta name="description" content="关于大樊 — 风景摄影师，现居成都。" />
+  <meta name="description" content="关于大樊 / DaFan — 风景摄影师，成都。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="header-inner">
-      <a class="wordmark" href="./index.html" data-i18n="wordmark">大樊</a>
-      <nav class="site-nav" aria-label="Primary">
-        <a href="./work.html" data-i18n="nav.work">作品</a>
-        <a href="./about.html" aria-current="page" data-i18n="nav.about">关于</a>
-        <a href="./contact.html" data-i18n="nav.contact">联络</a>
-      </nav>
-      <div class="header-actions">
+      <a class="wordmark" href="./index.html" data-i18n-aria="aria.wordmark">
+        <span class="lang-zh-only" data-i18n="wordmark.zh">大樊</span>
+        <span class="lang-en-only" data-i18n="wordmark.en">DaFan</span>
+      </a>
+      <div class="header-cluster">
+        <nav class="site-nav" aria-label="Primary">
+          <a href="./work.html" data-i18n="nav.work">作品</a>
+          <a href="./about.html" aria-current="page" data-i18n="nav.about">关于</a>
+          <a href="./contact.html" data-i18n="nav.contact">联络</a>
+        </nav>
         <div class="lang-toggle" role="group" aria-label="Language">
           <button type="button" class="lang-btn is-active" data-set-lang="zh" aria-pressed="true">中</button>
           <span class="lang-sep" aria-hidden="true">|</span>
           <button type="button" class="lang-btn" data-set-lang="en" aria-pressed="false">EN</button>
         </div>
-        <a class="ig-link" href="https://www.instagram.com/van_wuuuu/" target="_blank" rel="noopener noreferrer" data-i18n="nav.ig">Instagram</a>
       </div>
     </div>
   </header>
@@ -32,10 +37,8 @@
     <div class="prose">
       <p data-i18n="about.p1">大樊是一名风景摄影师，现居成都。</p>
       <p data-i18n="about.p2">摄一瞬，记一程。作品以系列为单位呈现，慢看、少打扰。</p>
-      <p data-i18n="about.p3">日常也会在 Instagram 分享片刻。</p>
+      <p data-i18n="about.p3">更多片刻在 Instagram（页脚）。</p>
       <p>
-        <a href="https://www.instagram.com/van_wuuuu/" target="_blank" rel="noopener noreferrer">@van_wuuuu</a>
-        ·
         <a href="mailto:vanwuuuu@gmail.com">vanwuuuu@gmail.com</a>
       </p>
     </div>
@@ -43,8 +46,8 @@
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <span data-i18n="footer.copy">© 2026 大樊</span>
-      <a href="https://www.instagram.com/van_wuuuu/" target="_blank" rel="noopener noreferrer">Instagram</a>
+      <span><span class="lang-zh-only" data-i18n="footer.copy.zh">© 2026 大樊</span><span class="lang-en-only" data-i18n="footer.copy.en">© 2026 DaFan</span></span>
+      <a href="https://www.instagram.com/van_wuuuu/" target="_blank" rel="noopener noreferrer" aria-label="Instagram @van_wuuuu">Instagram</a>
     </div>
   </footer>
 
