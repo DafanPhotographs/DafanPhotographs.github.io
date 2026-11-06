@@ -1,119 +1,104 @@
 :root {
-  /* ========== Brand ==========
-     中文名：大樊
-     英文名：DaFan
-  */
+  /* Brand: 中文 大樊 · English DaFan */
 
-  /* ========== Color ========== */
-  --color-bg: #F7F5F2;
-  --color-bg-elevated: #FAFAF8; /* 可选次级底，慎用 */
-  --color-text: #1A1A1A;
-  --color-text-muted: #6B6B6B; /* 或 color-mix(in srgb, var(--color-text) 60%, transparent) */
-  --color-text-subtle: color-mix(in srgb, var(--color-text) 55%, transparent);
-  --color-border: color-mix(in srgb, var(--color-text) 10%, transparent);
-  --color-border-strong: color-mix(in srgb, var(--color-text) 18%, transparent);
-  --color-focus: var(--color-text); /* 焦点环跟字色，勿高饱和 */
+  /* Color — near-white / near-black */
+  --color-bg: #ffffff;
+  --color-bg-soft: #f7f7f7;
+  --color-bg-elevated: #ffffff;
+  --color-text: #08090a;
+  --color-text-muted: #262626;
+  --color-text-subtle: color-mix(in srgb, var(--color-text-muted) 75%, transparent);
+  --color-border: transparent;
+  --color-border-strong: color-mix(in srgb, var(--color-text) 14%, transparent);
+  --color-focus: var(--color-text);
   --color-overlay: color-mix(in srgb, var(--color-bg) 92%, transparent);
-
-  /* 照片区：禁止给图加色底 */
   --color-photo-matte: transparent;
 
-  /* ========== Typography family ========== */
-  --font-sans: "Inter", "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", system-ui, sans-serif;
-  --font-serif: "Freight Text", "Source Han Serif SC", "Noto Serif SC", "Songti SC", Georgia, serif; /* 仅系列名/可选大标题 */
+  /* Typography — Inter loaded via Google Fonts in HTML */
+  --font-sans: "Inter", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
   --font-ui: var(--font-sans);
 
-  /* ========== Font size (desktop default) ========== */
-  --text-xs: 0.75rem;    /* 12px  页脚/元信息 */
-  --text-sm: 0.8125rem;  /* 13px  导航/过滤/语言切换 */
-  --text-md: 0.9375rem;  /* 15px  顶栏字标/正文起点 */
-  --text-base: 1rem;      /* 16px  正文 */
-  --text-lg: 1.125rem;    /* 18px  索引系列名 */
-  --text-xl: 1.375rem;    /* 22px  索引系列名偏大 */
-  --text-series: clamp(1.75rem, 3.2vw, 2.75rem); /* 28–44px 系列页主标题 */
-  --text-display: clamp(2rem, 4vw, 3rem);         /* 可选更大 display，慎用 */
+  /* Scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-md: 0.9375rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-hero: clamp(2.75rem, 8vw, 5.5rem);
+  --text-page: clamp(2rem, 4vw, 2.75rem);
+  --text-card-title: clamp(1.25rem, 1.5vw, 1.5rem);
+  --text-series: clamp(1.75rem, 3.2vw, 2.75rem);
 
-  /* ========== Font weight ========== */
   --weight-regular: 400;
   --weight-medium: 500;
-  --weight-semibold: 600; /* 极少用，激活态优先字重/下划线而非加粗堆叠 */
+  --weight-semibold: 600;
 
-  /* ========== Line height / tracking ========== */
-  --leading-tight: 1.15;
-  --leading-snug: 1.25;
+  --leading-tight: 1.12;
+  --leading-snug: 1.2;
   --leading-normal: 1.55;
   --leading-relaxed: 1.65;
+  --tracking-tight: -0.03em;
   --tracking-nav: 0.02em;
   --tracking-series: -0.01em;
   --measure-body: 42ch;
 
-  /* ========== Space scale ========== */
-  --space-1: 0.25rem;  /* 4 */
-  --space-2: 0.5rem;   /* 8 */
-  --space-3: 0.75rem;  /* 12 */
-  --space-4: 1rem;     /* 16 */
-  --space-5: 1.5rem;   /* 24 */
-  --space-6: 2rem;     /* 32 */
-  --space-7: 2.5rem;   /* 40 */
-  --space-8: 3rem;     /* 48 */
-  --space-9: 4rem;     /* 64 */
-  --space-10: 5rem;    /* 80 */
-  --space-11: 6rem;    /* 96 */
-  --space-12: 7.5rem;  /* 120 */
+  /* Space */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.5rem;
+  --space-8: 3rem;
+  --space-9: 4rem;
+  --space-10: 5rem;
+  --space-11: 6rem;
+  --space-12: 7.5rem;
 
-  /* ========== Layout ========== */
-  --page-margin: clamp(1.25rem, 4vw, 4rem); /* 20–64，大屏可再加媒体查询到 80 */
-  --page-margin-lg: 5rem; /* 80px 大屏外边距可选 */
-  --content-max: 90rem;   /* 全站宽上限，摄影站宜宽 */
-  --header-height: 3.75rem; /* 60px 桌面；移动见下方 */
-  --header-height-mobile: 3.25rem; /* 52px */
-  --nav-gap: 1.5rem;      /* 顶栏链接间距 */
-  --lang-gap: 0.5rem;     /* 「中 | EN」内间距 */
+  --page-margin: clamp(1.25rem, 4vw, 4rem);
+  --page-margin-lg: 5rem;
+  --content-max: 90rem;
+  --header-height: 3.75rem;
+  --header-height-mobile: 3.25rem;
+  --nav-gap: 1.5rem;
+  --lang-gap: 0.5rem;
 
-  /* 索引页 */
-  --index-filter-gap: var(--space-8);     /* 过滤条下 48 */
-  --index-row-gap: clamp(2.5rem, 5vw, 5rem); /* 行距 40–80 */
-  --index-col-gap: clamp(1.5rem, 2.5vw, 2.5rem); /* 列距 24–40 */
-  --index-title-gap: var(--space-3);      /* 系列名与缩略图 12 */
+  --index-filter-gap: var(--space-8);
+  --index-row-gap: clamp(2.5rem, 5vw, 5rem);
+  --index-col-gap: clamp(1.5rem, 2.5vw, 2.5rem);
+  --index-title-gap: var(--space-3);
 
-  /* 系列页 */
-  --series-title-to-first: clamp(1.5rem, 3vw, 3rem); /* 标题→首图 */
-  --series-image-gap: clamp(1rem, 2.5vw, 2.5rem);    /* 图与图 16–40 */
-  --series-image-gap-tight: var(--space-4);           /* 同组更紧 */
-  --series-copy-pad-y: clamp(3rem, 5vw, 4.5rem);      /* 文案插层上下 */
-  --series-end-gap: clamp(4rem, 6vw, 6rem);           /* 系列末→页脚 */
+  --series-title-to-first: clamp(1.5rem, 3vw, 3rem);
+  --series-image-gap: clamp(1rem, 2.5vw, 2.5rem);
+  --series-copy-pad-y: clamp(2rem, 4vw, 3rem);
+  --series-end-gap: clamp(4rem, 6vw, 6rem);
 
-  /* ========== Radius ========== */
-  /* 近白静奢：默认无圆角；控件也不做厚 pill */
   --radius-none: 0;
-  --radius-sm: 0; /* 锁定 0；若日后极轻触控热区可用 2px，默认勿开 */
-  --radius-control: 0;
 
-  /* ========== Motion ========== */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
   --duration-fast: 160ms;
   --duration-normal: 280ms;
   --duration-slow: 420ms;
-  --motion-fade-distance: 0.5rem; /* 8px 轻位移上限；勿超 12px */
 
-  /* ========== Header / chrome specifics ========== */
   --header-bg: var(--color-bg);
-  --header-blur: 0; /* 不做毛玻璃，保持静奢干净 */
+  --header-blur: 0;
   --underline-thickness: 1px;
   --focus-ring-width: 1px;
 }
 
-/* ========== Mobile overrides ========== */
 @media (max-width: 767.98px) {
   :root {
-    --text-sm: 0.75rem;     /* 12 导航 */
-    --text-md: 0.8125rem;   /* 13 字标 */
-    --text-base: 0.9375rem; /* 15 正文 */
-    --text-lg: 1rem;         /* 16 索引系列名 */
-    --text-xl: 1.125rem;     /* 18 */
-    --text-series: clamp(1.375rem, 6vw, 2rem); /* 22–32 */
-    --page-margin: 1.125rem; /* 18 */
+    --text-sm: 0.75rem;
+    --text-md: 0.8125rem;
+    --text-base: 0.9375rem;
+    --text-lg: 1rem;
+    --text-xl: 1.125rem;
+    --text-series: clamp(1.375rem, 6vw, 2rem);
+    --text-page: clamp(1.75rem, 5vw, 2.25rem);
+    --page-margin: 1.125rem;
     --header-height: var(--header-height-mobile);
     --nav-gap: 1rem;
     --index-filter-gap: var(--space-5);
@@ -121,19 +106,18 @@
   }
 }
 
-/* ========== Semantic aliases（组件用） ========== */
 :root {
   --type-nav: var(--text-sm);
   --type-nav-weight: var(--weight-medium);
   --type-wordmark: var(--text-md);
-  --type-wordmark-weight: var(--weight-medium);
-  --type-lang: var(--text-sm);          /* 「中 | EN」 */
+  --type-wordmark-weight: var(--weight-semibold);
+  --type-lang: var(--text-sm);
   --type-lang-weight: var(--weight-regular);
   --type-filter: var(--text-sm);
   --type-body: var(--text-base);
   --type-meta: var(--text-xs);
   --type-footer: var(--text-xs);
-  --type-index-title: var(--text-lg);
+  --type-index-title: var(--text-card-title);
   --type-series-title: var(--text-series);
-  --type-series-title-font: var(--font-serif); /* 不用衬线则改成 var(--font-sans) */
+  --type-series-title-font: var(--font-sans);
 }
