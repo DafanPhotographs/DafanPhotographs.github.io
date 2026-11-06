@@ -41,7 +41,7 @@
       const name = (form.querySelector('[name="name"]') || {}).value || "";
       const email = (form.querySelector('[name="email"]') || {}).value || "";
       const message = (form.querySelector('[name="message"]') || {}).value || "";
-      const subject = encodeURIComponent("Van Wu / 小五 — contact from " + (name || "website"));
+      const subject = encodeURIComponent("DaFan / 大樊 — contact from " + (name || "website"));
       const body = encodeURIComponent(
         "Name: " + name + "\nEmail: " + email + "\n\n" + message
       );

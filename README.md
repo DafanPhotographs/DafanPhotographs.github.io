@@ -1,4 +1,4 @@
-# 小五 / Van Wu — Photography site
+# 大樊 / DaFan — Photography site
 
 Mobile-first static portfolio for GitHub Pages. Near-white quiet luxury. Public info only: name, Chengdu, email, Instagram, tagline.
 
@@ -43,11 +43,11 @@ main.js             Filters + mailto
 - Copy / edit HTML under `series/` for new work; link cards from `index.html` and `work.html`.
 - Replace CSS photo placeholders (`.photo-block`, `.series-card-media`) with `<img>` when finals are ready.
 - Chrome strings (nav, taglines, series titles): edit `i18n.js` dict for `zh` / `en`.
-- Language preference persists in `localStorage` key `vanwu-lang`. 
+- Language preference persists in `localStorage` key `dafan-lang` (legacy `vanwu-lang` is read once and migrated).
 
 ## Public fields used
 
-- 小五 / Van Wu · 成都 / Chengdu
+- 大樊 / DaFan · 成都 / Chengdu
 - vanwuuuu@gmail.com
 - https://www.instagram.com/van_wuuuu/
 - 摄一瞬，记一程 / Capture a moment, record a journey

@@ -1,5 +1,6 @@
 (function () {
-  const STORAGE_KEY = "vanwu-lang";
+  const STORAGE_KEY = "dafan-lang";
+  const LEGACY_STORAGE_KEY = "vanwu-lang";
   const DEFAULT = "zh";
 
   const dict = {
@@ -8,8 +9,8 @@
       "nav.about": "关于",
       "nav.contact": "联络",
       "nav.ig": "Instagram",
-      "wordmark": "小五",
-      "footer.copy": "© 2026 小五",
+      "wordmark": "大樊",
+      "footer.copy": "© 2026 大樊",
       "home.tagline": "摄一瞬，记一程",
       "home.meta": "风景摄影师 · 成都",
       "home.selected": "精选系列",
@@ -20,7 +21,7 @@
       "work.filter.personal": "个人",
       "work.empty": "该分类暂无系列。",
       "about.title": "关于",
-      "about.p1": "小五是一名风景摄影师，现居成都。",
+      "about.p1": "大樊是一名风景摄影师，现居成都。",
       "about.p2": "摄一瞬，记一程。作品以系列为单位呈现，慢看、少打扰。",
       "about.p3": "日常也会在 Instagram 分享片刻。",
       "contact.title": "联络",
@@ -51,8 +52,8 @@
       "nav.about": "About",
       "nav.contact": "Contact",
       "nav.ig": "Instagram",
-      "wordmark": "Van Wu",
-      "footer.copy": "© 2026 Van Wu",
+      "wordmark": "DaFan",
+      "footer.copy": "© 2026 DaFan",
       "home.tagline": "Capture a moment, record a journey",
       "home.meta": "Landscape photographer · Chengdu",
       "home.selected": "Selected series",
@@ -63,7 +64,7 @@
       "work.filter.personal": "Personal",
       "work.empty": "No series in this category yet.",
       "about.title": "About",
-      "about.p1": "Xiaowu is a landscape photographer based in Chengdu.",
+      "about.p1": "DaFan is a landscape photographer based in Chengdu.",
       "about.p2": "Capture a moment, record a journey. Work is presented as series—slow, quiet, unhurried.",
       "about.p3": "Moments also appear on Instagram.",
       "contact.title": "Contact",
@@ -94,6 +95,12 @@
   function getLang() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === "zh" || stored === "en") return stored;
+    const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacy === "zh" || legacy === "en") {
+      localStorage.setItem(STORAGE_KEY, legacy);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+      return legacy;
+    }
     return DEFAULT;
   }
 
@@ -145,5 +152,5 @@
     init();
   }
 
-  window.VanWuI18n = { applyLang: applyLang, getLang: getLang, dict: dict };
+  window.DaFanI18n = { applyLang: applyLang, getLang: getLang, dict: dict };
 })();
