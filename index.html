@@ -4,25 +4,30 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>大樊 / DaFan</title>
-  <meta name="description" content="摄一瞬，记一程 — 风景摄影师大樊，现居成都。" />
+  <meta name="description" content="摄一瞬，记一程 — 大樊 / DaFan，风景摄影师，成都。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="header-inner">
-      <a class="wordmark" href="./index.html" data-i18n="wordmark">大樊</a>
-      <nav class="site-nav" aria-label="Primary">
-        <a href="./work.html" data-i18n="nav.work">作品</a>
-        <a href="./about.html" data-i18n="nav.about">关于</a>
-        <a href="./contact.html" data-i18n="nav.contact">联络</a>
-      </nav>
-      <div class="header-actions">
+      <a class="wordmark" href="./index.html" data-i18n-aria="aria.wordmark">
+        <span class="lang-zh-only" data-i18n="wordmark.zh">大樊</span>
+        <span class="lang-en-only" data-i18n="wordmark.en">DaFan</span>
+      </a>
+      <div class="header-cluster">
+        <nav class="site-nav" aria-label="Primary">
+          <a href="./work.html" data-i18n="nav.work">作品</a>
+          <a href="./about.html" data-i18n="nav.about">关于</a>
+          <a href="./contact.html" data-i18n="nav.contact">联络</a>
+        </nav>
         <div class="lang-toggle" role="group" aria-label="Language">
           <button type="button" class="lang-btn is-active" data-set-lang="zh" aria-pressed="true">中</button>
           <span class="lang-sep" aria-hidden="true">|</span>
           <button type="button" class="lang-btn" data-set-lang="en" aria-pressed="false">EN</button>
         </div>
-        <a class="ig-link" href="https://www.instagram.com/van_wuuuu/" target="_blank" rel="noopener noreferrer" data-i18n="nav.ig">Instagram</a>
       </div>
     </div>
   </header>
@@ -30,39 +35,54 @@
   <main class="site-main">
     <section class="hero">
       <h1 class="hero-tagline" data-i18n="home.tagline">摄一瞬，记一程</h1>
-      <p class="hero-meta" data-i18n="home.meta">风景摄影师 · 成都</p>
+      <p class="hero-lede" data-i18n="home.lede">风景与旅途，以系列慢慢展开。</p>
+      <p class="hero-meta" data-i18n="home.meta">成都 · Chengdu</p>
     </section>
 
-    <p class="section-label" data-i18n="home.selected">精选系列</p>
-    <div class="series-grid home-grid">
-      <a class="series-card" href="./series/north-woods.html">
-        <div class="series-card-media" aria-hidden="true"></div>
-        <div class="series-card-meta">
-          <h2 class="series-card-title" data-i18n="s1.title">北境疏林</h2>
-          <span class="series-card-year" data-i18n="s1.year">2024</span>
+    <section class="work-home" aria-labelledby="work-home-label">
+      <h2 id="work-home-label" class="visually-hidden" data-i18n="home.workHeading">作品</h2>
+
+      <a class="work-home-row" href="./series/bipenggou.html">
+        <div class="work-home-media">
+          <img src="./images/series/bipenggou/cover.jpg" alt="" data-i18n-alt="home.alt.bipenggou" loading="eager" decoding="async" />
+        </div>
+        <div class="work-home-meta">
+          <h3 class="work-home-title" data-i18n="s1.title">毕棚沟</h3>
+          <p class="work-home-year"><span data-i18n="s1.year">2024</span></p>
+          <span class="work-home-cta"><span data-i18n="card.view">查看</span> <span class="work-home-arrow" aria-hidden="true">→</span></span>
         </div>
       </a>
-      <a class="series-card" href="./series/coast-road.html">
-        <div class="series-card-media" aria-hidden="true"></div>
-        <div class="series-card-meta">
-          <h2 class="series-card-title" data-i18n="s2.title">海边公路</h2>
-          <span class="series-card-year" data-i18n="s2.year">2023</span>
+
+      <a class="work-home-row" href="./series/emeishan.html">
+        <div class="work-home-media">
+          <img src="./images/series/emeishan/cover.jpg" alt="" data-i18n-alt="home.alt.emeishan" loading="lazy" decoding="async" />
+        </div>
+        <div class="work-home-meta">
+          <h3 class="work-home-title" data-i18n="s2.title">峨眉山</h3>
+          <p class="work-home-year"><span data-i18n="s2.year">2024</span></p>
+          <span class="work-home-cta"><span data-i18n="card.view">查看</span> <span class="work-home-arrow" aria-hidden="true">→</span></span>
         </div>
       </a>
-      <a class="series-card" href="./series/window-notes.html">
-        <div class="series-card-media" aria-hidden="true"></div>
-        <div class="series-card-meta">
-          <h2 class="series-card-title" data-i18n="s3.title">窗边日记</h2>
-          <span class="series-card-year" data-i18n="s3.year">2025</span>
+
+      <a class="work-home-row" href="./series/qingdao.html">
+        <div class="work-home-media">
+          <img src="./images/series/qingdao/cover.jpg" alt="" data-i18n-alt="home.alt.qingdao" loading="lazy" decoding="async" />
+        </div>
+        <div class="work-home-meta">
+          <h3 class="work-home-title" data-i18n="s3.title">青岛</h3>
+          <p class="work-home-year"><span data-i18n="s3.year">2024</span></p>
+          <span class="work-home-cta"><span data-i18n="card.view">查看</span> <span class="work-home-arrow" aria-hidden="true">→</span></span>
         </div>
       </a>
-    </div>
+    </section>
+
+    <p class="home-statement" data-i18n="home.statement">慢下来，让照片替路程说话。</p>
   </main>
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <span data-i18n="footer.copy">© 2026 大樊</span>
-      <a href="https://www.instagram.com/van_wuuuu/" target="_blank" rel="noopener noreferrer">Instagram</a>
+      <span><span class="lang-zh-only" data-i18n="footer.copy.zh">© 2026 大樊</span><span class="lang-en-only" data-i18n="footer.copy.en">© 2026 DaFan</span></span>
+      <a href="https://www.instagram.com/van_wuuuu/" target="_blank" rel="noopener noreferrer" aria-label="Instagram @van_wuuuu">Instagram</a>
     </div>
   </footer>
 
