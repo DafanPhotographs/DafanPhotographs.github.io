@@ -1,0 +1,63 @@
+(function () {
+  function initFilters() {
+    const root = document.querySelector("[data-filter-root]");
+    if (!root) return;
+
+    const buttons = root.querySelectorAll("[data-filter]");
+    const cards = document.querySelectorAll("[data-category]");
+    const empty = document.querySelector("[data-filter-empty]");
+
+    function setFilter(value) {
+      let visible = 0;
+      cards.forEach(function (card) {
+        const cat = card.getAttribute("data-category") || "";
+        const show = value === "all" || cat === value;
+        card.classList.toggle("is-hidden", !show);
+        if (show) visible += 1;
+      });
+      buttons.forEach(function (btn) {
+        const active = btn.getAttribute("data-filter") === value;
+        btn.classList.toggle("is-active", active);
+        btn.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+      if (empty) empty.classList.toggle("is-visible", visible === 0);
+    }
+
+    buttons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        setFilter(btn.getAttribute("data-filter") || "all");
+      });
+    });
+
+    setFilter("all");
+  }
+
+  function initMailtoForm() {
+    const form = document.querySelector("[data-mailto-form]");
+    if (!form) return;
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const name = (form.querySelector('[name="name"]') || {}).value || "";
+      const email = (form.querySelector('[name="email"]') || {}).value || "";
+      const message = (form.querySelector('[name="message"]') || {}).value || "";
+      const subject = encodeURIComponent("Van Wu / 小五 — contact from " + (name || "website"));
+      const body = encodeURIComponent(
+        "Name: " + name + "\nEmail: " + email + "\n\n" + message
+      );
+      window.location.href =
+        "mailto:vanwuuuu@gmail.com?subject=" + subject + "&body=" + body;
+    });
+  }
+
+  function init() {
+    initFilters();
+    initMailtoForm();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
