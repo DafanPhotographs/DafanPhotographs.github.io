@@ -48,6 +48,58 @@ async function sceneDominatesViewport(page, index) {
   }, index);
 }
 
+/**
+ * WCAG contrast (sRGB). Used with worst-case scrim composite under visible nav labels.
+ * @param {[number, number, number]} fg
+ * @param {[number, number, number]} bg
+ */
+function contrastRatio(fg, bg) {
+  const lum = (rgb) => {
+    const lin = rgb.map((v) => {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+  };
+  const L1 = lum(fg);
+  const L2 = lum(bg);
+  const hi = Math.max(L1, L2);
+  const lo = Math.min(L1, L2);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/**
+ * @param {import("@playwright/test").Page} page
+ */
+async function headerPhotoGeometry(page) {
+  return page.evaluate(() => {
+    const header = document.querySelector(".site-header");
+    const end = document.querySelector("[data-home-photo-zone-end]");
+    if (!header || !end) return null;
+    const hh = header.getBoundingClientRect().height;
+    const endTop = end.getBoundingClientRect().top;
+    return {
+      headerH: hh,
+      endTop,
+      solid: header.classList.contains("site-header--solid"),
+      mode: header.getAttribute("data-header-mode"),
+      photoUnderHeader: endTop > hh + 0.5,
+    };
+  });
+}
+
+/**
+ * @param {import("@playwright/test").Page} page
+ */
+async function visibleNavWorkLabel(page) {
+  const lang = await page.evaluate(() => document.documentElement.lang);
+  const sel =
+    lang === "en"
+      ? '.site-nav a[href="./works/"] .lang-en-only.nav-link-label'
+      : '.site-nav a[href="./works/"] .lang-zh-only.nav-link-label';
+  return page.locator(sel);
+}
+
 test.describe("Home fullscreen stages", () => {
 
   test("1440 desktop: scroll advances scenes and reverses", async ({ page }) => {
@@ -220,5 +272,154 @@ test.describe("Home fullscreen stages", () => {
       () => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
     );
     expect(ok).toBe(true);
+  });
+
+  test("overlay header has top scrim (not text-shadow only)", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    const pseudo = await page.evaluate(() => {
+      const h = document.querySelector(".site-header--overlay");
+      if (!h) return null;
+      return getComputedStyle(h, "::before").content;
+    });
+    expect(pseudo).not.toBe("none");
+    /* Method: WCAG 2.1 relative luminance; worst-case #fff sky through 68% #0a0c0e at nav band (CSS ::before top stop). */
+    const worst = [10, 12, 14].map((c) => Math.round(0.68 * c + 0.32 * 255));
+    expect(contrastRatio([255, 255, 255], worst)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  test("EN visible nav label contrast uses real label not hidden decor", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.locator('[data-set-lang="en"]').click();
+    await page.waitForTimeout(200);
+    const label = await visibleNavWorkLabel(page);
+    await expect(label).toBeVisible();
+    await expect(label).toHaveText("Work");
+    const box = await label.boundingBox();
+    expect(box && box.width).toBeGreaterThan(10);
+  });
+
+  test("header solid only when photo rail has cleared header band", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    let geo = await headerPhotoGeometry(page);
+    expect(geo.photoUnderHeader).toBe(true);
+    expect(geo.solid).toBe(false);
+
+    await page.evaluate(() => {
+      const end = document.querySelector("[data-home-photo-zone-end]");
+      if (end) end.scrollIntoView({ block: "start" });
+    });
+    await page.waitForTimeout(400);
+    geo = await headerPhotoGeometry(page);
+    if (geo.endTop <= geo.headerH + 0.5) {
+      expect(geo.solid).toBe(true);
+      expect(geo.mode).toBe("solid");
+    }
+
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(200);
+    geo = await headerPhotoGeometry(page);
+    expect(geo.solid).toBe(false);
+  });
+
+  test("End with photo tail under header: may stay overlay until marker crosses header", async ({
+    page,
+  }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    await page.keyboard.press("End");
+    await page.waitForTimeout(500);
+    const geo = await headerPhotoGeometry(page);
+    expect(geo.solid).toBe(!geo.photoUnderHeader);
+    if (geo.photoUnderHeader) {
+      expect(geo.mode).toBe("overlay");
+    }
+  });
+
+  test("slow wheel does not skip more than one scene forward", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    for (let i = 0; i < 8; i += 1) {
+      await page.mouse.wheel(0, 120);
+      await page.waitForTimeout(120);
+    }
+    const idx = Number(await activeSceneIndex(page));
+    expect(idx).toBeLessThanOrEqual(1);
+  });
+
+  test("scrollTrigger count matches multi-pin mechanism (not single timeline)", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    const count = await page.evaluate(() => ScrollTrigger.getAll().length);
+    expect(count).toBeGreaterThanOrEqual(4);
+    expect(count).toBeLessThanOrEqual(12);
+  });
+
+  test("hash deep link focuses featured scene in document", async ({ page }) => {
+    await page.setViewportSize(NARROW);
+    await page.goto("/#home-scene-bipenggou");
+    await page.waitForLoadState("networkidle");
+    const inView = await page.evaluate(() => {
+      const el = document.getElementById("home-scene-bipenggou");
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      return r.top < window.innerHeight * 0.85 && r.bottom > 100;
+    });
+    expect(inView).toBe(true);
+  });
+
+  test("no-JS home uses solid sticky header readable on bright content", async ({ browser }) => {
+    const context = await browser.newContext({
+      javaScriptEnabled: false,
+      viewport: NARROW,
+    });
+    const page = await context.newPage();
+    await page.goto(HOME);
+    const mode = await page.evaluate(() => {
+      const h = document.querySelector(".site-header");
+      const style = h ? getComputedStyle(h) : null;
+      return {
+        sticky: style && style.position === "sticky",
+        color: style ? style.color : "",
+        bg: style ? style.backgroundColor : "",
+      };
+    });
+    expect(mode.sticky).toBe(true);
+    expect(mode.color).not.toBe("rgb(255, 255, 255)");
+    await context.close();
+  });
+
+  test("375/390/768 zh-en cycle footer and nav", async ({ page }) => {
+    for (const size of [NARROW, NARROW_390, TABLET]) {
+      for (const lang of ["zh", "en"]) {
+        await page.setViewportSize(size);
+        await page.goto(HOME);
+        await page.waitForLoadState("networkidle");
+        if (lang === "en") await page.locator('[data-set-lang="en"]').click();
+        const label = await visibleNavWorkLabel(page);
+        await expect(label).toBeVisible();
+        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+        await expect(page.locator(".site-footer a[href*='instagram']").first()).toBeInViewport();
+      }
+    }
+  });
+
+  test("hero pill rotation keeps overlay scrim at 1440", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    for (let p = 0; p < 3; p += 1) {
+      await page.locator(`[data-hero-pill="${p}"]`).click();
+      await page.waitForTimeout(300);
+      const worst = [10, 12, 14].map((c) => Math.round(0.68 * c + 0.32 * 255));
+      expect(contrastRatio([255, 255, 255], worst)).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });

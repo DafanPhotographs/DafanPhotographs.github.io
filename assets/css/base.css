@@ -95,16 +95,42 @@ button {
     border-color var(--duration-fast) var(--ease-out);
 }
 
+.page-home .site-header--overlay::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: calc(var(--header-height) + 3rem);
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, #0a0c0e 68%, transparent) 0%,
+    color-mix(in srgb, #0a0c0e 48%, transparent) 52%,
+    color-mix(in srgb, #0a0c0e 28%, transparent) 78%,
+    transparent 100%
+  );
+}
+
+.page-home .site-header .header-inner {
+  position: relative;
+  z-index: 1;
+}
+
 .page-home .site-header--overlay .wordmark,
 .page-home .site-header--overlay .nav-link-label,
-.page-home .site-header--overlay .site-nav a,
-.page-home .site-header--overlay .lang-btn {
+.page-home .site-header--overlay .site-nav .lang-btn {
   color: #fff;
-  text-shadow: 0 1px 10px color-mix(in srgb, #000 55%, transparent);
+  text-shadow: none;
+}
+
+.page-home .site-header--overlay .nav-decor {
+  color: #fff;
 }
 
 .page-home .site-header--overlay .lang-btn:not(.is-active) {
-  color: color-mix(in srgb, #fff 78%, transparent);
+  color: color-mix(in srgb, #fff 86%, transparent);
 }
 
 .page-home .site-header--solid {
@@ -112,10 +138,39 @@ button {
   border-bottom: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
 }
 
+.page-home .site-header--solid::before {
+  display: none;
+}
+
 .page-home .site-header--solid .wordmark,
 .page-home .site-header--solid .nav-link-label,
 .page-home .site-header--solid .site-nav a,
 .page-home .site-header--solid .lang-btn {
+  color: inherit;
+  text-shadow: none;
+}
+
+/* No-JS: readable dark-on-light header; stage rails still full-bleed below */
+html.no-js.page-home .site-header,
+html.no-js .page-home .site-header {
+  position: sticky;
+  background: var(--header-bg);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+
+html.no-js.page-home .site-header::before,
+html.no-js .page-home .site-header::before {
+  display: none;
+}
+
+html.no-js.page-home .site-header .wordmark,
+html.no-js.page-home .site-header .nav-link-label,
+html.no-js.page-home .site-header .site-nav a,
+html.no-js.page-home .site-header .lang-btn,
+html.no-js .page-home .site-header .wordmark,
+html.no-js .page-home .site-header .nav-link-label,
+html.no-js .page-home .site-header .site-nav a,
+html.no-js .page-home .site-header .lang-btn {
   color: inherit;
   text-shadow: none;
 }

@@ -62,12 +62,19 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, #000 55%, transparent) 0%,
-    color-mix(in srgb, #000 18%, transparent) 38%,
-    transparent 72%
-  );
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, #0a0c0e 40%, transparent) 0%,
+      color-mix(in srgb, #0a0c0e 16%, transparent) 22%,
+      transparent 38%
+    ),
+    linear-gradient(
+      to top,
+      color-mix(in srgb, #000 55%, transparent) 0%,
+      color-mix(in srgb, #000 18%, transparent) 38%,
+      transparent 72%
+    );
   pointer-events: none;
 }
 
@@ -198,6 +205,26 @@
 .home-scene-media {
   position: absolute;
   inset: 0;
+}
+
+.home-scene-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, #0a0c0e 38%, transparent) 0%,
+      color-mix(in srgb, #0a0c0e 14%, transparent) 20%,
+      transparent 36%
+    ),
+    linear-gradient(
+      to top,
+      color-mix(in srgb, #000 50%, transparent) 0%,
+      transparent 55%
+    );
 }
 
 .home-scene-media img {
