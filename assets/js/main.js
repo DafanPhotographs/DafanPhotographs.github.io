@@ -21,6 +21,7 @@
         btn.setAttribute("aria-pressed", active ? "true" : "false");
       });
       if (empty) empty.classList.toggle("is-visible", visible === 0);
+      document.dispatchEvent(new CustomEvent("works-filter-change"));
     }
 
     buttons.forEach(function (btn) {

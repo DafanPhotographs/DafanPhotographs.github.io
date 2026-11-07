@@ -160,9 +160,33 @@
   opacity: 1;
 }
 
-/* Featured panels — static in PR1 */
+/* Featured panels — vertical flow default; pin+scrub when .home-featured--pin (PR2) */
 .home-featured {
   margin-top: var(--space-11);
+}
+
+.home-featured--pin {
+  margin-top: 0;
+}
+
+.home-featured--pin .featured-grid--pin {
+  gap: 0;
+}
+
+.home-featured--pin .featured-grid--pin .featured-panel {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-8) 0;
+  box-sizing: border-box;
+}
+
+.home-featured--pin .featured-grid--pin .featured-panel-media {
+  flex: 1 1 auto;
+  max-height: min(72vh, 42rem);
+  aspect-ratio: auto;
 }
 
 .featured-grid {

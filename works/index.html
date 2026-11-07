@@ -82,7 +82,9 @@
 
     <p class="empty-filter" data-filter-empty data-i18n="work.empty">该分类暂无系列。</p>
 
-    <div class="series-grid work-series">
+    <div class="works-horizontal" data-works-horizontal>
+      <div class="works-horizontal__viewport">
+        <div class="series-grid work-series" data-works-track>
       <a class="series-card" href="./bipenggou/" data-category="landscape">
         <div class="series-card-media">
           <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/dafan/series/bipenggou/cover.jpg" alt="" data-i18n-alt="home.alt.bipenggou" width="2400" height="1500" loading="eager" decoding="async" data-cloud-fallback />
@@ -113,6 +115,8 @@
           <span class="series-card-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
         </div>
       </a>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -134,5 +138,9 @@
 
   <script src="../assets/js/i18n.js"></script>
   <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/motion-shared.js"></script>
+  <script src="../assets/js/vendor/gsap.min.js"></script>
+  <script src="../assets/js/vendor/ScrollTrigger.min.js"></script>
+  <script src="../assets/js/works-horizontal.js"></script>
 </body>
 </html>
