@@ -11,6 +11,10 @@ html {
   scroll-behavior: smooth;
 }
 
+.page-home {
+  scroll-behavior: auto;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -76,6 +80,44 @@ button {
   height: var(--header-height);
   background: var(--header-bg);
   border-bottom: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+
+/* Homepage only: fixed transparent bar over photo stages; solid after photo zone */
+.page-home .site-header {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: transparent;
+  border-bottom-color: transparent;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.page-home .site-header--overlay .wordmark,
+.page-home .site-header--overlay .nav-link-label,
+.page-home .site-header--overlay .site-nav a,
+.page-home .site-header--overlay .lang-btn {
+  color: #fff;
+  text-shadow: 0 1px 10px color-mix(in srgb, #000 55%, transparent);
+}
+
+.page-home .site-header--overlay .lang-btn:not(.is-active) {
+  color: color-mix(in srgb, #fff 78%, transparent);
+}
+
+.page-home .site-header--solid {
+  background: var(--header-bg);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+
+.page-home .site-header--solid .wordmark,
+.page-home .site-header--solid .nav-link-label,
+.page-home .site-header--solid .site-nav a,
+.page-home .site-header--solid .lang-btn {
+  color: inherit;
+  text-shadow: none;
 }
 
 .header-inner {
