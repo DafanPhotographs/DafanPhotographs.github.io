@@ -1,0 +1,11 @@
+{
+  "name": "dafan-photographs-site",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:qa": "playwright test tests/header-lang-toggle.spec.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.49.1"
+  }
+}
