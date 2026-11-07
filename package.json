@@ -3,7 +3,9 @@
   "private": true,
   "scripts": {
     "test": "playwright test",
-    "test:qa": "playwright test tests/header-lang-toggle.spec.js"
+    "test:qa": "playwright test tests/header-lang-toggle.spec.js",
+    "test:stages": "playwright test tests/home-stages.spec.js",
+    "test:home": "playwright test tests/header-lang-toggle.spec.js tests/home-stages.spec.js"
   },
   "devDependencies": {
     "@playwright/test": "1.49.1"
