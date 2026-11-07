@@ -120,7 +120,7 @@ button {
 
 .page-home .site-header--overlay .wordmark,
 .page-home .site-header--overlay .nav-link-label,
-.page-home .site-header--overlay .site-nav .lang-btn {
+.page-home .site-header--overlay .lang-toggle .lang-btn {
   color: #fff;
   text-shadow: none;
 }
@@ -129,8 +129,16 @@ button {
   color: #fff;
 }
 
-.page-home .site-header--overlay .lang-btn:not(.is-active) {
+.page-home .site-header--overlay .lang-toggle .lang-btn:not(.is-active) {
   color: color-mix(in srgb, #fff 86%, transparent);
+}
+
+.page-home .site-header--overlay .lang-toggle .lang-btn.is-active {
+  color: #fff;
+  font-weight: var(--weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+  text-decoration-thickness: var(--underline-thickness);
 }
 
 .page-home .site-header--solid {
@@ -166,12 +174,14 @@ html.no-js .page-home .site-header::before {
 html.no-js.page-home .site-header .wordmark,
 html.no-js.page-home .site-header .nav-link-label,
 html.no-js.page-home .site-header .site-nav a,
-html.no-js.page-home .site-header .lang-btn,
+html.no-js.page-home .site-header.site-header--overlay .lang-toggle .lang-btn,
+html.no-js.page-home .site-header.site-header--overlay .lang-toggle .lang-btn.is-active,
 html.no-js .page-home .site-header .wordmark,
 html.no-js .page-home .site-header .nav-link-label,
 html.no-js .page-home .site-header .site-nav a,
-html.no-js .page-home .site-header .lang-btn {
-  color: inherit;
+html.no-js .page-home .site-header.site-header--overlay .lang-toggle .lang-btn,
+html.no-js .page-home .site-header.site-header--overlay .lang-toggle .lang-btn.is-active {
+  color: var(--color-text);
   text-shadow: none;
 }
 
