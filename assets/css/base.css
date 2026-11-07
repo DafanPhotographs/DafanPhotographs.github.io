@@ -262,23 +262,46 @@ button {
 
 @media (max-width: 767.98px) {
   /*
-   * QA F3: English nav labels (especially “Photography”) overflow narrow viewports when
-   * the lang toggle trails the nav; pin the toggle before the nav and let the cluster shrink.
+   * QA F3: English nav overflows on narrow viewports. Keep the lang toggle in the visible
+   * header: row 1 = wordmark + toggle; row 2 = nav (may wrap). Avoid order/wrap that
+   * parks the toggle on a flex line above a fixed-height header (clips at y < 0).
    */
+  .site-header {
+    height: auto;
+    min-height: var(--header-height);
+  }
+
+  .header-inner {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "wordmark lang"
+      "nav nav";
+    align-items: center;
+    column-gap: var(--space-3);
+    row-gap: var(--space-1);
+    height: auto;
+    padding-block: var(--space-1);
+  }
+
+  .wordmark {
+    grid-area: wordmark;
+  }
+
   .header-cluster {
-    flex: 1;
-    min-width: 0;
-    justify-content: flex-end;
-    flex-wrap: wrap;
+    display: contents;
   }
 
   .site-nav {
-    flex: 1 1 auto;
-    min-width: 0;
+    grid-area: nav;
+    justify-content: flex-start;
+    width: 100%;
+    flex: none;
   }
 
   .lang-toggle {
-    order: -1;
+    grid-area: lang;
+    justify-self: end;
     flex-shrink: 0;
   }
 }

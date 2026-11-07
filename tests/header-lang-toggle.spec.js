@@ -12,24 +12,46 @@ const HEADER_ROUTES = [
 ];
 
 const NARROW_WIDTHS = [320, 375, 390];
+const ALL_CHECK_WIDTHS = [320, 375, 390, 768, 1440];
 
 /**
  * @param {import("@playwright/test").Page} page
  */
-async function langToggleFullyVisible(page) {
+async function langToggleLayoutOk(page) {
   return page.evaluate(() => {
     const el = document.querySelector(".lang-toggle");
-    if (!el) return { ok: false, reason: "missing" };
+    const header = document.querySelector(".site-header");
+    if (!el || !header) return { ok: false, reason: "missing" };
     const rect = el.getBoundingClientRect();
+    const headerRect = header.getBoundingClientRect();
     const vw = document.documentElement.clientWidth;
     const scrollW = document.documentElement.scrollWidth;
-    const inView =
+    const inViewport =
       rect.width > 0 &&
       rect.height > 0 &&
+      rect.top >= -0.5 &&
       rect.left >= -0.5 &&
       rect.right <= vw + 0.5;
+    const withinHeader =
+      rect.top >= headerRect.top - 0.5 &&
+      rect.bottom <= headerRect.bottom + 0.5 &&
+      rect.left >= headerRect.left - 0.5 &&
+      rect.right <= headerRect.right + 0.5;
     const noOverflow = scrollW <= vw + 0.5;
-    return { ok: inView && noOverflow, inView, noOverflow, rect, scrollW, vw };
+    return {
+      ok: inViewport && withinHeader && noOverflow,
+      inViewport,
+      withinHeader,
+      noOverflow,
+      rect: { top: rect.top, left: rect.left, right: rect.right, bottom: rect.bottom },
+      headerRect: {
+        top: headerRect.top,
+        bottom: headerRect.bottom,
+        height: headerRect.height,
+      },
+      scrollW,
+      vw,
+    };
   });
 }
 
@@ -38,7 +60,7 @@ async function langToggleFullyVisible(page) {
  * @param {string} lang
  */
 async function expectLangExclusive(page, lang) {
-  const state = await page.evaluate((lang) => {
+  const state = await page.evaluate(() => {
     const root = document.documentElement;
     const zhOnly = Array.from(document.querySelectorAll(".lang-zh-only"));
     const enOnly = Array.from(document.querySelectorAll(".lang-en-only"));
@@ -52,7 +74,7 @@ async function expectLangExclusive(page, lang) {
       zhVisible: visible(zhOnly).length,
       enVisible: visible(enOnly).length,
     };
-  }, lang);
+  });
   expect(state.lang).toBe(lang);
   if (lang === "en") {
     expect(state.enVisible).toBeGreaterThan(0);
@@ -63,26 +85,43 @@ async function expectLangExclusive(page, lang) {
   }
 }
 
+/**
+ * @param {import("@playwright/test").Page} page
+ */
+async function expectLangToggleOperable(page) {
+  const layout = await langToggleLayoutOk(page);
+  expect(layout.ok, JSON.stringify(layout)).toBeTruthy();
+  await expect(page.locator(".lang-toggle")).toBeVisible();
+  await expect(page.locator('button[data-set-lang="zh"]')).toBeEnabled();
+  await expect(page.locator('button[data-set-lang="en"]')).toBeEnabled();
+}
+
 test.describe("QA F3 — header language toggle on narrow viewports", () => {
   for (const route of HEADER_ROUTES) {
-    test(`EN then narrow: operable lang toggle on ${route}`, async ({ page }) => {
-      await page.setViewportSize({ width: 1440, height: 900 });
-      await page.goto(route);
-      await page.locator('button[data-set-lang="en"]').click();
-      await expectLangExclusive(page, "en");
+    for (const startLang of ["zh", "en"]) {
+      test(`${startLang.toUpperCase()} then narrow: operable lang toggle on ${route}`, async ({
+        page,
+      }) => {
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(route);
+        if (startLang === "en") {
+          await page.locator('button[data-set-lang="en"]').click();
+          await expectLangExclusive(page, "en");
+        }
 
-      for (const w of NARROW_WIDTHS) {
-        await page.setViewportSize({ width: w, height: 812 });
-        const vis = await langToggleFullyVisible(page);
-        expect(vis.ok, JSON.stringify(vis)).toBeTruthy();
-        await expect(page.locator(".lang-toggle")).toBeVisible();
-        await expect(page.locator('button[data-set-lang="zh"]')).toBeEnabled();
-        await expect(page.locator('button[data-set-lang="en"]')).toBeEnabled();
-      }
+        for (const w of NARROW_WIDTHS) {
+          await page.setViewportSize({ width: w, height: 812 });
+          await expectLangToggleOperable(page);
+        }
 
-      await page.locator('button[data-set-lang="zh"]').click();
-      await expectLangExclusive(page, "zh");
-    });
+        await page.locator('button[data-set-lang="zh"]').click();
+        await expectLangExclusive(page, "zh");
+        await page.locator('button[data-set-lang="en"]').click();
+        await expectLangExclusive(page, "en");
+        await page.locator('button[data-set-lang="zh"]').click();
+        await expectLangExclusive(page, "zh");
+      });
+    }
   }
 
   test("desktop EN→narrow→EN→zh toggle cycle on home", async ({ page }) => {
@@ -90,24 +129,30 @@ test.describe("QA F3 — header language toggle on narrow viewports", () => {
     await page.goto("/");
     await page.locator('button[data-set-lang="en"]').click();
     await page.setViewportSize({ width: 375, height: 812 });
-    let vis = await langToggleFullyVisible(page);
-    expect(vis.ok, JSON.stringify(vis)).toBeTruthy();
+    await expectLangToggleOperable(page);
 
     await page.locator('button[data-set-lang="en"]').click();
     await expectLangExclusive(page, "en");
     await page.locator('button[data-set-lang="zh"]').click();
     await expectLangExclusive(page, "zh");
-    vis = await langToggleFullyVisible(page);
-    expect(vis.ok, JSON.stringify(vis)).toBeTruthy();
+    await expectLangToggleOperable(page);
   });
 
-  test("wide viewports keep lang toggle visible (768, 1440)", async ({ page }) => {
-    for (const w of [768, 1440]) {
-      await page.setViewportSize({ width: w, height: 900 });
-      await page.goto("/works/");
-      await page.locator('button[data-set-lang="en"]').click();
-      const vis = await langToggleFullyVisible(page);
-      expect(vis.ok, `width ${w}: ${JSON.stringify(vis)}`).toBeTruthy();
+  for (const w of ALL_CHECK_WIDTHS) {
+    for (const lang of ["zh", "en"]) {
+      test(`layout ${w}px ${lang.toUpperCase()} on /works/`, async ({ page }) => {
+        await page.setViewportSize({ width: w, height: 900 });
+        await page.goto("/works/");
+        if (lang === "en") {
+          await page.locator('button[data-set-lang="en"]').click();
+        }
+        await expectLangExclusive(page, lang);
+        await expectLangToggleOperable(page);
+        const other = lang === "en" ? "zh" : "en";
+        await page.locator(`button[data-set-lang="${other}"]`).click();
+        await expectLangExclusive(page, other);
+        await expectLangToggleOperable(page);
+      });
     }
-  });
+  }
 });
