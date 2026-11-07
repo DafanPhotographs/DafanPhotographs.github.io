@@ -12,6 +12,9 @@
       "wordmark.zh": "大樊",
       "wordmark.en": "DaFan",
       "aria.wordmark": "大樊 / DaFan",
+      "aria.langMenu": "选择语言",
+      "lang.option.zh": "中文",
+      "lang.option.en": "English",
       "footer.copy.zh": "© 2026 大樊",
       "footer.copy.en": "© 2026 DaFan",
       "footer.city": "成都",
@@ -74,6 +77,9 @@
       "wordmark.zh": "大樊",
       "wordmark.en": "DaFan",
       "aria.wordmark": "DaFan / 大樊",
+      "aria.langMenu": "Choose language",
+      "lang.option.zh": "中文",
+      "lang.option.en": "English",
       "footer.copy.zh": "© 2026 大樊",
       "footer.copy.en": "© 2026 DaFan",
       "footer.city": "Chengdu",
@@ -177,6 +183,11 @@
       const isActive = btn.getAttribute("data-set-lang") === lang;
       btn.classList.toggle("is-active", isActive);
       btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+      btn.setAttribute("aria-selected", isActive ? "true" : "false");
+    });
+
+    document.querySelectorAll("[data-lang-current]").forEach(function (el) {
+      el.textContent = lang === "en" ? "EN" : "中";
     });
 
     localStorage.setItem(STORAGE_KEY, lang);

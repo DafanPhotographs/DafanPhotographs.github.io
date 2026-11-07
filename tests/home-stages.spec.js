@@ -51,11 +51,16 @@ async function sceneDominatesViewport(page, index) {
 /**
  * @param {import("@playwright/test").Page} page
  */
-async function headerOverlayBlend(page) {
-  return page.locator(".page-home .site-header--overlay").evaluate((el) => {
+async function headerInvertBlend(page) {
+  return page.locator(".page-home .site-header--overlay .header-chrome-blend").first().evaluate((el) => {
     const s = getComputedStyle(el);
-    return { mixBlendMode: s.mixBlendMode, bg: s.backgroundColor };
+    return { mixBlendMode: s.mixBlendMode, color: s.color };
   });
+}
+
+async function pickLang(page, lang) {
+  await page.locator(".lang-dropdown__trigger").click();
+  await page.locator(`.lang-dropdown__option[data-set-lang="${lang}"]`).click();
 }
 
 async function wordmarkSourceWhite(page) {
@@ -215,7 +220,7 @@ test.describe("Home fullscreen stages", () => {
     const before = await page.evaluate(() =>
       typeof ScrollTrigger !== "undefined" ? ScrollTrigger.getAll().length : 0
     );
-    await page.locator('[data-set-lang="en"]').click();
+    await pickLang(page, "en");
     await page.waitForTimeout(400);
     const after = await page.evaluate(() => ScrollTrigger.getAll().length);
     expect(after).toBe(before);
@@ -287,12 +292,12 @@ test.describe("Home fullscreen stages", () => {
       return getComputedStyle(h, "::before").content;
     });
     expect(scrim).toBe("none");
-    const blend = await headerOverlayBlend(page);
+    const blend = await headerInvertBlend(page);
     expect(blend.mixBlendMode).toBe("difference");
     expect(isWhiteSource(await wordmarkSourceWhite(page))).toBe(true);
   });
 
-  test("difference header 375/390/768/1440: white source, active underline, lang switch", async ({
+  test("difference header 375/390/768/1440: white source, dropdown lang switch", async ({
     page,
   }) => {
     const sizes = [
@@ -305,16 +310,15 @@ test.describe("Home fullscreen stages", () => {
       await page.setViewportSize({ width: w, height: h });
       await page.goto(HOME);
       await page.waitForLoadState("networkidle");
-      const blend = await headerOverlayBlend(page);
+      const blend = await headerInvertBlend(page);
       expect(blend.mixBlendMode).toBe("difference");
-      const active = page.locator(".lang-toggle .lang-btn.is-active");
-      await expect(active).toHaveCSS("text-decoration-line", "underline");
-      const src = await active.evaluate((el) => getComputedStyle(el).color);
+      await expect(page.locator("[data-lang-current]")).toHaveText("中");
+      const src = await page.locator(".lang-dropdown__trigger").evaluate((el) => getComputedStyle(el).color);
       expect(isWhiteSource(src)).toBe(true);
-      await page.locator('[data-set-lang="en"]').click();
+      await pickLang(page, "en");
       await page.waitForTimeout(150);
-      await expect(page.locator('.lang-btn.is-active[data-set-lang="en"]')).toBeVisible();
-      await page.locator('[data-set-lang="zh"]').click();
+      await expect(page.locator("[data-lang-current]")).toHaveText("EN");
+      await pickLang(page, "zh");
     }
   });
 
@@ -353,7 +357,7 @@ test.describe("Home fullscreen stages", () => {
     const page = await context.newPage();
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
-    const blend = await headerOverlayBlend(page);
+    const blend = await headerInvertBlend(page);
     expect(blend.mixBlendMode).toBe("difference");
     await context.close();
   });
@@ -387,7 +391,7 @@ test.describe("Home fullscreen stages", () => {
   test("EN visible nav label contrast uses real label not hidden decor", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
-    await page.locator('[data-set-lang="en"]').click();
+    await pickLang(page, "en");
     await page.waitForTimeout(200);
     const label = await visibleNavWorkLabel(page);
     await expect(label).toBeVisible();
@@ -497,7 +501,7 @@ test.describe("Home fullscreen stages", () => {
         await page.setViewportSize(size);
         await page.goto(HOME);
         await page.waitForLoadState("networkidle");
-        if (lang === "en") await page.locator('[data-set-lang="en"]').click();
+        if (lang === "en") await pickLang(page, "en");
         const label = await visibleNavWorkLabel(page);
         await expect(label).toBeVisible();
         await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
