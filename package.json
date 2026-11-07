@@ -8,6 +8,7 @@
     "test:home": "playwright test tests/header-lang-toggle.spec.js tests/home-stages.spec.js"
   },
   "devDependencies": {
-    "@playwright/test": "1.49.1"
+    "@playwright/test": "1.49.1",
+    "pngjs": "^7.0.0"
   }
 }

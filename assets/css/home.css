@@ -62,19 +62,13 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  background:
-    linear-gradient(
-      to bottom,
-      color-mix(in srgb, #0a0c0e 40%, transparent) 0%,
-      color-mix(in srgb, #0a0c0e 16%, transparent) 22%,
-      transparent 38%
-    ),
-    linear-gradient(
-      to top,
-      color-mix(in srgb, #000 55%, transparent) 0%,
-      color-mix(in srgb, #000 18%, transparent) 38%,
-      transparent 72%
-    );
+  /* Bottom-only scrim for hero copy; no top darkening (would fake gray under difference header). */
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, #000 55%, transparent) 0%,
+    color-mix(in srgb, #000 18%, transparent) 38%,
+    transparent 72%
+  );
   pointer-events: none;
 }
 
@@ -213,18 +207,11 @@
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background:
-    linear-gradient(
-      to bottom,
-      color-mix(in srgb, #0a0c0e 38%, transparent) 0%,
-      color-mix(in srgb, #0a0c0e 14%, transparent) 20%,
-      transparent 36%
-    ),
-    linear-gradient(
-      to top,
-      color-mix(in srgb, #000 50%, transparent) 0%,
-      transparent 55%
-    );
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, #000 50%, transparent) 0%,
+    transparent 55%
+  );
 }
 
 .home-scene-media img {

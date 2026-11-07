@@ -51,11 +51,15 @@ async function sceneDominatesViewport(page, index) {
 /**
  * @param {import("@playwright/test").Page} page
  */
-async function headerChromeBlend(page) {
-  return page.locator(".page-home .header-chrome").evaluate((el) => {
+async function headerOverlayBlend(page) {
+  return page.locator(".page-home .site-header--overlay").evaluate((el) => {
     const s = getComputedStyle(el);
-    return { mixBlendMode: s.mixBlendMode, color: s.color };
+    return { mixBlendMode: s.mixBlendMode, bg: s.backgroundColor };
   });
+}
+
+async function wordmarkSourceWhite(page) {
+  return page.locator(".page-home .wordmark").evaluate((el) => getComputedStyle(el).color);
 }
 
 /** Source paint must stay #fff; contrast is from difference compositing (not computed color). */
@@ -283,9 +287,9 @@ test.describe("Home fullscreen stages", () => {
       return getComputedStyle(h, "::before").content;
     });
     expect(scrim).toBe("none");
-    const blend = await headerChromeBlend(page);
+    const blend = await headerOverlayBlend(page);
     expect(blend.mixBlendMode).toBe("difference");
-    expect(isWhiteSource(blend.color)).toBe(true);
+    expect(isWhiteSource(await wordmarkSourceWhite(page))).toBe(true);
   });
 
   test("difference header 375/390/768/1440: white source, active underline, lang switch", async ({
@@ -301,7 +305,7 @@ test.describe("Home fullscreen stages", () => {
       await page.setViewportSize({ width: w, height: h });
       await page.goto(HOME);
       await page.waitForLoadState("networkidle");
-      const blend = await headerChromeBlend(page);
+      const blend = await headerOverlayBlend(page);
       expect(blend.mixBlendMode).toBe("difference");
       const active = page.locator(".lang-toggle .lang-btn.is-active");
       await expect(active).toHaveCSS("text-decoration-line", "underline");
@@ -321,9 +325,10 @@ test.describe("Home fullscreen stages", () => {
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(450);
     if ((await page.locator(".site-header--solid").count()) > 0) {
-      const blend = await headerChromeBlend(page);
-      expect(blend.mixBlendMode).toBe("normal");
-      expect(isWhiteSource(blend.color)).toBe(false);
+      const hdr = await page.locator(".site-header").evaluate((el) => ({
+        blend: getComputedStyle(el).mixBlendMode,
+      }));
+      expect(hdr.blend).toBe("normal");
     }
 
     await page.goto("/works/");
@@ -348,7 +353,7 @@ test.describe("Home fullscreen stages", () => {
     const page = await context.newPage();
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
-    const blend = await headerChromeBlend(page);
+    const blend = await headerOverlayBlend(page);
     expect(blend.mixBlendMode).toBe("difference");
     await context.close();
   });
