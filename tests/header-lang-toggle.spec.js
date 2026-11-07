@@ -16,10 +16,19 @@ const ALL_CHECK_WIDTHS = [320, 375, 390, 768, 1440];
 
 /**
  * @param {import("@playwright/test").Page} page
+ * @param {string} lang
+ */
+async function pickLang(page, lang) {
+  await page.locator(".lang-dropdown__trigger").click();
+  await page.locator(`.lang-dropdown__option[data-set-lang="${lang}"]`).click();
+}
+
+/**
+ * @param {import("@playwright/test").Page} page
  */
 async function langToggleLayoutOk(page) {
   return page.evaluate(() => {
-    const el = document.querySelector(".lang-toggle");
+    const el = document.querySelector(".lang-dropdown");
     const header = document.querySelector(".site-header");
     if (!el || !header) return { ok: false, reason: "missing" };
     const rect = el.getBoundingClientRect();
@@ -91,9 +100,12 @@ async function expectLangExclusive(page, lang) {
 async function expectLangToggleOperable(page) {
   const layout = await langToggleLayoutOk(page);
   expect(layout.ok, JSON.stringify(layout)).toBeTruthy();
-  await expect(page.locator(".lang-toggle")).toBeVisible();
-  await expect(page.locator('button[data-set-lang="zh"]')).toBeEnabled();
-  await expect(page.locator('button[data-set-lang="en"]')).toBeEnabled();
+  await expect(page.locator(".lang-dropdown")).toBeVisible();
+  await expect(page.locator(".lang-dropdown__trigger")).toBeEnabled();
+  await page.locator(".lang-dropdown__trigger").click();
+  await expect(page.locator('.lang-dropdown__option[data-set-lang="zh"]')).toBeEnabled();
+  await expect(page.locator('.lang-dropdown__option[data-set-lang="en"]')).toBeEnabled();
+  await page.keyboard.press("Escape");
 }
 
 test.describe("QA F3 — header language toggle on narrow viewports", () => {
@@ -105,7 +117,7 @@ test.describe("QA F3 — header language toggle on narrow viewports", () => {
         await page.setViewportSize({ width: 1440, height: 900 });
         await page.goto(route);
         if (startLang === "en") {
-          await page.locator('button[data-set-lang="en"]').click();
+          await pickLang(page, "en");
           await expectLangExclusive(page, "en");
         }
 
@@ -114,11 +126,11 @@ test.describe("QA F3 — header language toggle on narrow viewports", () => {
           await expectLangToggleOperable(page);
         }
 
-        await page.locator('button[data-set-lang="zh"]').click();
+        await pickLang(page, "zh");
         await expectLangExclusive(page, "zh");
-        await page.locator('button[data-set-lang="en"]').click();
+        await pickLang(page, "en");
         await expectLangExclusive(page, "en");
-        await page.locator('button[data-set-lang="zh"]').click();
+        await pickLang(page, "zh");
         await expectLangExclusive(page, "zh");
       });
     }
@@ -127,13 +139,13 @@ test.describe("QA F3 — header language toggle on narrow viewports", () => {
   test("desktop EN→narrow→EN→zh toggle cycle on home", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
-    await page.locator('button[data-set-lang="en"]').click();
+    await pickLang(page, "en");
     await page.setViewportSize({ width: 375, height: 812 });
     await expectLangToggleOperable(page);
 
-    await page.locator('button[data-set-lang="en"]').click();
+    await pickLang(page, "en");
     await expectLangExclusive(page, "en");
-    await page.locator('button[data-set-lang="zh"]').click();
+    await pickLang(page, "zh");
     await expectLangExclusive(page, "zh");
     await expectLangToggleOperable(page);
   });
@@ -144,12 +156,12 @@ test.describe("QA F3 — header language toggle on narrow viewports", () => {
         await page.setViewportSize({ width: w, height: 900 });
         await page.goto("/works/");
         if (lang === "en") {
-          await page.locator('button[data-set-lang="en"]').click();
+          await pickLang(page, "en");
         }
         await expectLangExclusive(page, lang);
         await expectLangToggleOperable(page);
         const other = lang === "en" ? "zh" : "en";
-        await page.locator(`button[data-set-lang="${other}"]`).click();
+        await pickLang(page, other);
         await expectLangExclusive(page, other);
         await expectLangToggleOperable(page);
       });
