@@ -90,7 +90,7 @@
 }
 
 /* Chinese pages: avoid tight/negative tracking inherited by UI Latin vars */
-html[lang="zh-Hans"] {
+html[lang^="zh"] {
   --tracking-tight: 0;
   --tracking-series: 0;
 }

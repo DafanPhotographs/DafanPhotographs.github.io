@@ -288,7 +288,7 @@ button {
   }
 }
 
-html[lang="zh"] .lang-en-only,
+html[lang^="zh"] .lang-en-only,
 html[lang="en"] .lang-zh-only {
   display: none !important;
 }
