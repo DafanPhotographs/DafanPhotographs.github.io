@@ -95,50 +95,59 @@ button {
     border-color var(--duration-fast) var(--ease-out);
 }
 
-.page-home .site-header--overlay::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: calc(var(--header-height) + 3rem);
-  pointer-events: none;
-  z-index: 0;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, #0a0c0e 68%, transparent) 0%,
-    color-mix(in srgb, #0a0c0e 48%, transparent) 52%,
-    color-mix(in srgb, #0a0c0e 28%, transparent) 78%,
-    transparent 100%
-  );
+/* Photo overlay: white source glyphs + difference (no header gradient scrim) */
+.page-home .site-header--overlay {
+  isolation: auto;
 }
 
 .page-home .site-header .header-inner {
   position: relative;
   z-index: 1;
+  height: 100%;
+}
+
+.page-home .site-header--overlay .header-chrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: difference;
+  color: #fff;
 }
 
 .page-home .site-header--overlay .wordmark,
 .page-home .site-header--overlay .nav-link-label,
-.page-home .site-header--overlay .lang-toggle .lang-btn {
+.page-home .site-header--overlay .lang-toggle .lang-btn,
+.page-home .site-header--overlay .lang-sep {
   color: #fff;
   text-shadow: none;
 }
 
 .page-home .site-header--overlay .nav-decor {
-  color: #fff;
-}
-
-.page-home .site-header--overlay .lang-toggle .lang-btn:not(.is-active) {
-  color: color-mix(in srgb, #fff 86%, transparent);
+  display: none;
 }
 
 .page-home .site-header--overlay .lang-toggle .lang-btn.is-active {
-  color: #fff;
   font-weight: var(--weight-semibold);
   text-decoration: underline;
   text-underline-offset: 0.3em;
   text-decoration-thickness: var(--underline-thickness);
+}
+
+.page-home .site-header--overlay .site-nav a:hover .nav-link-label,
+.page-home .site-header--overlay .lang-toggle .lang-btn:hover {
+  opacity: 0.88;
+}
+
+.page-home .site-header--overlay .wordmark:focus-visible,
+.page-home .site-header--overlay .site-nav a:focus-visible,
+.page-home .site-header--overlay .lang-btn:focus-visible {
+  isolation: isolate;
+  mix-blend-mode: normal;
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: 3px;
 }
 
 .page-home .site-header--solid {
@@ -146,19 +155,20 @@ button {
   border-bottom: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
 }
 
-.page-home .site-header--solid::before {
-  display: none;
+.page-home .site-header--solid .header-chrome {
+  mix-blend-mode: normal;
+  color: inherit;
 }
 
 .page-home .site-header--solid .wordmark,
 .page-home .site-header--solid .nav-link-label,
 .page-home .site-header--solid .site-nav a,
-.page-home .site-header--solid .lang-btn {
+.page-home .site-header--solid .lang-btn,
+.page-home .site-header--solid .lang-sep {
   color: inherit;
-  text-shadow: none;
 }
 
-/* No-JS: readable dark-on-light header; stage rails still full-bleed below */
+/* No-JS: solid bar, no difference blend */
 html.no-js.page-home .site-header,
 html.no-js .page-home .site-header {
   position: sticky;
@@ -166,23 +176,21 @@ html.no-js .page-home .site-header {
   border-bottom: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
 }
 
-html.no-js.page-home .site-header::before,
-html.no-js .page-home .site-header::before {
-  display: none;
+html.no-js.page-home .site-header .header-chrome,
+html.no-js .page-home .site-header .header-chrome {
+  mix-blend-mode: normal;
+  color: inherit;
 }
 
 html.no-js.page-home .site-header .wordmark,
 html.no-js.page-home .site-header .nav-link-label,
 html.no-js.page-home .site-header .site-nav a,
-html.no-js.page-home .site-header.site-header--overlay .lang-toggle .lang-btn,
-html.no-js.page-home .site-header.site-header--overlay .lang-toggle .lang-btn.is-active,
+html.no-js.page-home .site-header .lang-toggle .lang-btn,
 html.no-js .page-home .site-header .wordmark,
 html.no-js .page-home .site-header .nav-link-label,
 html.no-js .page-home .site-header .site-nav a,
-html.no-js .page-home .site-header.site-header--overlay .lang-toggle .lang-btn,
-html.no-js .page-home .site-header.site-header--overlay .lang-toggle .lang-btn.is-active {
+html.no-js .page-home .site-header .lang-toggle .lang-btn {
   color: var(--color-text);
-  text-shadow: none;
 }
 
 .header-inner {
@@ -194,6 +202,84 @@ html.no-js .page-home .site-header.site-header--overlay .lang-toggle .lang-btn.i
   align-items: center;
   justify-content: space-between;
   gap: var(--space-5);
+}
+
+.page-home .site-header .header-inner {
+  display: block;
+  max-width: none;
+  margin: 0;
+  width: 100%;
+  padding: 0 var(--header-pad-x, var(--page-margin));
+}
+
+@media (min-width: 1024px) and (max-width: 1199.98px) {
+  .page-home .site-header .header-inner {
+    padding-inline: var(--header-pad-x-md, 2rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --type-wordmark: 1.5rem;
+    --type-wordmark-weight: 700;
+    --type-nav: 1.125rem;
+    --type-nav-weight: 600;
+    --type-lang: 0.875rem;
+    --type-lang-weight: 600;
+    --nav-gap: 1.75rem;
+  }
+
+  html[lang="en"] {
+    --tracking-nav: 0;
+  }
+
+  html[lang^="zh"] {
+    --tracking-nav: 0.02em;
+  }
+
+  .site-nav a {
+    line-height: 1.25;
+  }
+
+  .wordmark {
+    line-height: 1.25;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  :root {
+    --type-wordmark: 1.375rem;
+    --type-wordmark-weight: 700;
+    --type-nav: 1rem;
+    --type-nav-weight: 600;
+    --nav-gap: 1.25rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  :root {
+    --type-wordmark: 1.25rem;
+    --type-wordmark-weight: 700;
+    --type-nav: 0.875rem;
+    --type-nav-weight: 600;
+    --type-lang: 0.8125rem;
+    --type-lang-weight: 600;
+    --nav-gap: 1.5rem;
+    --page-margin: 1.25rem;
+  }
+
+  .page-home .site-header .header-inner {
+    padding-inline: 1.25rem;
+  }
+
+  .site-nav a {
+    line-height: 1.25;
+    letter-spacing: 0.02em;
+  }
+}
+
+.page-home .site-header--overlay .header-cluster {
+  margin-left: auto;
 }
 
 .wordmark {
@@ -378,7 +464,39 @@ html.no-js .page-home .site-header.site-header--overlay .lang-toggle .lang-btn.i
     min-height: var(--header-height);
   }
 
-  .header-inner {
+  .page-home .site-header .header-chrome {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "wordmark lang"
+      "nav nav";
+    align-items: center;
+    column-gap: var(--space-3);
+    row-gap: var(--space-1);
+    width: 100%;
+  }
+
+  .page-home .site-header .header-cluster {
+    display: contents;
+  }
+
+  .page-home .site-header .wordmark {
+    grid-area: wordmark;
+  }
+
+  .page-home .site-header .site-nav {
+    grid-area: nav;
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .page-home .site-header .lang-toggle {
+    grid-area: lang;
+    justify-self: end;
+  }
+
+  body:not(.page-home) .header-inner,
+  .header-inner:not(:has(.header-chrome)) {
     display: grid;
     grid-template-columns: 1fr auto;
     grid-template-areas:

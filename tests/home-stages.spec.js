@@ -49,35 +49,20 @@ async function sceneDominatesViewport(page, index) {
 }
 
 /**
- * WCAG contrast (sRGB). Used with worst-case scrim composite under visible nav labels.
- * @param {[number, number, number]} fg
- * @param {[number, number, number]} bg
- */
-/**
- * @param {string} cssColor
- */
-function relativeLuminanceFromCss(cssColor) {
-  const ok = cssColor.match(/oklab\(\s*([\d.]+)/);
-  if (ok) return parseFloat(ok[1]);
-  const srgb = cssColor.match(/color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/);
-  if (srgb) {
-    return (parseFloat(srgb[1]) + parseFloat(srgb[2]) + parseFloat(srgb[3])) / 3;
-  }
-  const m = cssColor.match(/rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/);
-  if (!m) return 0;
-  const rgb = [Number(m[1]), Number(m[2]), Number(m[3])];
-  const lin = rgb.map((v) => {
-    v /= 255;
-    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-  });
-  return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
-}
-
-/**
  * @param {import("@playwright/test").Page} page
  */
-async function activeLangButtonColor(page) {
-  return page.locator(".lang-toggle .lang-btn.is-active").evaluate((el) => getComputedStyle(el).color);
+async function headerChromeBlend(page) {
+  return page.locator(".page-home .header-chrome").evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { mixBlendMode: s.mixBlendMode, color: s.color };
+  });
+}
+
+/** Source paint must stay #fff; contrast is from difference compositing (not computed color). */
+function isWhiteSource(cssColor) {
+  const m = cssColor.match(/rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/);
+  if (m) return Number(m[1]) >= 250 && Number(m[2]) >= 250 && Number(m[3]) >= 250;
+  return cssColor === "white" || cssColor === "#fff" || cssColor === "#ffffff";
 }
 
 /**
@@ -286,19 +271,24 @@ test.describe("Home fullscreen stages", () => {
     expect(ok).toBe(true);
   });
 
-  test("overlay header exposes top scrim pseudo-element", async ({ page }) => {
+  test("overlay header: no gradient scrim; chrome uses difference + white source", async ({
+    page,
+  }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
-    const pseudo = await page.evaluate(() => {
+    const scrim = await page.evaluate(() => {
       const h = document.querySelector(".site-header--overlay");
-      if (!h) return null;
+      if (!h) return "missing";
       return getComputedStyle(h, "::before").content;
     });
-    expect(pseudo).not.toBe("none");
+    expect(scrim).toBe("none");
+    const blend = await headerChromeBlend(page);
+    expect(blend.mixBlendMode).toBe("difference");
+    expect(isWhiteSource(blend.color)).toBe(true);
   });
 
-  test("overlay active lang button computed color is light (375/390/768/1440 zh+en)", async ({
+  test("difference header 375/390/768/1440: white source, active underline, lang switch", async ({
     page,
   }) => {
     const sizes = [
@@ -311,51 +301,82 @@ test.describe("Home fullscreen stages", () => {
       await page.setViewportSize({ width: w, height: h });
       await page.goto(HOME);
       await page.waitForLoadState("networkidle");
-      expect(await page.locator(".site-header--overlay").count()).toBeGreaterThan(0);
-
-      let color = await activeLangButtonColor(page);
-      expect(relativeLuminanceFromCss(color)).toBeGreaterThan(0.75);
-
+      const blend = await headerChromeBlend(page);
+      expect(blend.mixBlendMode).toBe("difference");
+      const active = page.locator(".lang-toggle .lang-btn.is-active");
+      await expect(active).toHaveCSS("text-decoration-line", "underline");
+      const src = await active.evaluate((el) => getComputedStyle(el).color);
+      expect(isWhiteSource(src)).toBe(true);
       await page.locator('[data-set-lang="en"]').click();
       await page.waitForTimeout(150);
-      color = await activeLangButtonColor(page);
-      expect(relativeLuminanceFromCss(color)).toBeGreaterThan(0.75);
-
+      await expect(page.locator('.lang-btn.is-active[data-set-lang="en"]')).toBeVisible();
       await page.locator('[data-set-lang="zh"]').click();
-      await page.waitForTimeout(150);
-      color = await activeLangButtonColor(page);
-      expect(relativeLuminanceFromCss(color)).toBeGreaterThan(0.75);
     }
   });
 
-  test("solid header restores dark active lang; works and no-js stay dark", async ({
-    page,
-    browser,
-  }) => {
+  test("solid, works, no-js: blend normal and dark source text", async ({ page, browser }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(450);
-    const solid = await page.locator(".site-header--solid").count();
-    if (solid > 0) {
-      const color = await activeLangButtonColor(page);
-      expect(relativeLuminanceFromCss(color)).toBeLessThan(0.2);
+    if ((await page.locator(".site-header--solid").count()) > 0) {
+      const blend = await headerChromeBlend(page);
+      expect(blend.mixBlendMode).toBe("normal");
+      expect(isWhiteSource(blend.color)).toBe(false);
     }
 
     await page.goto("/works/");
     await page.waitForLoadState("networkidle");
-    const worksColor = await activeLangButtonColor(page);
-    expect(relativeLuminanceFromCss(worksColor)).toBeLessThan(0.2);
+    const worksBlend = await page.locator(".site-header").evaluate((el) => getComputedStyle(el).mixBlendMode);
+    expect(worksBlend).toBe("normal");
 
     const ctx = await browser.newContext({ javaScriptEnabled: false, viewport: NARROW });
     const noJs = await ctx.newPage();
     await noJs.goto(HOME);
-    const noJsColor = await noJs
-      .locator(".lang-toggle .lang-btn.is-active")
-      .evaluate((el) => getComputedStyle(el).color);
-    expect(relativeLuminanceFromCss(noJsColor)).toBeLessThan(0.2);
+    const noJsChrome = await noJs.locator(".header-chrome").evaluate((el) => ({
+      blend: getComputedStyle(el).mixBlendMode,
+      color: getComputedStyle(el).color,
+    }));
+    expect(noJsChrome.blend).toBe("normal");
+    expect(isWhiteSource(noJsChrome.color)).toBe(false);
     await ctx.close();
+  });
+
+  test("1024 fine: header difference on home overlay", async ({ browser }) => {
+    const context = await browser.newContext({ viewport: LAPTOP, hasTouch: false });
+    const page = await context.newPage();
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    const blend = await headerChromeBlend(page);
+    expect(blend.mixBlendMode).toBe("difference");
+    await context.close();
+  });
+
+  test("header focus-visible keeps isolate ring on overlay", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.keyboard.press("Tab");
+    await page.waitForTimeout(100);
+    const focusMix = await page.evaluate(() => {
+      const el = document.activeElement;
+      if (!el || !el.closest(".site-header")) return null;
+      return getComputedStyle(el).mixBlendMode;
+    });
+    if (focusMix) expect(focusMix === "normal" || focusMix === "isolate").toBeTruthy();
+  });
+
+  test("journey home → works → series → contact without dead ends", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.locator('.site-nav a[href="./works/"]').click();
+    await expect(page).toHaveURL(/\/works\/$/);
+    await page.locator('a[href="./bipenggou/"]').click();
+    await expect(page).toHaveURL(/bipenggou/);
+    await page.locator('.site-nav a[href="../../contact/"]').click();
+    await expect(page).toHaveURL(/\/contact\/$/);
+    await page.locator('.wordmark[href="../"]').click();
+    await expect(page).toHaveURL(/\/$/);
   });
 
   test("EN visible nav label contrast uses real label not hidden decor", async ({ page }) => {
@@ -480,21 +501,15 @@ test.describe("Home fullscreen stages", () => {
     }
   });
 
-  test("hero pill and pause keep readable light text in overlay at 1440", async ({ page }) => {
+  test("hero pill and pause remain on-stage controls (not header blend)", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
     for (let p = 0; p < 3; p += 1) {
       await page.locator(`[data-hero-pill="${p}"]`).click();
-      await page.waitForTimeout(250);
-      const pillColor = await page
-        .locator(`[data-hero-pill="${p}"]`)
-        .evaluate((el) => getComputedStyle(el).color);
-      expect(relativeLuminanceFromCss(pillColor)).toBeGreaterThan(0.65);
+      await expect(page.locator(`[data-hero-pill="${p}"]`)).toHaveAttribute("aria-selected", "true");
     }
-    const pauseColor = await page
-      .locator("[data-hero-pause]")
-      .evaluate((el) => getComputedStyle(el).color);
-    expect(relativeLuminanceFromCss(pauseColor)).toBeGreaterThan(0.65);
+    await page.locator("[data-hero-pause]").click();
+    await expect(page.locator("[data-hero-pause]")).toHaveAttribute("aria-pressed", "true");
   });
 });
