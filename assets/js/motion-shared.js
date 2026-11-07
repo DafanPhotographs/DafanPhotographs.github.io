@@ -3,7 +3,7 @@
 
   /** Desktop fine pointer + reduced-motion off (task card section C). */
   var MOTION_MQ =
-    "(min-width: 768px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
+    "(min-width: 1024px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
 
   function throttle(fn, wait) {
     var t = null;
