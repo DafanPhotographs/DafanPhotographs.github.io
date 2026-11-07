@@ -260,6 +260,29 @@ button {
   opacity: 0.45;
 }
 
+@media (max-width: 767.98px) {
+  /*
+   * QA F3: English nav labels (especially “Photography”) overflow narrow viewports when
+   * the lang toggle trails the nav; pin the toggle before the nav and let the cluster shrink.
+   */
+  .header-cluster {
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .site-nav {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .lang-toggle {
+    order: -1;
+    flex-shrink: 0;
+  }
+}
+
 @media (min-width: 768px) {
   .site-main {
     padding-top: var(--space-10);
