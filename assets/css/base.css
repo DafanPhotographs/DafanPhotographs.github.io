@@ -131,8 +131,9 @@ button {
 
 .page-home .site-header--overlay .header-chrome-blend .wordmark,
 .page-home .site-header--overlay .header-chrome-blend .nav-link-label,
-.page-home .site-header--overlay .lang-dropdown__trigger-wrap.header-chrome-blend,
-.page-home .site-header--overlay .lang-dropdown__trigger-wrap.header-chrome-blend .lang-dropdown__trigger,
+.page-home .site-header--overlay .header-chrome-blend .lang-dropdown__trigger,
+.page-home .site-header--overlay .header-chrome-blend .lang-dropdown__current,
+.page-home .site-header--overlay .header-chrome-blend .lang-dropdown__chev,
 .page-home .site-header--overlay .lang-dropdown__menu.header-chrome-blend,
 .page-home .site-header--overlay .lang-dropdown__menu.header-chrome-blend .lang-dropdown__option {
   color: #fff;
@@ -172,6 +173,7 @@ button {
 .page-home .site-header--solid .nav-link-label,
 .page-home .site-header--solid .site-nav a,
 .page-home .site-header--solid .lang-dropdown__trigger,
+.page-home .site-header--solid .lang-dropdown__current,
 .page-home .site-header--solid .lang-dropdown__option {
   color: inherit;
 }
@@ -194,11 +196,13 @@ html.no-js.page-home .site-header .wordmark,
 html.no-js.page-home .site-header .nav-link-label,
 html.no-js.page-home .site-header .site-nav a,
 html.no-js.page-home .site-header .lang-dropdown__trigger,
+html.no-js.page-home .site-header .lang-dropdown__current,
 html.no-js.page-home .site-header .lang-dropdown__option,
 html.no-js .page-home .site-header .wordmark,
 html.no-js .page-home .site-header .nav-link-label,
 html.no-js .page-home .site-header .site-nav a,
 html.no-js .page-home .site-header .lang-dropdown__trigger,
+html.no-js .page-home .site-header .lang-dropdown__current,
 html.no-js .page-home .site-header .lang-dropdown__option {
   color: var(--color-text);
 }
@@ -414,6 +418,10 @@ html.no-js .page-home .site-header .header-chrome-blend {
 
 .lang-dropdown__current {
   font-weight: var(--weight-semibold);
+  color: inherit;
+}
+
+.site-header .lang-dropdown__trigger {
   color: var(--color-text);
 }
 
