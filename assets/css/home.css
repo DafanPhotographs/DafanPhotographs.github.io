@@ -156,17 +156,30 @@ html[lang="en"] .home-scene-title {
   pointer-events: none;
 }
 
-/* —— Closing · daofor white end screen —— */
+/* —— Closing · daofor white end screen (100svh · bottom meta band) —— */
 .home-closing {
   --closing-pad-x: clamp(1.25rem, 3vw, 2.5rem);
-  --closing-pad-bottom: clamp(6.5rem, 12vw, 9rem);
-  --closing-bar-gap: clamp(3rem, 6vw, 5rem);
-  --closing-bar-block: calc(0.8125rem + var(--space-4));
+  --closing-pad-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  --closing-action-gap: clamp(0.5625rem, 1.5vw, 1rem);
+  --closing-meta-row: calc(0.8125rem + var(--space-4));
+  --closing-footer-to-rule: calc(var(--space-4) + 1.375rem + 0.8125rem);
+  --closing-action-bottom: calc(
+    var(--closing-pad-bottom) + var(--closing-footer-to-rule) + var(--closing-action-gap)
+  );
+  --closing-rail-start: calc(
+    var(--closing-pad-x) + (100% - 2 * var(--closing-pad-x) - clamp(4rem, 6vw, 5rem)) * 1.6 / 2.5 +
+      clamp(4rem, 6vw, 5rem) + clamp(1.5rem, 3vw, 2rem)
+  );
+  box-sizing: border-box;
   position: relative;
   display: flex;
   flex-direction: column;
+  height: 100svh;
+  height: 100vh;
   min-height: 100svh;
   min-height: 100vh;
+  max-height: 100svh;
+  max-height: 100vh;
   padding: calc(var(--header-height) + clamp(2rem, 5vw, 3.5rem)) var(--closing-pad-x) var(--closing-pad-bottom);
   background: #fff;
   color: var(--color-text);
@@ -178,8 +191,10 @@ html[lang="en"] .home-scene-title {
   gap: clamp(4rem, 6vw, 5rem);
   align-items: stretch;
   flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
   max-width: none;
+  padding-bottom: calc(var(--closing-action-gap) + 3.25rem);
 }
 
 .home-closing__main {
@@ -291,11 +306,15 @@ html[lang="en"] .home-closing__tagline {
 }
 
 .home-closing__top {
+  position: absolute;
+  z-index: 2;
+  left: var(--closing-pad-x);
+  bottom: var(--closing-action-bottom);
   display: inline-flex;
   align-items: center;
   align-self: flex-start;
   min-height: 44px;
-  margin-top: auto;
+  margin-top: 0;
   padding: 0;
   font: inherit;
   font-size: 0.875rem;
@@ -319,7 +338,7 @@ html[lang="en"] .home-closing__tagline {
   justify-content: space-between;
   gap: var(--space-3);
   flex-shrink: 0;
-  margin-top: var(--closing-bar-gap);
+  margin-top: auto;
   padding-top: var(--space-4);
   border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
   width: 100%;
@@ -340,7 +359,7 @@ html[lang="en"] .home-closing__tagline {
 .home-closing__cta {
   position: absolute;
   right: var(--closing-pad-x);
-  bottom: calc(var(--closing-pad-bottom) + var(--closing-bar-gap) + var(--closing-bar-block) + 1.375rem);
+  bottom: var(--closing-action-bottom);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -364,6 +383,12 @@ html[lang="en"] .home-closing__tagline {
   display: none;
 }
 
+@media (min-width: 1024px) {
+  .home-closing__top {
+    left: var(--closing-rail-start);
+  }
+}
+
 @media (max-width: 1023.98px) {
   .home-scene-media-scale {
     width: calc(100% / var(--media-scale-from-mobile));
@@ -377,12 +402,14 @@ html[lang="en"] .home-closing__tagline {
 
   .home-closing {
     --closing-pad-x: 1.25rem;
-    --closing-bar-gap: clamp(2rem, 6vw, 3rem);
+    padding-top: calc(var(--header-height) + clamp(1.25rem, 4vw, 2rem));
   }
 
   .home-closing__inner {
     grid-template-columns: 1fr;
-    flex: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    gap: clamp(1.25rem, 4vw, 2rem);
   }
 
   .home-closing__main {
@@ -390,9 +417,9 @@ html[lang="en"] .home-closing__tagline {
   }
 
   .home-closing__mark {
-    margin-top: clamp(2rem, 8vw, 3rem);
-    min-height: clamp(5rem, 18vw, 7.5rem);
-    width: auto;
+    margin-top: clamp(1rem, 4vw, 1.75rem);
+    min-height: clamp(3.25rem, 11vw, 4.5rem);
+    width: clamp(3.25rem, 11vw, 4.5rem);
   }
 
   .home-closing__rail {
@@ -402,12 +429,13 @@ html[lang="en"] .home-closing__tagline {
     min-height: 0;
   }
 
-  .home-closing__top {
-    margin-top: clamp(1.75rem, 5vw, 2.5rem);
+  .home-closing__block + .home-closing__block {
+    margin-top: clamp(1rem, 3vw, 1.5rem);
   }
 
-  .home-closing__cta {
-    bottom: clamp(1.25rem, 4vw, 1.75rem);
+  .home-closing__link {
+    min-height: 40px;
+    padding-block: 0.2rem;
   }
 
   .home-closing__tagline {
