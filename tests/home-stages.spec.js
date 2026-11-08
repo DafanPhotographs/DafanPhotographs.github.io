@@ -188,7 +188,7 @@ test.describe("Home fullscreen stages", () => {
     await context.close();
   });
 
-  test("1024 coarse pointer: motion off", async ({ browser }) => {
+  test("1024 coarse pointer: home featured motion on (HOME_MOTION_MQ)", async ({ browser }) => {
     const context = await browser.newContext({
       viewport: LAPTOP,
       hasTouch: true,
@@ -196,16 +196,16 @@ test.describe("Home fullscreen stages", () => {
     const page = await context.newPage();
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
-    expect(await motionEnabled(page)).toBe(false);
+    expect(await motionEnabled(page)).toBe(true);
     await context.close();
   });
 
-  test("768 and 375: no motion; footer reachable by scroll", async ({ page }) => {
+  test("768 and 375: featured stack motion on; footer reachable by scroll", async ({ page }) => {
     for (const size of [TABLET, NARROW, NARROW_390]) {
       await page.setViewportSize(size);
       await page.goto(HOME);
       await page.waitForLoadState("networkidle");
-      expect(await motionEnabled(page)).toBe(false);
+      expect(await motionEnabled(page)).toBe(true);
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
       );
@@ -467,6 +467,7 @@ test.describe("Home fullscreen stages", () => {
     await page.setViewportSize(NARROW);
     await page.goto("/#home-scene-bipenggou");
     await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(600);
     const inView = await page.evaluate(() => {
       const el = document.getElementById("home-scene-bipenggou");
       if (!el) return false;
@@ -509,6 +510,46 @@ test.describe("Home fullscreen stages", () => {
         await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
         await expect(page.locator(".site-footer a[href*='instagram']").first()).toBeInViewport();
       }
+    }
+  });
+
+  test("featured panel: mid-scroll media scale between token and 1", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    await wheelScroll(page, 10, 280);
+    const scale = await page.evaluate(() => {
+      const media = document.querySelector('[data-home-scene="1"] .home-scene-media');
+      if (!media || typeof gsap === "undefined") return null;
+      return gsap.getProperty(media, "scale");
+    });
+    expect(scale).not.toBeNull();
+    expect(scale).toBeGreaterThan(0.75);
+    expect(scale).toBeLessThan(1);
+  });
+
+  test("375: featured stack uses mobile scale-from token", async ({ page }) => {
+    await page.setViewportSize(NARROW);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    const token = await page.evaluate(() =>
+      getComputedStyle(document.body).getPropertyValue("--media-scale-from-mobile").trim()
+    );
+    expect(token).toBe("0.6");
+    await page.mouse.move(188, 400);
+    for (let i = 0; i < 12; i += 1) {
+      await page.mouse.wheel(0, 200);
+      await page.waitForTimeout(80);
+    }
+    await page.waitForTimeout(400);
+    const scale = await page.evaluate(() => {
+      const media = document.querySelector('[data-home-scene="2"] .home-scene-media');
+      if (!media || typeof gsap === "undefined") return null;
+      return gsap.getProperty(media, "scale");
+    });
+    if (scale !== null && scale < 1) {
+      expect(scale).toBeGreaterThanOrEqual(0.6);
+      expect(scale).toBeLessThan(1);
     }
   });
 

@@ -9,6 +9,7 @@
   if (!scenes.length) return;
 
   var HERO_FOCUS = "[data-hero-pill], [data-hero-pause]";
+  var FEATURED_SELECTOR = ".featured-panel";
 
   function motionUnavailable() {
     return typeof gsap === "undefined" || typeof ScrollTrigger === "undefined";
@@ -17,6 +18,20 @@
   function setMotionClass(on) {
     document.documentElement.classList.toggle("home-stages--motion", on);
     rail.classList.toggle("home-stage-rail--motion", on);
+  }
+
+  function isFeaturedScene(scene) {
+    return scene.classList.contains("featured-panel") || scene.matches(FEATURED_SELECTOR);
+  }
+
+  function readMediaScaleFrom() {
+    var root = document.documentElement;
+    var mobile = window.matchMedia("(max-width: 1023.98px)").matches;
+    var prop = mobile ? "--media-scale-from-mobile" : "--media-scale-from";
+    var raw = getComputedStyle(root).getPropertyValue(prop).trim();
+    var n = parseFloat(raw);
+    if (!isFinite(n)) return mobile ? 0.6 : 0.75;
+    return n;
   }
 
   function focusablesIn(scene) {
@@ -84,12 +99,18 @@
   var mm = null;
   var onScrollEnd = null;
   var onScrollSync = null;
+  var onResizeRefresh = null;
 
   function killTriggers() {
     triggers.forEach(function (st) {
       if (st && st.kill) st.kill();
     });
     triggers = [];
+    scenes.forEach(function (scene) {
+      gsap.set(scene, { clearProps: "transform,zIndex" });
+      var media = scene.querySelector(".home-scene-media");
+      if (media) gsap.set(media, { clearProps: "transform" });
+    });
     if (onScrollEnd) {
       ScrollTrigger.removeEventListener("scrollEnd", onScrollEnd);
       onScrollEnd = null;
@@ -97,6 +118,10 @@
     if (onScrollSync) {
       window.removeEventListener("scroll", onScrollSync);
       onScrollSync = null;
+    }
+    if (onResizeRefresh) {
+      window.removeEventListener("resize", onResizeRefresh);
+      onResizeRefresh = null;
     }
   }
 
@@ -114,14 +139,67 @@
     setActiveScene(best);
   }
 
-  function buildMotion() {
-    killTriggers();
-    setMotionClass(true);
-    setActiveScene(0);
+  function sceneScrollHandlers(index) {
+    return {
+      onEnter: function () {
+        setActiveScene(index);
+      },
+      onEnterBack: function () {
+        setActiveScene(index);
+      },
+      onUpdate: function (self) {
+        if (self.isActive) setActiveScene(index);
+      },
+    };
+  }
 
-    scenes.forEach(function (scene, index) {
-      triggers.push(
-        ScrollTrigger.create({
+  function pinSnapBlock() {
+    return {
+      snap: {
+        snapTo: 1,
+        duration: { min: 0.12, max: 0.28 },
+        delay: 0.015,
+        ease: "power1.inOut",
+      },
+    };
+  }
+
+  function buildHeroPin(scene, index) {
+    var handlers = sceneScrollHandlers(index);
+    triggers.push(
+      ScrollTrigger.create(
+        Object.assign(
+          {
+            trigger: scene,
+            start: "top top",
+            end: "+=100%",
+            pin: true,
+            pinSpacing: true,
+            scrub: 0.65,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            id: "home-scene-" + index,
+          },
+          pinSnapBlock(),
+          handlers
+        )
+      )
+    );
+  }
+
+  function buildFeaturedPin(scene, index) {
+    var media = scene.querySelector(".home-scene-media");
+    if (!media) {
+      buildHeroPin(scene, index);
+      return;
+    }
+
+    var handlers = sceneScrollHandlers(index);
+    gsap.set(scene, { zIndex: 20 + index });
+
+    var tl = gsap.timeline({
+      scrollTrigger: Object.assign(
+        {
           trigger: scene,
           start: "top top",
           end: "+=100%",
@@ -131,41 +209,42 @@
           anticipatePin: 1,
           invalidateOnRefresh: true,
           id: "home-scene-" + index,
-          snap: {
-            snapTo: 1,
-            duration: { min: 0.12, max: 0.28 },
-            delay: 0.015,
-            ease: "power1.inOut",
-          },
-          onEnter: function () {
-            setActiveScene(index);
-          },
-          onEnterBack: function () {
-            setActiveScene(index);
-          },
-          onUpdate: function (self) {
-            if (self.isActive) setActiveScene(index);
-          },
-        })
-      );
+        },
+        pinSnapBlock(),
+        handlers
+      ),
+    });
 
-      var img = scene.querySelector(".home-scene-media img");
-      if (img) {
-        var tween = gsap.fromTo(
-          img,
-          { scale: 1.04 },
-          {
-            scale: 1,
-            ease: "none",
-            scrollTrigger: {
-              trigger: scene,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: true,
-            },
-          }
-        );
-        if (tween.scrollTrigger) triggers.push(tween.scrollTrigger);
+    tl.fromTo(
+      scene,
+      { yPercent: 100 },
+      { yPercent: 0, ease: "none", immediateRender: false },
+      0
+    );
+    tl.fromTo(
+      media,
+      {
+        scale: function () {
+          return readMediaScaleFrom();
+        },
+      },
+      { scale: 1, ease: "none", immediateRender: false },
+      0
+    );
+
+    if (tl.scrollTrigger) triggers.push(tl.scrollTrigger);
+  }
+
+  function buildMotion() {
+    killTriggers();
+    setMotionClass(true);
+    setActiveScene(0);
+
+    scenes.forEach(function (scene, index) {
+      if (isFeaturedScene(scene)) {
+        buildFeaturedPin(scene, index);
+      } else {
+        buildHeroPin(scene, index);
       }
     });
 
@@ -183,9 +262,34 @@
       shared.whenLayoutReady(rail, shared.refreshScrollTriggers);
     });
 
+    onResizeRefresh = function () {
+      shared.refreshScrollTriggers();
+    };
+    window.addEventListener("resize", onResizeRefresh, { passive: true });
+
     shared.whenLayoutReady(rail, function () {
       shared.refreshScrollTriggers();
+      applyHashDeepLink();
     });
+  }
+
+  function scrollToSceneIndex(index) {
+    var st = triggers.filter(function (t) {
+      return t.vars && t.vars.id === "home-scene-" + index;
+    })[0];
+    if (!st) return;
+    window.scrollTo(0, st.start + 2);
+    setActiveScene(index);
+  }
+
+  function applyHashDeepLink() {
+    var hash = window.location.hash;
+    if (!hash || hash.length < 2) return;
+    var target = document.querySelector(hash);
+    if (!target || !rail.contains(target)) return;
+    var idx = target.getAttribute("data-home-scene");
+    if (idx == null) return;
+    scrollToSceneIndex(Number(idx));
   }
 
   function teardownMotion() {
@@ -213,7 +317,7 @@
 
   mm = gsap.matchMedia();
 
-  mm.add(shared.MOTION_MQ, function () {
+  mm.add(shared.HOME_MOTION_MQ, function () {
     buildMotion();
     return teardownMotion;
   });
@@ -222,7 +326,7 @@
   reduceMql.addEventListener("change", function () {
     if (mm) mm.revert();
     requestAnimationFrame(function () {
-      if (mm && !reduceMql.matches && window.matchMedia(shared.MOTION_MQ).matches) {
+      if (mm && !reduceMql.matches && window.matchMedia(shared.HOME_MOTION_MQ).matches) {
         mm.refresh();
       }
     });

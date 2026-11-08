@@ -4,6 +4,9 @@
   var MOTION_MQ =
     "(min-width: 1024px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
 
+  /** Home featured stack/scale: all viewports; works motion stays on MOTION_MQ only. */
+  var HOME_MOTION_MQ = "(prefers-reduced-motion: no-preference)";
+
   function throttle(fn, wait) {
     var t = null;
     var trailing = null;
@@ -75,6 +78,7 @@
 
   window.DaFanMotionShared = {
     MOTION_MQ: MOTION_MQ,
+    HOME_MOTION_MQ: HOME_MOTION_MQ,
     whenLayoutReady: whenLayoutReady,
     refreshScrollTriggers: refreshScrollTriggers,
     bindLayoutObservers: bindLayoutObservers,
