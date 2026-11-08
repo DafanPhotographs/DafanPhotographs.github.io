@@ -174,11 +174,12 @@ html[lang="en"] .home-scene-title {
 
 .home-closing__inner {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 0.9fr);
   gap: clamp(4rem, 6vw, 5rem);
   align-items: stretch;
   flex: 1 1 auto;
-  max-width: 90rem;
+  width: 100%;
+  max-width: none;
 }
 
 .home-closing__main {
@@ -321,7 +322,8 @@ html[lang="en"] .home-closing__tagline {
   margin-top: var(--closing-bar-gap);
   padding-top: var(--space-4);
   border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
-  max-width: 90rem;
+  width: 100%;
+  max-width: none;
   font-size: 0.8125rem;
 }
 
