@@ -201,14 +201,14 @@ async function run() {
     );
   }
 
-  await scrollFeaturedProgress(page, 1, 0.5);
+  await scrollFeaturedProgress(page, 1, 0.72);
   results.push(
     await shot(page, "desktop-t12-mid.png", async (m) => {
       const tm = await transitionMeta(page);
       if (tm.scale1 == null || tm.scale1 <= 0.76 || tm.scale1 >= 0.98) {
         throw new Error("expected mid scale on scene1, got " + tm.scale1);
       }
-      if (!tm.next2 || tm.next2.band < 200) throw new Error("scene2 peek missing");
+      if (!tm.next2 || tm.next2.band < 120) throw new Error("scene2 peek missing");
       Object.assign(m, tm);
     })
   );

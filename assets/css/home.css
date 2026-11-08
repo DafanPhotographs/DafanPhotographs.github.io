@@ -112,8 +112,7 @@ html[lang="en"] .home-scene-title {
 }
 
 .home-stage-rail--motion .home-scene-media-scale {
-  transform: translate(-50%, -50%) scale(1);
-  transform-origin: center 56%;
+  transform-origin: center center;
 }
 
 .home-scene-stage {
@@ -139,7 +138,7 @@ html[lang="en"] .home-scene-title {
   height: calc(100% / var(--media-scale-from));
   left: 50%;
   top: 50%;
-  transform-origin: center 56%;
+  transform-origin: center center;
 }
 
 .home-scene-media-scale img {
