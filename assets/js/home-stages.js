@@ -147,28 +147,41 @@
     var handlers = sceneScrollHandlers(index);
     var mediaPos = { xPercent: -50, yPercent: -50 };
 
-    /* Rest + handoff: scale 1 (full bleed). Mid sticky span: shrink to token, then back to 1. */
-    gsap.set(media, Object.assign({ transformOrigin: "center 56%", scale: 1 }, mediaPos));
+    /* Option A (A-lock): monotonic from→1; rest cover via oversized media + object-fit (CSS). */
+    gsap.set(media, Object.assign({ transformOrigin: "center center" }, mediaPos));
 
-    var tl = gsap.timeline({
-      scrollTrigger: Object.assign(
+    var tween = gsap.fromTo(
+      media,
+      Object.assign(
         {
-          trigger: scene,
-          start: "top top",
-          end: "bottom top",
-          scrub: 0.65,
-          invalidateOnRefresh: true,
-          id: "home-scene-" + index,
+          scale: function () {
+            return readMediaScaleFrom();
+          },
         },
-        handlers
+        mediaPos
       ),
-      defaults: { ease: "none" },
-    });
+      Object.assign(
+        {
+          scale: 1,
+          ease: "none",
+          immediateRender: false,
+          scrollTrigger: Object.assign(
+            {
+              trigger: scene,
+              start: index === 0 ? "top top" : "top bottom",
+              end: "bottom top",
+              scrub: 0.65,
+              invalidateOnRefresh: true,
+              id: "home-scene-" + index,
+            },
+            handlers
+          ),
+        },
+        mediaPos
+      )
+    );
 
-    tl.to(media, Object.assign({ scale: function () { return readMediaScaleFrom(); }, duration: 0.4 }, mediaPos))
-      .to(media, Object.assign({ scale: 1, duration: 0.6 }, mediaPos));
-
-    if (tl.scrollTrigger) triggers.push(tl.scrollTrigger);
+    if (tween.scrollTrigger) triggers.push(tween.scrollTrigger);
   }
 
   function buildMotion() {

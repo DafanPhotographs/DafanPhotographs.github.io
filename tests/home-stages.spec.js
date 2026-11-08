@@ -558,7 +558,35 @@ test.describe("Home fullscreen stages", () => {
     }
   });
 
-  test("1440: scene rest media scale is 1 (full bleed, no letterbox)", async ({ page }) => {
+  test("1440: overlay entry scene1 scale near from (not ~1)", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    let best = null;
+    for (let y = 0; y <= 1200; y += 6) {
+      await page.evaluate((ys) => {
+        window.scrollTo(0, ys);
+        ScrollTrigger.update();
+      }, y);
+      await page.waitForTimeout(25);
+      const m = await page.evaluate(() => {
+        const s1 = document.querySelector('[data-home-scene="1"]');
+        const vh = window.innerHeight;
+        const band = s1 ? Math.max(0, vh - s1.getBoundingClientRect().top) : 0;
+        const media = s1 && s1.querySelector(".home-scene-media-scale");
+        const scale = media ? Number(gsap.getProperty(media, "scale")) : null;
+        return { band, scale, y: window.scrollY };
+      });
+      if (m.band > 180 && m.band < 420 && m.scale != null) {
+        if (!best || Math.abs(m.band - 260) < Math.abs(best.band - 260)) best = m;
+      }
+    }
+    expect(best).not.toBeNull();
+    expect(best.scale).toBeGreaterThanOrEqual(0.74);
+    expect(best.scale).toBeLessThan(0.88);
+  });
+
+  test("1440: scene0 rest cover full bleed (A-lock fromTo + CSS cover)", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
@@ -568,22 +596,58 @@ test.describe("Home fullscreen stages", () => {
     });
     await page.waitForTimeout(400);
     const rest = await page.evaluate(() => {
-      const scenes = [0, 1, 2];
-      const scales = scenes.map((i) => {
-        const media = document.querySelector('[data-home-scene="' + i + '"] .home-scene-media-scale');
-        return media && typeof gsap !== "undefined" ? Number(gsap.getProperty(media, "scale")) : null;
-      });
+      const token = parseFloat(getComputedStyle(document.body).getPropertyValue("--media-scale-from"));
       const media0 = document.querySelector('[data-home-scene="0"] .home-scene-media-scale');
       const stage = document.querySelector('[data-home-scene="0"] .home-scene-stage');
+      const img = media0 && media0.querySelector("img");
+      const scale =
+        media0 && typeof gsap !== "undefined" ? Number(gsap.getProperty(media0, "scale")) : null;
       const mediaRect = media0 ? media0.getBoundingClientRect() : null;
       const stageRect = stage ? stage.getBoundingClientRect() : null;
-      const topGap = mediaRect && stageRect ? Math.max(0, mediaRect.top - stageRect.top) : null;
-      return { scales, topGap, scrollY: window.scrollY };
+      const imgRect = img ? img.getBoundingClientRect() : null;
+      const topGap =
+        imgRect && stageRect ? Math.max(0, stageRect.top - imgRect.top >= 0 ? imgRect.top - stageRect.top : 0) : null;
+      const leadingBlack =
+        imgRect && stageRect
+          ? imgRect.top > stageRect.top + 0.5 || imgRect.left > stageRect.left + 0.5
+          : null;
+      return { scale, token, topGap, leadingBlack, scrollY: window.scrollY };
     });
-    expect(rest.scales[0]).toBeGreaterThan(0.98);
-    expect(rest.scales[0]).toBeLessThanOrEqual(1.02);
+    expect(rest.scale).toBeGreaterThanOrEqual(0.74);
+    expect(rest.scale).toBeLessThanOrEqual(0.76);
     expect(rest.topGap).not.toBeNull();
     expect(rest.topGap).toBeLessThan(2);
+    expect(rest.leadingBlack).toBe(false);
+  });
+
+  test("1440: transition 0→1 scale monotonic early≤mid≤late (no V curve)", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    const fromToken = await page.evaluate(() =>
+      parseFloat(getComputedStyle(document.body).getPropertyValue("--media-scale-from"))
+    );
+    const picks = [];
+    for (const progress of [0.2, 0.5, 0.92]) {
+      await page.evaluate((p) => {
+        const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-0");
+        if (!st) throw new Error("missing home-scene-0");
+        window.scrollTo(0, st.start + (st.end - st.start) * p);
+        ScrollTrigger.update();
+      }, progress);
+      await page.waitForTimeout(400);
+      const scale = await page.evaluate(() => {
+        const media = document.querySelector('[data-home-scene="0"] .home-scene-media-scale');
+        return media ? Number(gsap.getProperty(media, "scale")) : null;
+      });
+      picks.push({ progress, scale });
+    }
+    expect(fromToken).toBeLessThan(0.92);
+    expect(picks[0].scale).toBeGreaterThanOrEqual(fromToken - 0.02);
+    expect(picks[0].scale).toBeLessThanOrEqual(fromToken + 0.05);
+    expect(picks[1].scale).toBeGreaterThan(picks[0].scale - 0.01);
+    expect(picks[2].scale).toBeGreaterThan(picks[1].scale - 0.01);
+    expect(picks[2].scale).toBeGreaterThan(0.94);
   });
 
   test("featured panel: mid-scroll media scale between token and 1", async ({ page }) => {
