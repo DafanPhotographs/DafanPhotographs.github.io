@@ -67,6 +67,14 @@
   --nav-gap: 1.5rem;
   --lang-gap: 0.5rem;
 
+  /* Language dropdown menu (desktop defaults) */
+  --lang-item-min-height: 32px;
+  --lang-item-padding-block: 6px;
+  --lang-item-padding-inline: 10px;
+  --lang-item-gap: 0;
+  --lang-menu-padding: 0;
+  --lang-menu-offset-top: 10px;
+
   --index-filter-gap: var(--space-8);
   --index-row-gap: clamp(2.5rem, 5vw, 5rem);
   --index-col-gap: clamp(1.5rem, 2.5vw, 2.5rem);
@@ -109,6 +117,12 @@ html[lang^="zh"] {
     --page-margin: 1.125rem;
     --header-height: var(--header-height-mobile);
     --nav-gap: 1rem;
+    --lang-item-min-height: 40px;
+    --lang-item-padding-block: 8px;
+    --lang-item-padding-inline: 10px;
+    --lang-item-gap: 0;
+    --lang-menu-padding: 0;
+    --lang-menu-offset-top: 8px;
     --index-filter-gap: var(--space-5);
     --index-row-gap: clamp(2.5rem, 8vw, 3.5rem);
   }
