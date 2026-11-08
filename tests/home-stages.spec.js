@@ -558,6 +558,34 @@ test.describe("Home fullscreen stages", () => {
     }
   });
 
+  test("1440: scene rest media scale is 1 (full bleed, no letterbox)", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+      if (typeof ScrollTrigger !== "undefined") ScrollTrigger.update();
+    });
+    await page.waitForTimeout(400);
+    const rest = await page.evaluate(() => {
+      const scenes = [0, 1, 2];
+      const scales = scenes.map((i) => {
+        const media = document.querySelector('[data-home-scene="' + i + '"] .home-scene-media-scale');
+        return media && typeof gsap !== "undefined" ? Number(gsap.getProperty(media, "scale")) : null;
+      });
+      const media0 = document.querySelector('[data-home-scene="0"] .home-scene-media-scale');
+      const stage = document.querySelector('[data-home-scene="0"] .home-scene-stage');
+      const mediaRect = media0 ? media0.getBoundingClientRect() : null;
+      const stageRect = stage ? stage.getBoundingClientRect() : null;
+      const topGap = mediaRect && stageRect ? Math.max(0, mediaRect.top - stageRect.top) : null;
+      return { scales, topGap, scrollY: window.scrollY };
+    });
+    expect(rest.scales[0]).toBeGreaterThan(0.98);
+    expect(rest.scales[0]).toBeLessThanOrEqual(1.02);
+    expect(rest.topGap).not.toBeNull();
+    expect(rest.topGap).toBeLessThan(2);
+  });
+
   test("featured panel: mid-scroll media scale between token and 1", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
