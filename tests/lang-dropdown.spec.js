@@ -71,16 +71,46 @@ test.describe("Language dropdown", () => {
     expect(overflow).toBeLessThanOrEqual(376);
   });
 
-  test("home overlay panel uses normal blend and light surface", async ({ page }) => {
+  test("scheme A home overlay: transparent menu, difference blend", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(HOME);
     await openLangMenu(page);
     const panelStyle = await page.locator(".lang-dropdown__menu").evaluate((el) => {
       const s = getComputedStyle(el);
-      return { mixBlendMode: s.mixBlendMode, bg: s.backgroundColor };
+      return {
+        mixBlendMode: s.mixBlendMode,
+        bg: s.backgroundColor,
+        boxShadow: s.boxShadow,
+        backdrop: s.backdropFilter,
+      };
     });
-    expect(panelStyle.mixBlendMode).toBe("normal");
-    expect(panelStyle.bg).not.toBe("rgba(0, 0, 0, 0)");
+    expect(panelStyle.mixBlendMode).toBe("difference");
+    expect(panelStyle.bg).toBe("rgba(0, 0, 0, 0)");
+    expect(panelStyle.boxShadow).toBe("none");
+    expect(panelStyle.backdrop).toBe("none");
+    await expect(page.locator('.lang-dropdown__option[data-set-lang="zh"]')).toHaveText(/中/);
+    await expect(page.locator('.lang-dropdown__option[data-set-lang="en"]')).toHaveText(/EN/);
+  });
+
+  test("scheme A mobile: menu below header grid, options 44px min", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(HOME);
+    await openLangMenu(page);
+    const layout = await page.evaluate(() => {
+      const nav = document.querySelector(".site-nav");
+      const menu = document.querySelector(".lang-dropdown__menu");
+      const header = document.querySelector(".site-header");
+      if (!nav || !menu || !header) return null;
+      const nr = nav.getBoundingClientRect();
+      const mr = menu.getBoundingClientRect();
+      return { gap: mr.top - nr.bottom, menuTop: mr.top, navBottom: nr.bottom };
+    });
+    expect(layout).toBeTruthy();
+    expect(layout.gap).toBeGreaterThanOrEqual(10);
+    const minH = await page.locator(".lang-dropdown__option").first().evaluate((el) => {
+      return parseFloat(getComputedStyle(el).minHeight);
+    });
+    expect(minH).toBeGreaterThanOrEqual(44);
   });
 
   test("works page dropdown switches language", async ({ page }) => {
