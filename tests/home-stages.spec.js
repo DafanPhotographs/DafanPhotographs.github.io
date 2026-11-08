@@ -118,7 +118,8 @@ test.describe("Home fullscreen stages", () => {
 
     const y0 = await page.evaluate(() => window.scrollY);
     expect(await activeSceneIndex(page)).toBe("0");
-    await expect(page.locator(".hero-tagline")).toBeInViewport();
+    await expect(page.locator("[data-hero-scene-title]")).toBeInViewport();
+    await expect(page.locator(".hero-copy-pin")).toHaveCount(0);
 
     await wheelScroll(page, 14, 600);
     const y1 = await page.evaluate(() => window.scrollY);
@@ -133,17 +134,17 @@ test.describe("Home fullscreen stages", () => {
     expect(Number(idxBack)).toBeLessThan(Number(idxMid));
   });
 
-  test("1440: footer enters viewport; footer link focusable", async ({ page }) => {
+  test("1440: closing screen enters viewport; IG link focusable", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
     await page.keyboard.press("End");
     await page.waitForTimeout(600);
 
-    const footerLink = page.locator(".site-footer a[href*='instagram']").first();
-    await expect(footerLink).toBeInViewport();
-    await footerLink.focus();
-    await expect(footerLink).toBeFocused();
+    const igLink = page.locator(".home-closing__ig");
+    await expect(igLink).toBeInViewport();
+    await igLink.focus();
+    await expect(igLink).toBeFocused();
   });
 
   test("1440: PageDown and in-scene featured link", async ({ page }) => {
@@ -172,8 +173,7 @@ test.describe("Home fullscreen stages", () => {
     await wheelScroll(page, 28, 650);
     const heroHidden = await page.locator('[data-home-scene="0"]').getAttribute("aria-hidden");
     expect(heroHidden).toBe("true");
-    const pillTab = await page.locator("[data-hero-pill]").first().evaluate((el) => el.tabIndex);
-    expect(pillTab).toBeGreaterThanOrEqual(0);
+    await expect(page.locator("[data-hero-pill]")).toHaveCount(0);
     const active = await activeSceneIndex(page);
     const inactiveTabs = await page.evaluate((activeIdx) => {
       return [1, 2, 3]
@@ -212,7 +212,7 @@ test.describe("Home fullscreen stages", () => {
     await context.close();
   });
 
-  test("768 and 375: featured stack motion on; footer reachable by scroll", async ({ page }) => {
+  test("768 and 375: featured stack motion on; closing reachable by scroll", async ({ page }) => {
     for (const size of [TABLET, NARROW, NARROW_390]) {
       await page.setViewportSize(size);
       await page.goto(HOME);
@@ -223,7 +223,7 @@ test.describe("Home fullscreen stages", () => {
       );
       expect(overflow).toBe(true);
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-      await expect(page.locator(".site-footer")).toBeInViewport();
+      await expect(page.locator(".home-closing__cta").first()).toBeInViewport();
     }
   });
 
@@ -248,9 +248,9 @@ test.describe("Home fullscreen stages", () => {
     await page.waitForTimeout(350);
     await page.keyboard.press("End");
     await page.waitForTimeout(400);
-    await expect(page.locator(".site-footer")).toBeInViewport();
+    await expect(page.locator(".home-closing")).toBeInViewport();
     const gap = await page.evaluate(() => {
-      const f = document.querySelector(".site-footer");
+      const f = document.querySelector(".home-closing");
       if (!f) return 0;
       const r = f.getBoundingClientRect();
       return Math.abs(r.bottom - window.innerHeight);
@@ -271,7 +271,7 @@ test.describe("Home fullscreen stages", () => {
     );
     expect(count).toBe(0);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await expect(page.locator(".site-footer")).toBeInViewport();
+    await expect(page.locator(".home-closing__tagline")).toBeInViewport();
   });
 
   test("works index: header stays sticky document flow (not home overlay)", async ({ page }) => {
@@ -544,7 +544,7 @@ test.describe("Home fullscreen stages", () => {
     await context.close();
   });
 
-  test("375/390/768 zh-en cycle footer and nav", async ({ page }) => {
+  test("375/390/768 zh-en cycle closing and nav", async ({ page }) => {
     for (const size of [NARROW, NARROW_390, TABLET]) {
       for (const lang of ["zh", "en"]) {
         await page.setViewportSize(size);
@@ -554,7 +554,7 @@ test.describe("Home fullscreen stages", () => {
         const label = await visibleNavWorkLabel(page);
         await expect(label).toBeVisible();
         await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-        await expect(page.locator(".site-footer a[href*='instagram']").first()).toBeInViewport();
+        await expect(page.locator(".home-closing__ig")).toBeInViewport();
       }
     }
   });
@@ -566,7 +566,7 @@ test.describe("Home fullscreen stages", () => {
     await wheelScroll(page, 10, 280);
     const metrics = await page.evaluate(() => {
       const panel = document.querySelector('[data-home-scene="1"]');
-      const media = panel && panel.querySelector(".home-scene-media");
+      const media = panel && panel.querySelector(".home-scene-media-scale");
       if (!panel || !media || typeof gsap === "undefined") return null;
       const mediaScale = gsap.getProperty(media, "scale");
       return {
@@ -597,7 +597,7 @@ test.describe("Home fullscreen stages", () => {
     }
     await page.waitForTimeout(400);
     const scale = await page.evaluate(() => {
-      const media = document.querySelector('[data-home-scene="2"] .home-scene-media');
+      const media = document.querySelector('[data-home-scene="2"] .home-scene-media-scale');
       if (!media || typeof gsap === "undefined") return null;
       return gsap.getProperty(media, "scale");
     });
@@ -620,32 +620,53 @@ test.describe("Home fullscreen stages", () => {
     }
   });
 
-  test("hero copy cluster stays fixed in viewport while scrolling featured stack", async ({ page }) => {
+  test("photo rail: left scene title uses difference, no copy-pin", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
-    const tagline = page.locator(".hero-copy-pin .hero-tagline");
-    await expect(tagline).toBeVisible();
-    const y0 = await tagline.evaluate((el) => el.getBoundingClientRect().top);
-    await wheelScroll(page, 14, 320);
-    const y1 = await tagline.evaluate((el) => el.getBoundingClientRect().top);
-    expect(Math.abs(y1 - y0)).toBeLessThan(2);
-    const pinStyle = await page.locator("[data-hero-copy-pin]").evaluate((el) => getComputedStyle(el).position);
-    expect(pinStyle).toBe("fixed");
-    const z = await page.locator("[data-hero-copy-pin]").evaluate((el) => getComputedStyle(el).zIndex);
-    expect(Number(z)).toBeGreaterThan(23);
-    expect(Number(z)).toBeLessThan(40);
+    await expect(page.locator("[data-hero-copy-pin]")).toHaveCount(0);
+    const blend = await page.locator(".home-scene-title-blend").first().evaluate((el) => getComputedStyle(el).mixBlendMode);
+    expect(blend).toBe("difference");
+    const y0 = await page.locator("[data-hero-scene-title]").evaluate((el) => el.getBoundingClientRect().top);
+    await wheelScroll(page, 22, 400);
+    expect(await sceneDominatesViewport(page, 1)).toBe(true);
+    const featuredTitleY = await page.evaluate(() => {
+      const el = document.querySelector('[data-home-scene="1"] .home-scene-title');
+      return el ? el.getBoundingClientRect().top : 0;
+    });
+    const vh = await page.evaluate(() => window.innerHeight);
+    expect(Math.abs(featuredTitleY - vh / 2)).toBeLessThan(140);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(450);
+    const yBack = await page.locator("[data-hero-scene-title]").evaluate((el) => el.getBoundingClientRect().top);
+    expect(Math.abs(yBack - y0)).toBeLessThan(80);
   });
 
-  test("hero pill and pause remain on-stage controls (not header blend)", async ({ page }) => {
+  test("closing daofor screen: tagline, series links, CTA, solid header", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
-    for (let p = 0; p < 3; p += 1) {
-      await page.locator(`[data-hero-pill="${p}"]`).click();
-      await expect(page.locator(`[data-hero-pill="${p}"]`)).toHaveAttribute("aria-selected", "true");
-    }
-    await page.locator("[data-hero-pause]").click();
-    await expect(page.locator("[data-hero-pause]")).toHaveAttribute("aria-pressed", "true");
+    await page.keyboard.press("End");
+    await page.waitForTimeout(500);
+    await expect(page.locator(".home-closing__tagline")).toBeVisible();
+    await expect(page.locator(".home-tagline-repeat")).toHaveCount(0);
+    await expect(page.locator('.home-closing__link[href="./works/bipenggou/"]')).toBeVisible();
+    await expect(page.locator(".home-closing__cta.lang-zh-only")).toHaveAttribute("href", /contact/);
+    const hdr = await page.locator(".site-header--solid").count();
+    expect(hdr).toBeGreaterThan(0);
+    const wordmarkColor = await page.locator(".site-header--solid .wordmark").evaluate((el) => getComputedStyle(el).color);
+    expect(isWhiteSource(wordmarkColor)).toBe(false);
+  });
+
+  test("hero carousel updates left series title across slides", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(5600);
+    const title = await page.locator("[data-hero-scene-title]").textContent();
+    expect(title && title.trim().length).toBeGreaterThan(0);
+    await page.waitForTimeout(5600);
+    const title2 = await page.locator("[data-hero-scene-title]").textContent();
+    expect(title2).not.toBe(title);
   });
 });
