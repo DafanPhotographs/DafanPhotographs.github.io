@@ -518,14 +518,19 @@ test.describe("Home fullscreen stages", () => {
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
     await wheelScroll(page, 10, 280);
-    const scale = await page.evaluate(() => {
-      const media = document.querySelector('[data-home-scene="1"] .home-scene-media');
-      if (!media || typeof gsap === "undefined") return null;
-      return gsap.getProperty(media, "scale");
+    const metrics = await page.evaluate(() => {
+      const panel = document.querySelector('[data-home-scene="1"]');
+      const media = panel && panel.querySelector(".home-scene-media");
+      if (!panel || !media || typeof gsap === "undefined") return null;
+      return {
+        scale: gsap.getProperty(media, "scale"),
+        panelYPercent: gsap.getProperty(panel, "yPercent"),
+      };
     });
-    expect(scale).not.toBeNull();
-    expect(scale).toBeGreaterThan(0.75);
-    expect(scale).toBeLessThan(1);
+    expect(metrics).not.toBeNull();
+    expect(metrics.scale).toBeGreaterThan(0.75);
+    expect(metrics.scale).toBeLessThan(1);
+    expect(metrics.panelYPercent).toBe(0);
   });
 
   test("375: featured stack uses mobile scale-from token", async ({ page }) => {

@@ -24,8 +24,16 @@
     return scene.classList.contains("featured-panel") || scene.matches(FEATURED_SELECTOR);
   }
 
+  function cssTokenSource() {
+    if (document.body && document.body.classList.contains("page-home")) {
+      return document.body;
+    }
+    if (rail) return rail;
+    return document.documentElement;
+  }
+
   function readMediaScaleFrom() {
-    var root = document.documentElement;
+    var root = cssTokenSource();
     var mobile = window.matchMedia("(max-width: 1023.98px)").matches;
     var prop = mobile ? "--media-scale-from-mobile" : "--media-scale-from";
     var raw = getComputedStyle(root).getPropertyValue(prop).trim();
@@ -197,42 +205,36 @@
     var handlers = sceneScrollHandlers(index);
     gsap.set(scene, { zIndex: 20 + index });
 
-    var tl = gsap.timeline({
-      scrollTrigger: Object.assign(
-        {
-          trigger: scene,
-          start: "top top",
-          end: "+=100%",
-          pin: true,
-          pinSpacing: true,
-          scrub: 0.65,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          id: "home-scene-" + index,
-        },
-        pinSnapBlock(),
-        handlers
-      ),
-    });
-
-    tl.fromTo(
-      scene,
-      { yPercent: 100 },
-      { yPercent: 0, ease: "none", immediateRender: false },
-      0
-    );
-    tl.fromTo(
+    var tween = gsap.fromTo(
       media,
       {
         scale: function () {
           return readMediaScaleFrom();
         },
       },
-      { scale: 1, ease: "none", immediateRender: false },
-      0
+      {
+        scale: 1,
+        ease: "none",
+        immediateRender: false,
+        scrollTrigger: Object.assign(
+          {
+            trigger: scene,
+            start: "top top",
+            end: "+=100%",
+            pin: true,
+            pinSpacing: true,
+            scrub: 0.65,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            id: "home-scene-" + index,
+          },
+          pinSnapBlock(),
+          handlers
+        ),
+      }
     );
 
-    if (tl.scrollTrigger) triggers.push(tl.scrollTrigger);
+    if (tween.scrollTrigger) triggers.push(tween.scrollTrigger);
   }
 
   function buildMotion() {
