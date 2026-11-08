@@ -118,8 +118,8 @@ test.describe("Home fullscreen stages", () => {
 
     const y0 = await page.evaluate(() => window.scrollY);
     expect(await activeSceneIndex(page)).toBe("0");
-    await expect(page.locator("[data-hero-scene-title]")).toBeInViewport();
-    await expect(page.locator(".hero-copy-pin")).toHaveCount(0);
+    await expect(page.locator('[data-home-scene="0"] .home-scene-title')).toBeInViewport();
+    await expect(page.locator("[data-hero-slide], .hero-slides, .hero-stack")).toHaveCount(0);
 
     await wheelScroll(page, 14, 600);
     const y1 = await page.evaluate(() => window.scrollY);
@@ -173,10 +173,10 @@ test.describe("Home fullscreen stages", () => {
     await wheelScroll(page, 28, 650);
     const heroHidden = await page.locator('[data-home-scene="0"]').getAttribute("aria-hidden");
     expect(heroHidden).toBe("true");
-    await expect(page.locator("[data-hero-pill]")).toHaveCount(0);
+    await expect(page.locator("[data-hero-pill], [data-hero-slide]")).toHaveCount(0);
     const active = await activeSceneIndex(page);
     const inactiveTabs = await page.evaluate((activeIdx) => {
-      return [1, 2, 3]
+      return [0, 1, 2]
         .filter((i) => String(i) !== activeIdx)
         .map((i) => {
           const el = document.querySelector('[data-home-scene="' + i + '"]');
@@ -466,7 +466,7 @@ test.describe("Home fullscreen stages", () => {
     expect(idx).toBeLessThanOrEqual(1);
   });
 
-  test("scrollTrigger: hero pin + featured scale (no featured pin)", async ({ page }) => {
+  test("scrollTrigger: three sticky-scale scenes, no pin", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
@@ -474,9 +474,8 @@ test.describe("Home fullscreen stages", () => {
       ScrollTrigger.getAll().filter((st) => st.vars && st.vars.pin === true).length
     );
     const count = await page.evaluate(() => ScrollTrigger.getAll().length);
-    expect(pins).toBe(1);
-    expect(count).toBeGreaterThanOrEqual(4);
-    expect(count).toBeLessThanOrEqual(8);
+    expect(pins).toBe(0);
+    expect(count).toBe(3);
   });
 
   test("featured scenes use CSS sticky stack z-order (not yPercent slide)", async ({ page }) => {
@@ -484,7 +483,7 @@ test.describe("Home fullscreen stages", () => {
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
     const stack = await page.evaluate(() => {
-      const panels = [1, 2, 3].map((i) => document.querySelector('[data-home-scene="' + i + '"]'));
+      const panels = [0, 1, 2].map((i) => document.querySelector('[data-home-scene="' + i + '"]'));
       if (panels.some((p) => !p)) return null;
       const styles = panels.map((p) => {
         const s = getComputedStyle(p);
@@ -563,7 +562,13 @@ test.describe("Home fullscreen stages", () => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
-    await wheelScroll(page, 10, 280);
+    await page.evaluate(() => {
+      const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-1");
+      if (!st) throw new Error("missing home-scene-1");
+      window.scrollTo(0, st.start + (st.end - st.start) * 0.48);
+      ScrollTrigger.update();
+    });
+    await page.waitForTimeout(450);
     const metrics = await page.evaluate(() => {
       const panel = document.querySelector('[data-home-scene="1"]');
       const media = panel && panel.querySelector(".home-scene-media-scale");
@@ -620,14 +625,14 @@ test.describe("Home fullscreen stages", () => {
     }
   });
 
-  test("photo rail: left scene title uses difference, no copy-pin", async ({ page }) => {
+  test("photo rail: left scene title uses difference, tracks active scene", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
-    await expect(page.locator("[data-hero-copy-pin]")).toHaveCount(0);
+    await expect(page.locator("[data-hero-copy-pin], [data-hero-scene-title]")).toHaveCount(0);
     const blend = await page.locator(".home-scene-title-blend").first().evaluate((el) => getComputedStyle(el).mixBlendMode);
     expect(blend).toBe("difference");
-    const y0 = await page.locator("[data-hero-scene-title]").evaluate((el) => el.getBoundingClientRect().top);
+    const y0 = await page.locator('[data-home-scene="0"] .home-scene-title').evaluate((el) => el.getBoundingClientRect().top);
     await wheelScroll(page, 22, 400);
     expect(await sceneDominatesViewport(page, 1)).toBe(true);
     const featuredTitleY = await page.evaluate(() => {
@@ -638,8 +643,60 @@ test.describe("Home fullscreen stages", () => {
     expect(Math.abs(featuredTitleY - vh / 2)).toBeLessThan(140);
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(450);
-    const yBack = await page.locator("[data-hero-scene-title]").evaluate((el) => el.getBoundingClientRect().top);
+    const yBack = await page.locator('[data-home-scene="0"] .home-scene-title').evaluate((el) => el.getBoundingClientRect().top);
     expect(Math.abs(yBack - y0)).toBeLessThan(80);
+  });
+
+  test("1440: scene0→1 mid matches sticky peek + media scale (same family as 1→2)", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    await page.evaluate(() => {
+      const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-0");
+      if (!st) throw new Error("missing home-scene-0");
+      const y = st.start + (st.end - st.start) * 0.5;
+      window.scrollTo(0, y);
+      ScrollTrigger.update();
+    });
+    await page.waitForTimeout(450);
+    const metrics = await page.evaluate(() => {
+      const scene0 = document.querySelector('[data-home-scene="0"]');
+      const scene1 = document.querySelector('[data-home-scene="1"]');
+      const r1 = scene1 ? scene1.getBoundingClientRect() : null;
+      const scale0 =
+        scene0 && typeof gsap !== "undefined"
+          ? gsap.getProperty(scene0.querySelector(".home-scene-media-scale"), "scale")
+          : null;
+      const title = document.querySelector(".home-scene.is-stage-active .home-scene-title");
+      return {
+        nextBand: r1 ? Math.max(0, window.innerHeight - r1.top) : 0,
+        scale0,
+        title: title ? title.textContent.trim() : "",
+      };
+    });
+    expect(metrics.nextBand).toBeGreaterThan(200);
+    expect(metrics.scale0).toBeGreaterThan(0.75);
+    expect(metrics.scale0).toBeLessThan(1);
+    expect(metrics.title.length).toBeGreaterThan(0);
+  });
+
+  test("three photo scenes: distinct series titles at rest (no carousel)", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    const titles = await page.evaluate(() =>
+      [0, 1, 2].map((i) => {
+        const el = document.querySelector('[data-home-scene="' + i + '"] .home-scene-title');
+        return el ? el.textContent.trim() : "";
+      })
+    );
+    expect(titles[0]).toContain("毕棚沟");
+    expect(titles[1]).toContain("峨眉山");
+    expect(titles[2]).toContain("青岛");
+    expect(new Set(titles).size).toBe(3);
+    await page.waitForTimeout(1200);
+    const still = await page.locator('[data-home-scene="0"] .home-scene-title').textContent();
+    expect(still).toContain("毕棚沟");
   });
 
   test("closing daofor screen: tagline, series links, CTA, solid header", async ({ page }) => {
@@ -658,15 +715,4 @@ test.describe("Home fullscreen stages", () => {
     expect(isWhiteSource(wordmarkColor)).toBe(false);
   });
 
-  test("hero carousel updates left series title across slides", async ({ page }) => {
-    await page.setViewportSize(MOTION_VIEWPORT);
-    await page.goto(HOME);
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(5600);
-    const title = await page.locator("[data-hero-scene-title]").textContent();
-    expect(title && title.trim().length).toBeGreaterThan(0);
-    await page.waitForTimeout(5600);
-    const title2 = await page.locator("[data-hero-scene-title]").textContent();
-    expect(title2).not.toBe(title);
-  });
 });

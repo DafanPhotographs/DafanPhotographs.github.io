@@ -32,8 +32,8 @@ async function waitMotionReady(page) {
     () =>
       typeof ScrollTrigger !== "undefined" &&
       document.documentElement.classList.contains("home-stages--motion") &&
-      ScrollTrigger.getAll().filter((st) => st.vars && String(st.vars.id || "").startsWith("home-scene-")).length >=
-        4
+      ScrollTrigger.getAll().filter((st) => st.vars && String(st.vars.id || "").startsWith("home-scene-")).length ===
+        3
   );
   await page.evaluate(() => {
     ScrollTrigger.refresh();
@@ -65,6 +65,38 @@ async function scrollFeaturedProgress(page, sceneIndex, progress01) {
 /**
  * @param {import("@playwright/test").Page} page
  */
+async function transitionMeta(page) {
+  return page.evaluate(() => {
+    const active = document.querySelector("[data-home-stage-rail]")?.getAttribute("data-active-scene");
+    const vh = window.innerHeight;
+    const next = (idx) => {
+      const el = document.querySelector('[data-home-scene="' + idx + '"]');
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { top: r.top, band: Math.max(0, vh - r.top), isFeatured: el.classList.contains("featured-panel") };
+    };
+    const scaleOf = (idx) => {
+      const media = document.querySelector('[data-home-scene="' + idx + '"] .home-scene-media-scale');
+      return media && typeof gsap !== "undefined" ? Number(gsap.getProperty(media, "scale")) : null;
+    };
+    const title = document.querySelector(".home-scene.is-stage-active .home-scene-title");
+    return {
+      activeScene: active,
+      scrollY: window.scrollY,
+      title: title?.textContent?.trim() || "",
+      scale0: scaleOf(0),
+      scale1: scaleOf(1),
+      scale2: scaleOf(2),
+      next1: next(1),
+      next2: next(2),
+      heroSlides: document.querySelectorAll("[data-hero-slide]").length,
+    };
+  });
+}
+
+/**
+ * @param {import("@playwright/test").Page} page
+ */
 async function sceneFrameMeta(page) {
   return page.evaluate(() => {
     const active = document.querySelector("[data-home-stage-rail]")?.getAttribute("data-active-scene");
@@ -75,9 +107,7 @@ async function sceneFrameMeta(page) {
     const headerH = header?.getBoundingClientRect().height ?? 0;
     const endTop = photoEnd?.getBoundingClientRect().top ?? 0;
     const pastPhoto = endTop <= headerH + 0.5;
-    const media = document.querySelector(
-      '[data-home-scene="2"] .home-scene-media-scale'
-    );
+    const media = document.querySelector('[data-home-scene="2"] .home-scene-media-scale');
     const scale =
       media && typeof gsap !== "undefined" ? Number(gsap.getProperty(media, "scale")) : null;
     const title = document.querySelector(".home-scene.is-stage-active .home-scene-title");
@@ -96,7 +126,7 @@ async function sceneFrameMeta(page) {
       headerOverlay: header?.classList.contains("site-header--overlay") ?? false,
       headerDifference:
         blend && getComputedStyle(blend).mixBlendMode === "difference",
-      heroCopyPin: document.querySelectorAll("[data-hero-copy-pin]").length,
+      heroSlides: document.querySelectorAll("[data-hero-slide]").length,
       taglineInRail: document.querySelectorAll(".hero-tagline, .hero-copy-pin").length,
     };
   });
@@ -129,9 +159,9 @@ async function scrollToClosing(page) {
   await page.waitForTimeout(500);
 }
 
-async function shot(page, filename, assertFn) {
-  const meta = await sceneFrameMeta(page);
-  if (assertFn) assertFn(meta);
+async function shot(page, filename, assertFn, extraMeta) {
+  const meta = { ...(await sceneFrameMeta(page)), ...(extraMeta || {}) };
+  if (assertFn) await assertFn(meta);
   const path = join(OUT, filename);
   await page.screenshot({ path, fullPage: false });
   return { filename, path, md5: md5(path), meta };
@@ -149,13 +179,72 @@ async function run() {
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(400);
   results.push(
-    await shot(page, "desktop-hero.png", (m) => {
-      if (m.activeScene !== "0") throw new Error("hero activeScene " + m.activeScene);
-      if (m.closingDominates) throw new Error("closing visible on hero shot");
+    await shot(page, "desktop-scene0-rest.png", (m) => {
+      if (m.activeScene !== "0") throw new Error("scene0 activeScene " + m.activeScene);
+      if (m.closingDominates) throw new Error("closing visible on scene0");
+      if (m.heroSlides > 0) throw new Error("hero slides remain");
     })
   );
 
-  // Featured sticky mid — scene 2, mid scale (~0.87), full-bleed photo + overlay header
+  for (const [progress, file] of [
+    [0.2, "desktop-t01-early.png"],
+    [0.5, "desktop-t01-mid.png"],
+    [0.8, "desktop-t01-late.png"],
+  ]) {
+    await scrollFeaturedProgress(page, 0, progress);
+    const tm = await transitionMeta(page);
+    results.push(
+      await shot(page, file, (m) => {
+        if (m.pastPhoto || m.closingDominates) throw new Error("not on photo rail");
+        if (m.heroSlides > 0) throw new Error("hero slides remain");
+      }, tm)
+    );
+  }
+
+  await scrollFeaturedProgress(page, 1, 0.5);
+  results.push(
+    await shot(page, "desktop-t12-mid.png", async (m) => {
+      const tm = await transitionMeta(page);
+      if (tm.scale1 == null || tm.scale1 <= 0.76 || tm.scale1 >= 0.98) {
+        throw new Error("expected mid scale on scene1, got " + tm.scale1);
+      }
+      if (!tm.next2 || tm.next2.band < 200) throw new Error("scene2 peek missing");
+      Object.assign(m, tm);
+    })
+  );
+
+  await scrollFeaturedProgress(page, 0, 0.5);
+  await page.screenshot({ path: join(OUT, "desktop-t01-mid-crop.png"), fullPage: false });
+  await scrollFeaturedProgress(page, 1, 0.5);
+  await page.screenshot({ path: join(OUT, "desktop-t12-mid-crop.png"), fullPage: false });
+  const { PNG } = await import("pngjs");
+  const fs = await import("node:fs");
+  const left = PNG.sync.read(fs.readFileSync(join(OUT, "desktop-t01-mid-crop.png")));
+  const right = PNG.sync.read(fs.readFileSync(join(OUT, "desktop-t12-mid-crop.png")));
+  const wide = new PNG({ width: left.width + right.width, height: Math.max(left.height, right.height) });
+  for (let y = 0; y < left.height; y++) {
+    for (let x = 0; x < left.width; x++) {
+      const i = (wide.width * y + x) << 2;
+      const j = (left.width * y + x) << 2;
+      wide.data[i] = left.data[j];
+      wide.data[i + 1] = left.data[j + 1];
+      wide.data[i + 2] = left.data[j + 2];
+      wide.data[i + 3] = left.data[j + 3];
+    }
+  }
+  for (let y = 0; y < right.height; y++) {
+    for (let x = 0; x < right.width; x++) {
+      const i = (wide.width * y + (x + left.width)) << 2;
+      const j = (right.width * y + x) << 2;
+      wide.data[i] = right.data[j];
+      wide.data[i + 1] = right.data[j + 1];
+      wide.data[i + 2] = right.data[j + 2];
+      wide.data[i + 3] = right.data[j + 3];
+    }
+  }
+  fs.writeFileSync(join(OUT, "compare-t01-vs-t12-mid.png"), PNG.sync.write(wide));
+  results.push({ filename: "compare-t01-vs-t12-mid.png", path: join(OUT, "compare-t01-vs-t12-mid.png"), meta: {} });
+
   await scrollFeaturedProgress(page, 2, 0.48);
   results.push(
     await shot(page, "desktop-featured-mid.png", (m) => {
@@ -166,28 +255,6 @@ async function run() {
       if (m.taglineInRail > 0) throw new Error("tagline cluster in rail");
       if (m.scaleScene2 == null || m.scaleScene2 <= 0.76 || m.scaleScene2 >= 0.98) {
         throw new Error("expected mid scale, got " + m.scaleScene2);
-      }
-    })
-  );
-
-  // Scale from — scene 2 at start of sticky span
-  await scrollFeaturedProgress(page, 2, 0.02);
-  results.push(
-    await shot(page, "desktop-scale-from.png", (m) => {
-      if (m.pastPhoto || m.closingDominates) throw new Error("not on photo rail");
-      if (m.scaleScene2 == null || m.scaleScene2 < 0.73 || m.scaleScene2 > 0.78) {
-        throw new Error("expected scale~0.75, got " + m.scaleScene2);
-      }
-    })
-  );
-
-  // Optional mid-scale evidence (between from and 1)
-  await scrollFeaturedProgress(page, 2, 0.28);
-  results.push(
-    await shot(page, "desktop-scale-mid.png", (m) => {
-      if (m.pastPhoto || m.closingDominates) throw new Error("not on photo rail");
-      if (m.scaleScene2 == null || m.scaleScene2 < 0.8 || m.scaleScene2 > 0.92) {
-        throw new Error("expected mid scale band, got " + m.scaleScene2);
       }
     })
   );
@@ -203,10 +270,16 @@ async function run() {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto(`${base}/`);
   await waitMotionReady(page);
-  await scrollFeaturedProgress(page, 2, 0.45);
+  await scrollFeaturedProgress(page, 0, 0.5);
   results.push(
-    await shot(page, "mobile-featured-mid.png", (m) => {
-      if (m.pastPhoto || m.closingDominates) throw new Error("mobile featured not on rail");
+    await shot(page, "mobile-t01-mid.png", (m) => {
+      if (m.pastPhoto || m.closingDominates) throw new Error("mobile t01 not on rail");
+    })
+  );
+  await scrollFeaturedProgress(page, 1, 0.45);
+  results.push(
+    await shot(page, "mobile-t12-mid.png", (m) => {
+      if (m.pastPhoto || m.closingDominates) throw new Error("mobile t12 not on rail");
     })
   );
 
@@ -216,13 +289,15 @@ async function run() {
   await browser.close();
   server.kill("SIGTERM");
 
-  const digests = Object.fromEntries(results.map((r) => [r.filename, r.md5]));
-  const unique = new Set(Object.values(digests));
-  if (unique.size < results.length - 1) {
-    console.warn("WARNING: duplicate MD5 among shots", digests);
-  }
+  const metrics = results
+    .filter((r) => r.meta && r.meta.activeScene != null)
+    .map((r) => ({ file: r.filename, meta: r.meta }));
 
-  console.log(JSON.stringify({ out: OUT, digests, results: results.map((r) => ({ file: r.filename, meta: r.meta })) }, null, 2));
+  const metricsPath = join(OUT, "metrics.json");
+  fs.writeFileSync(metricsPath, JSON.stringify(metrics, null, 2));
+
+  const digests = Object.fromEntries(results.filter((r) => r.md5).map((r) => [r.filename, r.md5]));
+  console.log(JSON.stringify({ out: OUT, digests, metricsPath, results: results.map((r) => ({ file: r.filename, meta: r.meta })) }, null, 2));
 }
 
 run().catch((e) => {

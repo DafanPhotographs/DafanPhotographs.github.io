@@ -8,9 +8,6 @@
   var scenes = gsap.utils.toArray(rail.querySelectorAll("[data-home-scene]"));
   if (!scenes.length) return;
 
-  var HERO_FOCUS = null;
-  var FEATURED_SELECTOR = ".featured-panel";
-
   function motionUnavailable() {
     return typeof gsap === "undefined" || typeof ScrollTrigger === "undefined";
   }
@@ -18,10 +15,6 @@
   function setMotionClass(on) {
     document.documentElement.classList.toggle("home-stages--motion", on);
     rail.classList.toggle("home-stage-rail--motion", on);
-  }
-
-  function isFeaturedScene(scene) {
-    return scene.classList.contains("featured-panel") || scene.matches(FEATURED_SELECTOR);
   }
 
   function cssTokenSource() {
@@ -62,7 +55,7 @@
       scene.classList.toggle("is-stage-active", active);
       scene.setAttribute("aria-hidden", active ? "false" : "true");
       focusablesIn(scene).forEach(function (el) {
-        if (el.closest(".site-header") || (HERO_FOCUS && el.matches(HERO_FOCUS))) return;
+        if (el.closest(".site-header")) return;
         if (active) {
           if (el.hasAttribute("data-stage-tabindex")) {
             var prev = el.getAttribute("data-stage-tabindex");
@@ -75,25 +68,6 @@
           el.tabIndex = -1;
         }
       });
-      if (HERO_FOCUS) {
-        if (active) {
-          scene.querySelectorAll(HERO_FOCUS).forEach(function (el) {
-            if (el.hasAttribute("data-stage-tabindex")) {
-              var prev = el.getAttribute("data-stage-tabindex");
-              if (prev === "") el.removeAttribute("tabindex");
-              else el.setAttribute("tabindex", prev);
-              el.removeAttribute("data-stage-tabindex");
-            }
-          });
-        } else {
-          scene.querySelectorAll(HERO_FOCUS).forEach(function (el) {
-            if (!el.hasAttribute("data-stage-tabindex")) {
-              el.setAttribute("data-stage-tabindex", el.getAttribute("tabindex") || "");
-              el.tabIndex = -1;
-            }
-          });
-        }
-      }
     });
     rail.setAttribute("data-active-scene", String(index));
   }
@@ -125,11 +99,7 @@
     });
     triggers = [];
     scenes.forEach(function (scene) {
-      if (isFeaturedScene(scene)) {
-        gsap.set(scene, { clearProps: "transform" });
-      } else {
-        gsap.set(scene, { clearProps: "transform,zIndex" });
-      }
+      gsap.set(scene, { clearProps: "transform" });
       var media = scene.querySelector(".home-scene-media-scale");
       if (media) gsap.set(media, { clearProps: "transform" });
     });
@@ -168,40 +138,6 @@
         if (self.isActive) setActiveScene(index);
       },
     };
-  }
-
-  function pinSnapBlock() {
-    return {
-      snap: {
-        snapTo: 1,
-        duration: { min: 0.12, max: 0.28 },
-        delay: 0.015,
-        ease: "power1.inOut",
-      },
-    };
-  }
-
-  function buildHeroPin(scene, index) {
-    var handlers = sceneScrollHandlers(index);
-    triggers.push(
-      ScrollTrigger.create(
-        Object.assign(
-          {
-            trigger: scene,
-            start: "top top",
-            end: "+=100%",
-            pin: true,
-            pinSpacing: true,
-            scrub: 0.65,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-            id: "home-scene-" + index,
-          },
-          pinSnapBlock(),
-          handlers
-        )
-      )
-    );
   }
 
   function buildFeaturedStickyScale(scene, index) {
@@ -250,11 +186,7 @@
     setActiveScene(0);
 
     scenes.forEach(function (scene, index) {
-      if (isFeaturedScene(scene)) {
-        buildFeaturedStickyScale(scene, index);
-      } else {
-        buildHeroPin(scene, index);
-      }
+      buildFeaturedStickyScale(scene, index);
     });
 
     onScrollSync = function () {
@@ -282,25 +214,9 @@
     });
   }
 
-  function scrollTriggerForIndex(index) {
-    return triggers.filter(function (t) {
-      return t.vars && t.vars.id === "home-scene-" + index;
-    })[0];
-  }
-
   function scrollToSceneIndex(index) {
     var scene = scenes[index];
     if (!scene) return;
-
-    if (index === 0) {
-      var heroSt = scrollTriggerForIndex(0);
-      if (heroSt) {
-        window.scrollTo(0, heroSt.start + 2);
-        setActiveScene(0);
-        return;
-      }
-    }
-
     var top = scene.getBoundingClientRect().top + window.pageYOffset;
     window.scrollTo(0, Math.max(0, top));
     setActiveScene(index);

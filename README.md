@@ -22,7 +22,7 @@ Open http://127.0.0.1:8080/
 ## Layout (clean URLs)
 
 ```
-index.html                 Home (hero + featured panels)
+index.html                 Home (three photo scenes + closing)
 works/index.html           Work index (+ filters)
 works/<slug>/index.html    Series case pages
 photography/index.html     Photography hub (three series)
@@ -30,7 +30,7 @@ about/index.html
 contact/index.html         mailto form → vanwuuuu@gmail.com
 data/series.json           Series metadata (Cloudinary prefixes)
 assets/css/                tokens, base, home, works, project
-assets/js/                 i18n.js, main.js, hero.js (PR1; no GSAP)
+assets/js/                 i18n.js, main.js, hero.js (back-to-top only), home-stages.js
 styles.css                 Bundled @import for legacy paths
 ```
 
