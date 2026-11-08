@@ -59,6 +59,8 @@ async function headerInvertBlend(page) {
 }
 
 async function pickLang(page, lang) {
+  const current = await page.evaluate(() => document.documentElement.lang || localStorage.getItem("dafan-lang") || "zh");
+  if (current === lang) return;
   await page.locator(".lang-dropdown__trigger").click();
   await page.locator(`.lang-dropdown__option[data-set-lang="${lang}"]`).click();
 }
