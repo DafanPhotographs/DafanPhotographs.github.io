@@ -177,7 +177,7 @@ probes.push(await probeFrame(page375, "375-zh-hero0", { lang: "zh", dpr: 2 }));
 const pageScenes = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
 await pageScenes.goto(`${BASE}/`);
 await pageScenes.waitForLoadState("networkidle");
-for (const id of ["1", "2", "3"]) {
+for (const id of ["0", "1", "2"]) {
   await scrollToScene(pageScenes, id);
   const meta = await activeSceneMeta(pageScenes);
   if (meta.activeScene !== id) {

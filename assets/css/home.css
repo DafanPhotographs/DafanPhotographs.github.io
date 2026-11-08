@@ -1,4 +1,4 @@
-/* Home — full-viewport photo stages; hero.js for carousel (no GSAP on hero rotation) */
+/* Home — full-viewport photo stages (sticky stack + media scale via home-stages.js) */
 
 .page-home {
   --media-scale-from: 0.75;
@@ -22,47 +22,6 @@
   display: block;
   width: 100%;
   margin: 0;
-}
-
-/* —— Hero scene (0) —— */
-.hero-stack {
-  width: 100vw;
-  max-width: 100%;
-  margin: 0;
-}
-
-.hero-visual {
-  position: relative;
-  width: 100%;
-  min-height: 100svh;
-  min-height: 100vh;
-  overflow: hidden;
-  background: #000;
-}
-
-.hero-slides {
-  position: absolute;
-  inset: 0;
-}
-
-.hero-slide {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--duration-slow) var(--ease-in-out);
-}
-
-.hero-slide.is-active {
-  opacity: 1;
-}
-
-.hero-slide img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
 }
 
 /* —— Left scene title (photo rail only; difference) —— */
@@ -107,11 +66,7 @@ html[lang="en"] .home-scene-title {
   letter-spacing: -0.015em;
 }
 
-.hero-stack.is-paused .hero-slide.is-active {
-  opacity: 1;
-}
-
-/* —— Featured scenes —— */
+/* —— Photo scenes (single-image panels) —— */
 .home-featured {
   margin: 0;
 }
@@ -139,16 +94,16 @@ html[lang="en"] .home-scene-title {
   isolation: isolate;
 }
 
+.home-stage-rail--motion [data-home-scene="0"] {
+  z-index: 20;
+}
+
 .home-stage-rail--motion [data-home-scene="1"] {
   z-index: 21;
 }
 
 .home-stage-rail--motion [data-home-scene="2"] {
   z-index: 22;
-}
-
-.home-stage-rail--motion [data-home-scene="3"] {
-  z-index: 23;
 }
 
 .home-stage-rail--motion .featured-panel .home-scene-stage {
@@ -407,10 +362,6 @@ html[lang="en"] .home-closing__tagline {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-slide {
-    transition: none;
-  }
-
   .home-stage-rail--motion .home-scene-media-scale {
     transform: none !important;
   }
