@@ -43,9 +43,17 @@
   }
 
   function focusablesIn(scene) {
-    return scene.querySelectorAll(
-      'a[href], button:not([disabled]), input, textarea, select, [tabindex]:not([tabindex="-1"])'
-    );
+    var sel =
+      'a[href], button:not([disabled]), input, textarea, select, [tabindex]:not([tabindex="-1"])';
+    var nodes = scene.querySelectorAll(sel);
+    if (scene.matches && scene.matches(sel)) {
+      var merged = [scene];
+      nodes.forEach(function (el) {
+        merged.push(el);
+      });
+      return merged;
+    }
+    return nodes;
   }
 
   function setActiveScene(index) {

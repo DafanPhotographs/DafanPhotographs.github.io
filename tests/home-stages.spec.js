@@ -173,7 +173,19 @@ test.describe("Home fullscreen stages", () => {
     const heroHidden = await page.locator('[data-home-scene="0"]').getAttribute("aria-hidden");
     expect(heroHidden).toBe("true");
     const pillTab = await page.locator("[data-hero-pill]").first().evaluate((el) => el.tabIndex);
-    expect(pillTab).toBe(-1);
+    expect(pillTab).toBeGreaterThanOrEqual(0);
+    const active = await activeSceneIndex(page);
+    const inactiveTabs = await page.evaluate((activeIdx) => {
+      return [1, 2, 3]
+        .filter((i) => String(i) !== activeIdx)
+        .map((i) => {
+          const el = document.querySelector('[data-home-scene="' + i + '"]');
+          return el ? el.tabIndex : null;
+        });
+    }, active);
+    for (const tab of inactiveTabs) {
+      expect(tab).toBe(-1);
+    }
   });
 
   test("1024 fine pointer: motion on", async ({ browser }) => {
@@ -555,13 +567,10 @@ test.describe("Home fullscreen stages", () => {
     const metrics = await page.evaluate(() => {
       const panel = document.querySelector('[data-home-scene="1"]');
       const media = panel && panel.querySelector(".home-scene-media");
-      const overlay = panel && panel.querySelector(".home-scene-overlay");
-      if (!panel || !media || !overlay || typeof gsap === "undefined") return null;
+      if (!panel || !media || typeof gsap === "undefined") return null;
       const mediaScale = gsap.getProperty(media, "scale");
-      const overlayScale = gsap.getProperty(overlay, "scale");
       return {
         scale: mediaScale,
-        overlayScale: overlayScale == null ? 1 : overlayScale,
         panelYPercent: gsap.getProperty(panel, "yPercent"),
         stageOverflow: getComputedStyle(panel.querySelector(".home-scene-stage")).overflow,
       };
@@ -570,7 +579,6 @@ test.describe("Home fullscreen stages", () => {
     expect(metrics.scale).toBeGreaterThan(0.75);
     expect(metrics.scale).toBeLessThan(1);
     expect(metrics.panelYPercent).toBe(0);
-    expect(metrics.overlayScale).toBe(1);
     expect(metrics.stageOverflow).toBe("hidden");
   });
 
@@ -597,6 +605,36 @@ test.describe("Home fullscreen stages", () => {
       expect(scale).toBeGreaterThanOrEqual(0.6);
       expect(scale).toBeLessThan(1);
     }
+  });
+
+  test("featured panels have no home-scene-overlay; links keep series aria-label", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    const featured = page.locator(".featured-panel.home-scene");
+    await expect(featured).toHaveCount(3);
+    for (let i = 0; i < 3; i += 1) {
+      await expect(featured.nth(i).locator(".home-scene-overlay")).toHaveCount(0);
+      const label = await featured.nth(i).getAttribute("aria-label");
+      expect(label).toBeTruthy();
+    }
+  });
+
+  test("hero copy cluster stays fixed in viewport while scrolling featured stack", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    const tagline = page.locator(".hero-copy-pin .hero-tagline");
+    await expect(tagline).toBeVisible();
+    const y0 = await tagline.evaluate((el) => el.getBoundingClientRect().top);
+    await wheelScroll(page, 14, 320);
+    const y1 = await tagline.evaluate((el) => el.getBoundingClientRect().top);
+    expect(Math.abs(y1 - y0)).toBeLessThan(2);
+    const pinStyle = await page.locator("[data-hero-copy-pin]").evaluate((el) => getComputedStyle(el).position);
+    expect(pinStyle).toBe("fixed");
+    const z = await page.locator("[data-hero-copy-pin]").evaluate((el) => getComputedStyle(el).zIndex);
+    expect(Number(z)).toBeGreaterThan(23);
+    expect(Number(z)).toBeLessThan(40);
   });
 
   test("hero pill and pause remain on-stage controls (not header blend)", async ({ page }) => {

@@ -97,6 +97,21 @@
 
   <main class="site-main site-main--home">
     <div class="home-stage-rail" data-home-stage-rail>
+    <div class="hero-copy-pin" data-hero-copy-pin>
+      <div class="hero-content">
+        <h1 class="hero-tagline" data-i18n="home.tagline">摄一瞬，记一程</h1>
+        <p class="hero-lede" data-i18n="home.lede">风景与旅途，以系列慢慢展开。</p>
+        <p class="hero-meta" data-i18n="home.meta">成都 · Chengdu</p>
+        <div class="hero-pills" role="tablist" aria-label="Hero" aria-orientation="horizontal">
+          <button type="button" class="hero-pill" role="tab" id="home-hero-tab-0" tabindex="0" aria-selected="true" aria-controls="home-hero-panel-0" data-hero-pill="0" data-i18n="s1.title">毕棚沟</button>
+          <button type="button" class="hero-pill" role="tab" id="home-hero-tab-1" tabindex="-1" aria-selected="false" aria-controls="home-hero-panel-1" data-hero-pill="1" data-i18n="s2.title">峨眉山</button>
+          <button type="button" class="hero-pill" role="tab" id="home-hero-tab-2" tabindex="-1" aria-selected="false" aria-controls="home-hero-panel-2" data-hero-pill="2" data-i18n="s3.title">青岛</button>
+        </div>
+        <div class="hero-controls">
+          <button type="button" class="hero-pause" data-hero-pause data-i18n="home.hero.pause" data-i18n-aria="home.hero.pauseAria" aria-pressed="false">暂停</button>
+        </div>
+      </div>
+    </div>
     <div class="hero-stack home-scene" data-home-scene="0" data-hero-root>
       <div class="hero-visual" data-hero-visual>
         <div class="hero-slides">
@@ -156,58 +171,30 @@
           </div>
         </div>
         <div class="hero-scrim" aria-hidden="true"></div>
-        <div class="hero-content">
-          <h1 class="hero-tagline" data-i18n="home.tagline">摄一瞬，记一程</h1>
-          <p class="hero-lede" data-i18n="home.lede">风景与旅途，以系列慢慢展开。</p>
-          <p class="hero-meta" data-i18n="home.meta">成都 · Chengdu</p>
-          <div class="hero-pills" role="tablist" aria-label="Hero" aria-orientation="horizontal">
-            <button type="button" class="hero-pill" role="tab" id="home-hero-tab-0" tabindex="0" aria-selected="true" aria-controls="home-hero-panel-0" data-hero-pill="0" data-i18n="s1.title">毕棚沟</button>
-            <button type="button" class="hero-pill" role="tab" id="home-hero-tab-1" tabindex="-1" aria-selected="false" aria-controls="home-hero-panel-1" data-hero-pill="1" data-i18n="s2.title">峨眉山</button>
-            <button type="button" class="hero-pill" role="tab" id="home-hero-tab-2" tabindex="-1" aria-selected="false" aria-controls="home-hero-panel-2" data-hero-pill="2" data-i18n="s3.title">青岛</button>
-          </div>
-          <div class="hero-controls">
-            <button type="button" class="hero-pause" data-hero-pause data-i18n="home.hero.pause" data-i18n-aria="home.hero.pauseAria" aria-pressed="false">暂停</button>
-          </div>
-        </div>
       </div>
     </div>
 
     <section class="home-featured" aria-labelledby="home-featured-label">
       <h2 id="home-featured-label" class="visually-hidden" data-i18n="home.workHeading">精选系列</h2>
       <div class="featured-grid">
-        <a class="featured-panel home-scene" id="home-scene-bipenggou" data-home-scene="1" href="./works/bipenggou/">
+        <a class="featured-panel home-scene" id="home-scene-bipenggou" data-home-scene="1" href="./works/bipenggou/" data-i18n-aria="s1.title">
           <div class="home-scene-stage">
             <div class="home-scene-media">
               <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,w_2400,h_1600,f_auto,q_auto/dafan/series/bipenggou/cover.jpg" alt="" data-i18n-alt="home.alt.bipenggou" width="2400" height="1600" loading="lazy" decoding="async" data-cloud-fallback />
             </div>
-            <div class="home-scene-overlay">
-              <h3 class="home-scene-title" data-i18n="s1.title">毕棚沟</h3>
-              <p class="home-scene-meta"><span data-i18n="s1.year">2024</span></p>
-              <span class="home-scene-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
-            </div>
           </div>
         </a>
-        <a class="featured-panel home-scene" data-home-scene="2" href="./works/emeishan/">
+        <a class="featured-panel home-scene" data-home-scene="2" href="./works/emeishan/" data-i18n-aria="s2.title">
           <div class="home-scene-stage">
             <div class="home-scene-media">
               <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,w_2400,h_1600,f_auto,q_auto/dafan/series/emeishan/cover.jpg" alt="" data-i18n-alt="home.alt.emeishan" width="2400" height="1600" loading="lazy" decoding="async" data-cloud-fallback />
             </div>
-            <div class="home-scene-overlay">
-              <h3 class="home-scene-title" data-i18n="s2.title">峨眉山</h3>
-              <p class="home-scene-meta"><span data-i18n="s2.year">2024</span></p>
-              <span class="home-scene-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
-            </div>
           </div>
         </a>
-        <a class="featured-panel home-scene" data-home-scene="3" href="./works/qingdao/">
+        <a class="featured-panel home-scene" data-home-scene="3" href="./works/qingdao/" data-i18n-aria="s3.title">
           <div class="home-scene-stage">
             <div class="home-scene-media">
               <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,w_2400,h_1600,f_auto,q_auto/dafan/series/qingdao/cover.jpg" alt="" data-i18n-alt="home.alt.qingdao" width="2400" height="1600" loading="lazy" decoding="async" data-cloud-fallback />
-            </div>
-            <div class="home-scene-overlay">
-              <h3 class="home-scene-title" data-i18n="s3.title">青岛</h3>
-              <p class="home-scene-meta"><span data-i18n="s3.year">2024</span></p>
-              <span class="home-scene-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
             </div>
           </div>
         </a>
