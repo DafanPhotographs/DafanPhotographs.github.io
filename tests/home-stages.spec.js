@@ -79,6 +79,66 @@ function isWhiteSource(cssColor) {
 /**
  * @param {import("@playwright/test").Page} page
  */
+/**
+ * Scroll until closing is the current screen (photo zone end at header).
+ * @param {import("@playwright/test").Page} page
+ */
+async function scrollToClosingFrame(page) {
+  for (let attempt = 0; attempt < 14; attempt += 1) {
+    const done = await page.evaluate((nudge) => {
+      const end = document.querySelector("[data-home-photo-zone-end]");
+      const header = document.querySelector(".site-header");
+      if (!end || !header) return false;
+      const headerH = header.getBoundingClientRect().height;
+      if (end.getBoundingClientRect().top <= headerH + 0.5) {
+        if (typeof ScrollTrigger !== "undefined") ScrollTrigger.update();
+        return true;
+      }
+      const target = end.getBoundingClientRect().top + window.scrollY - headerH + nudge;
+      window.scrollTo(0, Math.max(0, target));
+      if (typeof ScrollTrigger !== "undefined") ScrollTrigger.update();
+      return false;
+    }, Math.min(140, attempt * 52));
+    if (done) break;
+    await page.waitForTimeout(180);
+  }
+  await page.waitForTimeout(400);
+}
+
+/**
+ * @param {import("@playwright/test").Page} page
+ */
+async function closingBottomAlignMetrics(page) {
+  return page.evaluate(() => {
+    const closing = document.querySelector(".home-closing");
+    const bar = document.querySelector(".home-closing__bar");
+    const cta = document.querySelector(".home-closing__cta.lang-zh-only");
+    const topBtn = document.querySelector(".home-closing__top");
+    const tag = document.querySelector(".home-closing__tagline");
+    if (!closing || !bar || !cta || !topBtn || !tag) return null;
+    const vh = window.innerHeight;
+    const cs = getComputedStyle(closing);
+    const padBottom = parseFloat(cs.paddingBottom);
+    const cRect = closing.getBoundingClientRect();
+    const bRect = bar.getBoundingClientRect();
+    const ctaRect = cta.getBoundingClientRect();
+    const topRect = topBtn.getBoundingClientRect();
+    const ruleTop = bRect.top - parseFloat(getComputedStyle(bar).paddingTop);
+    return {
+      vh,
+      closingHeight: cRect.height,
+      closingTop: cRect.top,
+      closingBottomGap: Math.abs(cRect.bottom - vh),
+      padBottom,
+      metaBottomGap: vh - bRect.bottom,
+      ctaToRule: ruleTop - ctaRect.bottom,
+      midDiff: Math.abs((ctaRect.top + ctaRect.bottom) / 2 - (topRect.top + topRect.bottom) / 2),
+      tagTop: tag.getBoundingClientRect().top,
+      ctaInViewport: ctaRect.bottom <= vh + 1,
+    };
+  });
+}
+
 async function headerPhotoGeometry(page) {
   return page.evaluate(() => {
     const header = document.querySelector(".site-header");
@@ -789,6 +849,33 @@ test.describe("Home fullscreen stages", () => {
     await page.waitForTimeout(1200);
     const still = await page.locator('[data-home-scene="0"] .home-scene-title').textContent();
     expect(still).toContain("毕棚沟");
+  });
+
+  test("closing bottom-align: 100svh, meta near viewport bottom (SPEC 20261108)", async ({ page }) => {
+    const viewports = [
+      { size: MOTION_VIEWPORT, label: "1440" },
+      { size: { width: 1920, height: 1080 }, label: "1920" },
+      { size: NARROW, label: "375" },
+    ];
+    for (const { size } of viewports) {
+      await page.setViewportSize(size);
+      await page.goto(HOME);
+      await page.waitForLoadState("networkidle");
+      await scrollToClosingFrame(page);
+      const m = await closingBottomAlignMetrics(page);
+      expect(m).not.toBeNull();
+      expect(m.closingHeight).toBeGreaterThanOrEqual(m.vh * 0.98);
+      expect(m.closingHeight).toBeLessThanOrEqual(m.vh * 1.02);
+      expect(Math.abs(m.closingTop)).toBeLessThan(12);
+      expect(m.closingBottomGap).toBeLessThan(8);
+      expect(m.padBottom).toBeLessThanOrEqual(32);
+      expect(m.metaBottomGap).toBeLessThanOrEqual(40);
+      expect(m.ctaToRule).toBeGreaterThanOrEqual(4);
+      expect(m.ctaToRule).toBeLessThanOrEqual(28);
+      expect(m.midDiff).toBeLessThanOrEqual(24);
+      expect(m.ctaInViewport).toBe(true);
+      expect(m.tagTop).toBeLessThan(m.vh * 0.35);
+    }
   });
 
   test("closing daofor screen: tagline, series links, CTA, solid header", async ({ page }) => {
