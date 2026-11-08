@@ -1,0 +1,72 @@
+{
+  "black": {
+    "all_5_source_paths_byte_exact": true,
+    "viewBox_unchanged": true,
+    "no_text_or_background_elements": true
+  },
+  "white": {
+    "all_5_source_paths_byte_exact": true,
+    "viewBox_unchanged": true,
+    "no_text_or_background_elements": true
+  },
+  "currentColor": {
+    "all_5_source_paths_byte_exact": true,
+    "viewBox_unchanged": true,
+    "no_text_or_background_elements": true
+  },
+  "black_white_alpha_identical_all_sizes": true,
+  "selected_pair_row2_crop_pixel_exact": true,
+  "source_directory_unchanged": true,
+  "source_sha256": "b5ea873fe180a4a99abd5a975b452ff155a840953584b8308309bff2e0b68f26",
+  "viewBox": [
+    0,
+    13,
+    842,
+    212
+  ],
+  "aspect_ratio": 3.9716981132075473,
+  "PNG_dimensions_width_height": {
+    "DaFan-selected-G24-black-24px.png": [
+      95,
+      24
+    ],
+    "DaFan-selected-G24-black-32px.png": [
+      127,
+      32
+    ],
+    "DaFan-selected-G24-black-48px.png": [
+      191,
+      48
+    ],
+    "DaFan-selected-G24-black-64px.png": [
+      254,
+      64
+    ],
+    "DaFan-selected-G24-black-424px.png": [
+      1684,
+      424
+    ],
+    "DaFan-selected-G24-white-24px.png": [
+      95,
+      24
+    ],
+    "DaFan-selected-G24-white-32px.png": [
+      127,
+      32
+    ],
+    "DaFan-selected-G24-white-48px.png": [
+      191,
+      48
+    ],
+    "DaFan-selected-G24-white-64px.png": [
+      254,
+      64
+    ],
+    "DaFan-selected-G24-white-424px.png": [
+      1684,
+      424
+    ]
+  },
+  "final24_png_matches_original_G24_png_exactly": true,
+  "currentColor_custom_color_same_alpha": true
+}

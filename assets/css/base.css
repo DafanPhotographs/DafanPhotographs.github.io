@@ -302,14 +302,18 @@ html.no-js .page-home .site-header .header-chrome-blend {
 }
 
 .wordmark {
-  font-size: var(--type-wordmark);
-  font-weight: var(--type-wordmark-weight);
-  letter-spacing: var(--tracking-nav);
   flex-shrink: 0;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
   color: var(--color-text);
+  text-decoration: none;
+}
+
+.wordmark__mark {
+  display: block;
+  height: var(--brand-mark-height);
+  width: auto;
 }
 
 .header-cluster {

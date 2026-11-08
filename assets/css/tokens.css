@@ -1,5 +1,6 @@
 :root {
-  /* Brand: 中文 大樊 · English DaFan */
+  /* Brand: G-optical-24px English DaFan wordmark (inline SVG) */
+  --brand-mark-height: 24px;
 
   /* Color — near-white / near-black */
   --color-bg: #ffffff;
@@ -95,6 +96,12 @@
 html[lang^="zh"] {
   --tracking-tight: 0;
   --tracking-series: 0;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --brand-mark-height: 26px;
+  }
 }
 
 @media (max-width: 767.98px) {
