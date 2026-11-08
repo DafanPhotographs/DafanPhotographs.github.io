@@ -185,9 +185,19 @@
 
     document.querySelectorAll(".lang-btn").forEach(function (btn) {
       const isActive = btn.getAttribute("data-set-lang") === lang;
-      btn.classList.toggle("is-active", isActive);
-      btn.setAttribute("aria-pressed", isActive ? "true" : "false");
-      btn.setAttribute("aria-selected", isActive ? "true" : "false");
+      const inMenu = btn.closest(".lang-dropdown__menu");
+
+      if (inMenu) {
+        const row = btn.closest("li");
+        if (row) row.hidden = isActive;
+        btn.classList.remove("is-active");
+        btn.setAttribute("aria-pressed", "false");
+        btn.setAttribute("aria-selected", "false");
+      } else {
+        btn.classList.toggle("is-active", isActive);
+        btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+        btn.setAttribute("aria-selected", isActive ? "true" : "false");
+      }
     });
 
     document.querySelectorAll("[data-lang-current]").forEach(function (el) {

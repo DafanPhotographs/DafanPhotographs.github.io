@@ -25,10 +25,9 @@ test.describe("Language dropdown", () => {
     await page.goto(HOME);
     await expect(page.locator("[data-lang-current]")).toHaveText("中");
     await openLangMenu(page);
-    await expect(page.locator('.lang-dropdown__option[data-set-lang="zh"]')).toHaveAttribute(
-      "aria-selected",
-      "true"
-    );
+    await expect(page.locator('.lang-dropdown__option[data-set-lang="zh"]')).toBeHidden();
+    await expect(page.locator('.lang-dropdown__option[data-set-lang="en"]')).toBeVisible();
+    await expect(page.locator(".lang-dropdown__menu .lang-dropdown__option:visible")).toHaveCount(1);
     await selectLang(page, "en");
     expect(await page.evaluate(() => localStorage.getItem("dafan-lang"))).toBe("en");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
@@ -88,8 +87,10 @@ test.describe("Language dropdown", () => {
     expect(panelStyle.bg).toBe("rgba(0, 0, 0, 0)");
     expect(panelStyle.boxShadow).toBe("none");
     expect(panelStyle.backdrop).toBe("none");
-    await expect(page.locator('.lang-dropdown__option[data-set-lang="zh"]')).toHaveText(/中/);
+    await expect(page.locator('.lang-dropdown__option[data-set-lang="zh"]')).toBeHidden();
     await expect(page.locator('.lang-dropdown__option[data-set-lang="en"]')).toHaveText(/EN/);
+    const column = await page.locator(".lang-dropdown__menu").evaluate((el) => getComputedStyle(el).flexDirection);
+    expect(column).toBe("column");
   });
 
   test("scheme A mobile: menu below header grid, options 44px min", async ({ page }) => {
@@ -118,6 +119,27 @@ test.describe("Language dropdown", () => {
     await selectLang(page, "en");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.locator('[data-i18n="work.title"]')).toHaveText("Work");
+  });
+
+  test("open menu lists only the alternate language in a single column", async ({ page }) => {
+    await page.goto(HOME);
+    await openLangMenu(page);
+    await expect(page.locator(".lang-dropdown__menu .lang-dropdown__option:visible")).toHaveCount(1);
+    const layout = await page.locator(".lang-dropdown__menu").evaluate((menu) => {
+      const s = getComputedStyle(menu);
+      const rows = Array.from(menu.querySelectorAll("li:not([hidden])")).map((li) => {
+        const r = li.getBoundingClientRect();
+        return { top: r.top, left: r.left };
+      });
+      return { flexDirection: s.flexDirection, rows };
+    });
+    expect(layout.flexDirection).toBe("column");
+    if (layout.rows.length > 1) {
+      const tops = layout.rows.map((r) => r.top);
+      expect(Math.max(...tops) - Math.min(...tops)).toBeGreaterThan(1);
+      const lefts = layout.rows.map((r) => r.left);
+      expect(Math.max(...lefts) - Math.min(...lefts)).toBeLessThan(2);
+    }
   });
 
   test("no-JS keeps inline language options", async ({ browser }) => {

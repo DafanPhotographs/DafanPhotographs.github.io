@@ -19,6 +19,8 @@ const ALL_CHECK_WIDTHS = [320, 375, 390, 768, 1440];
  * @param {string} lang
  */
 async function pickLang(page, lang) {
+  const current = await page.evaluate(() => document.documentElement.lang || localStorage.getItem("dafan-lang") || "zh");
+  if (current === lang) return;
   await page.locator(".lang-dropdown__trigger").click();
   await page.locator(`.lang-dropdown__option[data-set-lang="${lang}"]`).click();
 }
@@ -103,8 +105,11 @@ async function expectLangToggleOperable(page) {
   await expect(page.locator(".lang-dropdown")).toBeVisible();
   await expect(page.locator(".lang-dropdown__trigger")).toBeEnabled();
   await page.locator(".lang-dropdown__trigger").click();
-  await expect(page.locator('.lang-dropdown__option[data-set-lang="zh"]')).toBeEnabled();
-  await expect(page.locator('.lang-dropdown__option[data-set-lang="en"]')).toBeEnabled();
+  const currentLang = await page.evaluate(() => document.documentElement.lang || "zh");
+  const alt = currentLang === "en" ? "zh" : "en";
+  await expect(page.locator(`.lang-dropdown__option[data-set-lang="${currentLang}"]`)).toBeHidden();
+  await expect(page.locator(`.lang-dropdown__option[data-set-lang="${alt}"]`)).toBeEnabled();
+  await expect(page.locator(".lang-dropdown__menu .lang-dropdown__option:visible")).toHaveCount(1);
   await page.keyboard.press("Escape");
 }
 

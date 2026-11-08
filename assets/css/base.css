@@ -441,6 +441,9 @@ html.no-js .page-home .site-header .header-chrome-blend {
   margin: 0;
   padding: 0;
   list-style: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   background: transparent;
   color: var(--color-text);
   border: none;
@@ -450,12 +453,21 @@ html.no-js .page-home .site-header .header-chrome-blend {
   mix-blend-mode: normal;
 }
 
+.lang-dropdown__menu > li {
+  display: block;
+  width: 100%;
+}
+
+.lang-dropdown__menu > li[hidden] {
+  display: none !important;
+}
+
 .lang-dropdown__menu[hidden] {
   display: none !important;
 }
 
 .lang-dropdown__menu:not([hidden]) {
-  display: block;
+  display: flex;
 }
 
 .page-home .site-header--overlay .lang-dropdown__menu.header-chrome-blend {
@@ -617,7 +629,8 @@ html.no-js .lang-dropdown__menu[hidden] {
   }
 
   .page-home .site-header .lang-dropdown__menu.header-chrome-blend {
-    display: block;
+    display: flex;
+    flex-direction: column;
   }
 
   .page-home .site-header .lang-dropdown {
