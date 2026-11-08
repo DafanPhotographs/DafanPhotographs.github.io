@@ -16,6 +16,24 @@
   width: 100%;
 }
 
+/* Pinned hero copy cluster: fixed readable for entire photo rail (hero + featured 1–3) */
+.page-home .hero-copy-pin {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.page-home .hero-copy-pin.hero-copy-pin--past {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.page-home .hero-copy-pin .hero-content {
+  pointer-events: auto;
+}
+
 .home-scene {
   display: block;
   width: 100%;
@@ -78,14 +96,23 @@
 }
 
 .hero-content {
-  position: relative;
-  z-index: 2;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  min-height: inherit;
   padding: calc(var(--header-height) + var(--space-6)) clamp(1.25rem, 3vw, 2.5rem) var(--space-9);
   gap: var(--space-4);
+}
+
+.page-home .hero-copy-pin .hero-content {
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+}
+
+.hero-visual .hero-content {
+  position: relative;
+  z-index: 2;
+  min-height: inherit;
 }
 
 .hero-tagline {
@@ -260,52 +287,6 @@
   display: block;
 }
 
-.home-scene-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: calc(var(--header-height) + var(--space-4)) clamp(1.25rem, 3vw, 2.5rem) var(--space-9);
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, #000 62%, transparent) 0%,
-    color-mix(in srgb, #000 22%, transparent) 40%,
-    transparent 68%
-  );
-  pointer-events: none;
-}
-
-.home-scene-overlay > * {
-  pointer-events: auto;
-}
-
-.home-scene-title {
-  margin: 0;
-  font-size: clamp(2rem, 5vw, 3.25rem);
-  font-weight: 600;
-  line-height: 1.08;
-  color: #fff;
-  text-shadow: 0 2px 20px color-mix(in srgb, #000 50%, transparent);
-}
-
-html[lang="en"] .home-scene-title {
-  letter-spacing: -0.02em;
-}
-
-.home-scene-meta,
-.home-scene-cta {
-  margin: var(--space-2) 0 0;
-  font-size: var(--text-sm);
-  color: color-mix(in srgb, #fff 85%, transparent);
-}
-
-.home-scene-cta {
-  font-weight: var(--weight-medium);
-  letter-spacing: var(--tracking-nav);
-}
-
 .home-photo-zone-end {
   height: 1px;
   width: 100%;
@@ -339,16 +320,13 @@ html[lang="en"] .home-tagline-repeat {
   background: var(--color-bg);
 }
 
-/* Mobile: same full-bleed geometry, native vertical scroll (no CSS scroll-snap) */
-@media (max-width: 1023.98px), (hover: none), (pointer: coarse) {
-  .home-scene-cta {
-    opacity: 1;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .hero-slide {
     transition: none;
+  }
+
+  .page-home .hero-copy-pin {
+    position: fixed;
   }
 
   .home-stage-rail--motion .home-scene-media {

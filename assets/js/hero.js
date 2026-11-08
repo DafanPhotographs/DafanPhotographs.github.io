@@ -1,10 +1,12 @@
 (function () {
   function initHero(root) {
     var slides = root.querySelectorAll("[data-hero-slide]");
-    var pills = root.querySelectorAll("[data-hero-pill]");
-    var pauseBtn = root.querySelector("[data-hero-pause]");
+    var rail = root.closest("[data-home-stage-rail]");
+    var copyPin = (rail && rail.querySelector("[data-hero-copy-pin]")) || root;
+    var pills = copyPin.querySelectorAll("[data-hero-pill]");
+    var pauseBtn = copyPin.querySelector("[data-hero-pause]");
     var visual = root.querySelector("[data-hero-visual]");
-    var pillBar = root.querySelector(".hero-pills");
+    var pillBar = copyPin.querySelector(".hero-pills");
     if (!slides.length) return;
 
     var index = 0;
@@ -127,6 +129,7 @@
 
     var focusScopes = [];
     if (visual) focusScopes.push(visual);
+    if (copyPin !== root) focusScopes.push(copyPin);
     if (pillBar) focusScopes.push(pillBar);
     if (pauseBtn) focusScopes.push(pauseBtn);
 
