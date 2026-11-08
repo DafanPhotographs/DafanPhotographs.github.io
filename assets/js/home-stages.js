@@ -115,7 +115,11 @@
     });
     triggers = [];
     scenes.forEach(function (scene) {
-      gsap.set(scene, { clearProps: "transform,zIndex" });
+      if (isFeaturedScene(scene)) {
+        gsap.set(scene, { clearProps: "transform" });
+      } else {
+        gsap.set(scene, { clearProps: "transform,zIndex" });
+      }
       var media = scene.querySelector(".home-scene-media");
       if (media) gsap.set(media, { clearProps: "transform" });
     });
@@ -135,14 +139,9 @@
 
   function syncActiveFromViewport() {
     var best = 0;
-    var bestDist = Infinity;
     scenes.forEach(function (scene, i) {
       var top = scene.getBoundingClientRect().top;
-      var dist = Math.abs(top);
-      if (dist < bestDist) {
-        bestDist = dist;
-        best = i;
-      }
+      if (top <= 4) best = i;
     });
     setActiveScene(best);
   }
@@ -195,15 +194,11 @@
     );
   }
 
-  function buildFeaturedPin(scene, index) {
+  function buildFeaturedStickyScale(scene, index) {
     var media = scene.querySelector(".home-scene-media");
-    if (!media) {
-      buildHeroPin(scene, index);
-      return;
-    }
+    if (!media) return;
 
     var handlers = sceneScrollHandlers(index);
-    gsap.set(scene, { zIndex: 20 + index });
 
     var tween = gsap.fromTo(
       media,
@@ -220,15 +215,11 @@
           {
             trigger: scene,
             start: "top top",
-            end: "+=100%",
-            pin: true,
-            pinSpacing: true,
+            end: "bottom top",
             scrub: 0.65,
-            anticipatePin: 1,
             invalidateOnRefresh: true,
             id: "home-scene-" + index,
           },
-          pinSnapBlock(),
           handlers
         ),
       }
@@ -244,7 +235,7 @@
 
     scenes.forEach(function (scene, index) {
       if (isFeaturedScene(scene)) {
-        buildFeaturedPin(scene, index);
+        buildFeaturedStickyScale(scene, index);
       } else {
         buildHeroPin(scene, index);
       }
@@ -275,12 +266,27 @@
     });
   }
 
-  function scrollToSceneIndex(index) {
-    var st = triggers.filter(function (t) {
+  function scrollTriggerForIndex(index) {
+    return triggers.filter(function (t) {
       return t.vars && t.vars.id === "home-scene-" + index;
     })[0];
-    if (!st) return;
-    window.scrollTo(0, st.start + 2);
+  }
+
+  function scrollToSceneIndex(index) {
+    var scene = scenes[index];
+    if (!scene) return;
+
+    if (index === 0) {
+      var heroSt = scrollTriggerForIndex(0);
+      if (heroSt) {
+        window.scrollTo(0, heroSt.start + 2);
+        setActiveScene(0);
+        return;
+      }
+    }
+
+    var top = scene.getBoundingClientRect().top + window.pageYOffset;
+    window.scrollTo(0, Math.max(0, top));
     setActiveScene(index);
   }
 
