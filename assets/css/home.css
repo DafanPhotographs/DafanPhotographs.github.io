@@ -1,5 +1,10 @@
 /* Home — full-viewport photo stages; hero.js for carousel (no GSAP on hero rotation) */
 
+.page-home {
+  --media-scale-from: 0.75;
+  --media-scale-from-mobile: 0.6;
+}
+
 .page-home .site-main--home {
   max-width: none;
   margin: 0;
@@ -186,6 +191,14 @@
   text-decoration: none;
 }
 
+.home-stage-rail--motion .featured-panel.home-scene {
+  position: relative;
+}
+
+.home-stage-rail--motion .home-scene-media {
+  transform-origin: center 56%;
+}
+
 .home-scene-stage {
   position: relative;
   width: 100vw;
@@ -311,5 +324,13 @@ html[lang="en"] .home-tagline-repeat {
 @media (prefers-reduced-motion: reduce) {
   .hero-slide {
     transition: none;
+  }
+
+  .home-stage-rail--motion .home-scene-media {
+    transform: none !important;
+  }
+
+  .home-stage-rail--motion .featured-panel.home-scene {
+    transform: none !important;
   }
 }
