@@ -7,7 +7,7 @@
   <meta name="description" content="摄影系列 — 大樊 / DaFan" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+SC:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/css/base.css" />
   <link rel="stylesheet" href="../assets/css/works.css" />
 </head>
@@ -61,10 +61,27 @@
             <span class="nav-link-label lang-en-only" data-i18n="nav.contact">Contact</span>
           </a>
         </nav>
-        <div class="lang-toggle" role="group" aria-label="Language">
-          <button type="button" class="lang-btn is-active" data-set-lang="zh" aria-pressed="true">中</button>
-          <span class="lang-sep" aria-hidden="true">|</span>
-          <button type="button" class="lang-btn" data-set-lang="en" aria-pressed="false">EN</button>
+        <div class="lang-dropdown" data-lang-dropdown>
+          <div class="lang-dropdown__trigger-wrap">
+            <button type="button" class="lang-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false" data-i18n-aria="aria.langMenu">
+              <span class="lang-dropdown__current" data-lang-current>中</span>
+              <span class="lang-dropdown__chev" aria-hidden="true"></span>
+            </button>
+          </div>
+          <ul class="lang-dropdown__menu" role="listbox" hidden>
+            <li role="presentation">
+              <button type="button" class="lang-dropdown__option lang-btn" role="option" data-set-lang="zh" data-i18n-aria="aria.lang.zh">
+                <span class="lang-dropdown__label" data-i18n="lang.option.zh">中</span>
+                <span class="lang-dropdown__check" aria-hidden="true"></span>
+              </button>
+            </li>
+            <li role="presentation">
+              <button type="button" class="lang-dropdown__option lang-btn" role="option" data-set-lang="en" data-i18n-aria="aria.lang.en">
+                <span class="lang-dropdown__label" data-i18n="lang.option.en">EN</span>
+                <span class="lang-dropdown__check" aria-hidden="true"></span>
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -82,7 +99,9 @@
 
     <p class="empty-filter" data-filter-empty data-i18n="work.empty">该分类暂无系列。</p>
 
-    <div class="series-grid work-series">
+    <div class="works-horizontal" data-works-horizontal>
+      <div class="works-horizontal__viewport">
+        <div class="series-grid work-series" data-works-track>
       <a class="series-card" href="./bipenggou/" data-category="landscape">
         <div class="series-card-media">
           <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/dafan/series/bipenggou/cover.jpg" alt="" data-i18n-alt="home.alt.bipenggou" width="2400" height="1500" loading="eager" decoding="async" data-cloud-fallback />
@@ -113,6 +132,8 @@
           <span class="series-card-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
         </div>
       </a>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -133,6 +154,11 @@
   </footer>
 
   <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/lang-dropdown.js"></script>
   <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/motion-shared.js"></script>
+  <script src="../assets/js/vendor/gsap.min.js"></script>
+  <script src="../assets/js/vendor/ScrollTrigger.min.js"></script>
+  <script src="../assets/js/works-horizontal.js"></script>
 </body>
 </html>

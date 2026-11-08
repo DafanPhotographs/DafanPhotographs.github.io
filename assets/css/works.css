@@ -1,5 +1,45 @@
 /* Work index — series cards + optional filters */
 
+.works-horizontal__viewport {
+  width: 100%;
+}
+
+.works-horizontal:not(.works-horizontal--active) {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.works-horizontal:not(.works-horizontal--active) .works-horizontal__viewport,
+.works-horizontal:not(.works-horizontal--active) [data-works-track],
+.works-horizontal:not(.works-horizontal--active) .series-card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.works-horizontal--active .works-horizontal__viewport {
+  overflow: hidden;
+}
+
+.works-horizontal--active [data-works-track] {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: clamp(2rem, 4vw, 3.5rem);
+  width: max-content;
+  will-change: transform;
+}
+
+.works-horizontal--active .series-card {
+  flex: 0 0 clamp(18rem, 38vw, 28rem);
+  max-width: 42rem;
+}
+
+.works-horizontal--active .series-card-media {
+  aspect-ratio: 4 / 5;
+}
+
 .series-grid {
   display: flex;
   flex-direction: column;

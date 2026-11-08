@@ -1,24 +1,28 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh" class="no-js">
 <head>
+  <script>
+    document.documentElement.classList.replace("no-js", "js");
+  </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>大樊 / DaFan</title>
   <meta name="description" content="摄一瞬，记一程 — 大樊 / DaFan，风景摄影师，成都。" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+SC:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/home.css" />
 </head>
-<body>
-  <header class="site-header">
+<body class="page-home">
+  <header class="site-header site-header--overlay">
     <div class="header-inner">
+      <div class="header-chrome">
+      <div class="header-chrome-blend">
       <a class="wordmark" href="./" data-i18n-aria="aria.wordmark">
         <span class="lang-zh-only" data-i18n="wordmark.zh">大樊</span>
         <span class="lang-en-only" data-i18n="wordmark.en">DaFan</span>
       </a>
-      <div class="header-cluster">
         <nav class="site-nav" aria-label="Primary">
           <a class="nav-link nav-link--stack" href="./works/">
             <span class="nav-decor" aria-hidden="true">
@@ -61,17 +65,36 @@
             <span class="nav-link-label lang-en-only" data-i18n="nav.contact">Contact</span>
           </a>
         </nav>
-        <div class="lang-toggle" role="group" aria-label="Language">
-          <button type="button" class="lang-btn is-active" data-set-lang="zh" aria-pressed="true">中</button>
-          <span class="lang-sep" aria-hidden="true">|</span>
-          <button type="button" class="lang-btn" data-set-lang="en" aria-pressed="false">EN</button>
+      </div>
+        <div class="lang-dropdown" data-lang-dropdown>
+          <div class="lang-dropdown__trigger-wrap header-chrome-blend">
+            <button type="button" class="lang-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false" data-i18n-aria="aria.langMenu">
+              <span class="lang-dropdown__current" data-lang-current>中</span>
+              <span class="lang-dropdown__chev" aria-hidden="true"></span>
+            </button>
+          </div>
+          <ul class="lang-dropdown__menu header-chrome-blend" role="listbox" hidden>
+            <li role="presentation">
+              <button type="button" class="lang-dropdown__option lang-btn" role="option" data-set-lang="zh" data-i18n-aria="aria.lang.zh">
+                <span class="lang-dropdown__label" data-i18n="lang.option.zh">中</span>
+                <span class="lang-dropdown__check" aria-hidden="true"></span>
+              </button>
+            </li>
+            <li role="presentation">
+              <button type="button" class="lang-dropdown__option lang-btn" role="option" data-set-lang="en" data-i18n-aria="aria.lang.en">
+                <span class="lang-dropdown__label" data-i18n="lang.option.en">EN</span>
+                <span class="lang-dropdown__check" aria-hidden="true"></span>
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
   </header>
 
-  <main class="site-main">
-    <div class="hero-stack" data-hero-root>
+  <main class="site-main site-main--home">
+    <div class="home-stage-rail" data-home-stage-rail>
+    <div class="hero-stack home-scene" data-home-scene="0" data-hero-root>
       <div class="hero-visual" data-hero-visual>
         <div class="hero-slides">
           <div
@@ -149,40 +172,49 @@
     <section class="home-featured" aria-labelledby="home-featured-label">
       <h2 id="home-featured-label" class="visually-hidden" data-i18n="home.workHeading">精选系列</h2>
       <div class="featured-grid">
-        <a class="featured-panel" href="./works/bipenggou/">
-          <div class="featured-panel-media">
-            <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/dafan/series/bipenggou/cover.jpg" alt="" data-i18n-alt="home.alt.bipenggou" width="2400" height="1500" loading="lazy" decoding="async" data-cloud-fallback />
-          </div>
-          <div class="featured-panel-meta">
-            <h3 class="featured-panel-title" data-i18n="s1.title">毕棚沟</h3>
-            <p class="featured-panel-year"><span data-i18n="s1.year">2024</span></p>
-            <span class="featured-panel-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
-          </div>
-        </a>
-        <a class="featured-panel" href="./works/emeishan/">
-          <div class="featured-panel-media">
-            <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/dafan/series/emeishan/cover.jpg" alt="" data-i18n-alt="home.alt.emeishan" width="2400" height="1500" loading="lazy" decoding="async" data-cloud-fallback />
-          </div>
-          <div class="featured-panel-meta">
-            <h3 class="featured-panel-title" data-i18n="s2.title">峨眉山</h3>
-            <p class="featured-panel-year"><span data-i18n="s2.year">2024</span></p>
-            <span class="featured-panel-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
+        <a class="featured-panel home-scene" id="home-scene-bipenggou" data-home-scene="1" href="./works/bipenggou/">
+          <div class="home-scene-stage">
+            <div class="home-scene-media">
+              <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,w_2400,h_1600,f_auto,q_auto/dafan/series/bipenggou/cover.jpg" alt="" data-i18n-alt="home.alt.bipenggou" width="2400" height="1600" loading="lazy" decoding="async" data-cloud-fallback />
+            </div>
+            <div class="home-scene-overlay">
+              <h3 class="home-scene-title" data-i18n="s1.title">毕棚沟</h3>
+              <p class="home-scene-meta"><span data-i18n="s1.year">2024</span></p>
+              <span class="home-scene-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
+            </div>
           </div>
         </a>
-        <a class="featured-panel" href="./works/qingdao/">
-          <div class="featured-panel-media">
-            <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/dafan/series/qingdao/cover.jpg" alt="" data-i18n-alt="home.alt.qingdao" width="2400" height="1500" loading="lazy" decoding="async" data-cloud-fallback />
+        <a class="featured-panel home-scene" data-home-scene="2" href="./works/emeishan/">
+          <div class="home-scene-stage">
+            <div class="home-scene-media">
+              <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,w_2400,h_1600,f_auto,q_auto/dafan/series/emeishan/cover.jpg" alt="" data-i18n-alt="home.alt.emeishan" width="2400" height="1600" loading="lazy" decoding="async" data-cloud-fallback />
+            </div>
+            <div class="home-scene-overlay">
+              <h3 class="home-scene-title" data-i18n="s2.title">峨眉山</h3>
+              <p class="home-scene-meta"><span data-i18n="s2.year">2024</span></p>
+              <span class="home-scene-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
+            </div>
           </div>
-          <div class="featured-panel-meta">
-            <h3 class="featured-panel-title" data-i18n="s3.title">青岛</h3>
-            <p class="featured-panel-year"><span data-i18n="s3.year">2024</span></p>
-            <span class="featured-panel-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="featured-panel home-scene" data-home-scene="3" href="./works/qingdao/">
+          <div class="home-scene-stage">
+            <div class="home-scene-media">
+              <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,w_2400,h_1600,f_auto,q_auto/dafan/series/qingdao/cover.jpg" alt="" data-i18n-alt="home.alt.qingdao" width="2400" height="1600" loading="lazy" decoding="async" data-cloud-fallback />
+            </div>
+            <div class="home-scene-overlay">
+              <h3 class="home-scene-title" data-i18n="s3.title">青岛</h3>
+              <p class="home-scene-meta"><span data-i18n="s3.year">2024</span></p>
+              <span class="home-scene-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
+            </div>
           </div>
         </a>
       </div>
     </section>
+    </div>
 
-    <section class="home-closing" aria-labelledby="home-tagline-repeat">
+    <div class="home-photo-zone-end" data-home-photo-zone-end aria-hidden="true"></div>
+
+    <section class="home-closing home-content-band" aria-labelledby="home-tagline-repeat">
       <h2 id="home-tagline-repeat" class="home-tagline-repeat" data-i18n="home.tagline">摄一瞬，记一程</h2>
     </section>
   </main>
@@ -204,7 +236,13 @@
   </footer>
 
   <script src="./assets/js/i18n.js"></script>
+  <script src="./assets/js/lang-dropdown.js"></script>
   <script src="./assets/js/main.js"></script>
   <script src="./assets/js/hero.js"></script>
+  <script src="./assets/js/home-header.js"></script>
+  <script src="./assets/js/motion-shared.js"></script>
+  <script src="./assets/js/vendor/gsap.min.js"></script>
+  <script src="./assets/js/vendor/ScrollTrigger.min.js"></script>
+  <script src="./assets/js/home-stages.js"></script>
 </body>
 </html>
