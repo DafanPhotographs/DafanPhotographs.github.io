@@ -454,13 +454,47 @@ test.describe("Home fullscreen stages", () => {
     expect(idx).toBeLessThanOrEqual(1);
   });
 
-  test("scrollTrigger count matches multi-pin mechanism (not single timeline)", async ({ page }) => {
+  test("scrollTrigger: hero pin + featured scale (no featured pin)", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
+    const pins = await page.evaluate(() =>
+      ScrollTrigger.getAll().filter((st) => st.vars && st.vars.pin === true).length
+    );
     const count = await page.evaluate(() => ScrollTrigger.getAll().length);
+    expect(pins).toBe(1);
     expect(count).toBeGreaterThanOrEqual(4);
-    expect(count).toBeLessThanOrEqual(12);
+    expect(count).toBeLessThanOrEqual(8);
+  });
+
+  test("featured scenes use CSS sticky stack z-order (not yPercent slide)", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    const stack = await page.evaluate(() => {
+      const panels = [1, 2, 3].map((i) => document.querySelector('[data-home-scene="' + i + '"]'));
+      if (panels.some((p) => !p)) return null;
+      const styles = panels.map((p) => {
+        const s = getComputedStyle(p);
+        return {
+          position: s.position,
+          top: s.top,
+          z: s.zIndex,
+          height: p.getBoundingClientRect().height,
+          yPercent: typeof gsap !== "undefined" ? gsap.getProperty(p, "yPercent") : 0,
+        };
+      });
+      return { styles, vh: window.innerHeight };
+    });
+    expect(stack).not.toBeNull();
+    for (const row of stack.styles) {
+      expect(row.position).toBe("sticky");
+      expect(row.top).toBe("0px");
+      expect(row.yPercent).toBe(0);
+      expect(row.height).toBeGreaterThanOrEqual(stack.vh * 0.92);
+    }
+    expect(Number(stack.styles[1].z)).toBeGreaterThan(Number(stack.styles[0].z));
+    expect(Number(stack.styles[2].z)).toBeGreaterThan(Number(stack.styles[1].z));
   });
 
   test("hash deep link focuses featured scene in document", async ({ page }) => {
@@ -518,14 +552,26 @@ test.describe("Home fullscreen stages", () => {
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
     await wheelScroll(page, 10, 280);
-    const scale = await page.evaluate(() => {
-      const media = document.querySelector('[data-home-scene="1"] .home-scene-media');
-      if (!media || typeof gsap === "undefined") return null;
-      return gsap.getProperty(media, "scale");
+    const metrics = await page.evaluate(() => {
+      const panel = document.querySelector('[data-home-scene="1"]');
+      const media = panel && panel.querySelector(".home-scene-media");
+      const overlay = panel && panel.querySelector(".home-scene-overlay");
+      if (!panel || !media || !overlay || typeof gsap === "undefined") return null;
+      const mediaScale = gsap.getProperty(media, "scale");
+      const overlayScale = gsap.getProperty(overlay, "scale");
+      return {
+        scale: mediaScale,
+        overlayScale: overlayScale == null ? 1 : overlayScale,
+        panelYPercent: gsap.getProperty(panel, "yPercent"),
+        stageOverflow: getComputedStyle(panel.querySelector(".home-scene-stage")).overflow,
+      };
     });
-    expect(scale).not.toBeNull();
-    expect(scale).toBeGreaterThan(0.75);
-    expect(scale).toBeLessThan(1);
+    expect(metrics).not.toBeNull();
+    expect(metrics.scale).toBeGreaterThan(0.75);
+    expect(metrics.scale).toBeLessThan(1);
+    expect(metrics.panelYPercent).toBe(0);
+    expect(metrics.overlayScale).toBe(1);
+    expect(metrics.stageOverflow).toBe("hidden");
   });
 
   test("375: featured stack uses mobile scale-from token", async ({ page }) => {

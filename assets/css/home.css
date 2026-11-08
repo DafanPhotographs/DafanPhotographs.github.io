@@ -191,8 +191,33 @@
   text-decoration: none;
 }
 
+/* Motion: featured scenes sticky-stack (hard edge cover), media scales inside frame */
 .home-stage-rail--motion .featured-panel.home-scene {
-  position: relative;
+  position: sticky;
+  top: 0;
+  display: block;
+  height: 100svh;
+  height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.home-stage-rail--motion [data-home-scene="1"] {
+  z-index: 21;
+}
+
+.home-stage-rail--motion [data-home-scene="2"] {
+  z-index: 22;
+}
+
+.home-stage-rail--motion [data-home-scene="3"] {
+  z-index: 23;
+}
+
+.home-stage-rail--motion .featured-panel .home-scene-stage {
+  height: 100%;
+  min-height: 100%;
 }
 
 .home-stage-rail--motion .home-scene-media {
