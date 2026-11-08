@@ -5,7 +5,6 @@
 
   var header = document.querySelector(".site-header");
   var photoEnd = document.querySelector("[data-home-photo-zone-end]");
-  var heroCopyPin = document.querySelector("[data-hero-copy-pin]");
   if (!header || !photoEnd) return;
 
   function setSolid(solid) {
@@ -24,9 +23,7 @@
   function syncHeaderMode() {
     var pastPhoto = headerLeavesPhotoZone();
     setSolid(pastPhoto);
-    if (heroCopyPin) {
-      heroCopyPin.classList.toggle("hero-copy-pin--past", pastPhoto);
-    }
+    document.body.classList.toggle("home-past-photo-zone", pastPhoto);
   }
 
   if (typeof IntersectionObserver === "undefined") {

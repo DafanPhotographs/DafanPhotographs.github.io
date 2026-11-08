@@ -1,18 +1,21 @@
 (function () {
+  var TITLE_KEYS = ["s1.title", "s2.title", "s3.title"];
+
+  function resolveI18n(key) {
+    if (!window.DaFanI18n || !window.DaFanI18n.dict) return null;
+    var lang = window.DaFanI18n.getLang();
+    var pack = window.DaFanI18n.dict[lang] || window.DaFanI18n.dict.zh;
+    return pack[key] || null;
+  }
+
   function initHero(root) {
     var slides = root.querySelectorAll("[data-hero-slide]");
-    var rail = root.closest("[data-home-stage-rail]");
-    var copyPin = (rail && rail.querySelector("[data-hero-copy-pin]")) || root;
-    var pills = copyPin.querySelectorAll("[data-hero-pill]");
-    var pauseBtn = copyPin.querySelector("[data-hero-pause]");
     var visual = root.querySelector("[data-hero-visual]");
-    var pillBar = copyPin.querySelector(".hero-pills");
+    var titleEl = root.querySelector("[data-hero-scene-title]");
     if (!slides.length) return;
 
     var index = 0;
-    var userPaused = false;
     var hoverPaused = false;
-    var focusPaused = false;
     var reducedMotion = false;
     var timerId = null;
     var INTERVAL_MS = 5200;
@@ -27,30 +30,25 @@
     }
 
     function effectivePaused() {
-      return userPaused || hoverPaused || focusPaused || document.visibilityState === "hidden" || reducedMotion;
+      return hoverPaused || document.visibilityState === "hidden" || reducedMotion;
     }
 
-    function pillIndexOf(el) {
-      for (var p = 0; p < pills.length; p++) {
-        if (pills[p] === el) return p;
-      }
-      return -1;
+    function syncHeroTitle(i) {
+      if (!titleEl) return;
+      var key = TITLE_KEYS[i] || TITLE_KEYS[0];
+      titleEl.setAttribute("data-i18n", key);
+      var text = resolveI18n(key);
+      if (text) titleEl.textContent = text;
     }
 
     function setSlide(i) {
-      var focusWasOnPill = pillIndexOf(document.activeElement) !== -1;
       index = (i + slides.length) % slides.length;
       slides.forEach(function (el, idx) {
         var on = idx === index;
         el.classList.toggle("is-active", on);
         el.setAttribute("aria-hidden", on ? "false" : "true");
       });
-      pills.forEach(function (el, idx) {
-        var on = idx === index;
-        el.setAttribute("aria-selected", on ? "true" : "false");
-        el.setAttribute("tabindex", on ? "0" : "-1");
-      });
-      if (focusWasOnPill && pills[index]) pills[index].focus();
+      syncHeroTitle(index);
     }
 
     function clearTimer() {
@@ -70,54 +68,6 @@
       timerId = window.setInterval(tick, INTERVAL_MS);
     }
 
-    function refreshPauseUi() {
-      if (!pauseBtn) return;
-      var paused = userPaused;
-      pauseBtn.setAttribute("aria-pressed", paused ? "true" : "false");
-      var labelKey = paused ? "home.hero.play" : "home.hero.pause";
-      var ariaKey = paused ? "home.hero.playAria" : "home.hero.pauseAria";
-      if (window.DaFanI18n && window.DaFanI18n.dict) {
-        var lang = window.DaFanI18n.getLang();
-        var pack = window.DaFanI18n.dict[lang] || window.DaFanI18n.dict.zh;
-        if (pack[labelKey]) pauseBtn.textContent = pack[labelKey];
-        if (pack[ariaKey]) pauseBtn.setAttribute("aria-label", pack[ariaKey]);
-      }
-    }
-
-    pills.forEach(function (pill) {
-      pill.addEventListener("click", function () {
-        var idx = parseInt(pill.getAttribute("data-hero-pill") || "0", 10);
-        if (Number.isNaN(idx)) return;
-        setSlide(idx);
-        startTimer();
-      });
-    });
-
-    if (pillBar) {
-      pillBar.addEventListener("keydown", function (e) {
-        var key = e.key;
-        if (key !== "ArrowLeft" && key !== "ArrowRight" && key !== "Home" && key !== "End") return;
-        var cur = pillIndexOf(document.activeElement);
-        if (cur === -1) return;
-        e.preventDefault();
-        var next = cur;
-        if (key === "ArrowRight") next = cur + 1;
-        else if (key === "ArrowLeft") next = cur - 1;
-        else if (key === "Home") next = 0;
-        else if (key === "End") next = pills.length - 1;
-        setSlide(next);
-        startTimer();
-      });
-    }
-
-    if (pauseBtn) {
-      pauseBtn.addEventListener("click", function () {
-        userPaused = !userPaused;
-        refreshPauseUi();
-        startTimer();
-      });
-    }
-
     if (visual) {
       visual.addEventListener("mouseenter", function () {
         hoverPaused = true;
@@ -127,36 +77,8 @@
       });
     }
 
-    var focusScopes = [];
-    if (visual) focusScopes.push(visual);
-    if (copyPin !== root) focusScopes.push(copyPin);
-    if (pillBar) focusScopes.push(pillBar);
-    if (pauseBtn) focusScopes.push(pauseBtn);
-
-    function containsActive(scope, active) {
-      return !!(scope && active && scope.contains(active));
-    }
-
-    function updateFocusPaused() {
-      var active = document.activeElement;
-      focusPaused = focusScopes.some(function (scope) {
-        return containsActive(scope, active);
-      });
-    }
-
-    focusScopes.forEach(function (scope) {
-      scope.addEventListener("focusin", updateFocusPaused);
-      scope.addEventListener("focusout", function () {
-        window.setTimeout(updateFocusPaused, 0);
-      });
-    });
-
-    document.addEventListener("visibilitychange", function () {
-      /* timer keeps running; effectivePaused blocks advance when hidden */
-    });
-
     document.addEventListener("langchange", function () {
-      refreshPauseUi();
+      syncHeroTitle(index);
     });
 
     mqReduceMotion().addEventListener("change", function () {
@@ -167,12 +89,20 @@
 
     readReducedMotion();
     setSlide(0);
-    refreshPauseUi();
     startTimer();
+  }
+
+  function initBackToTop() {
+    var btn = document.querySelector("[data-home-back-to-top]");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
   }
 
   function init() {
     document.querySelectorAll("[data-hero-root]").forEach(initHero);
+    initBackToTop();
   }
 
   if (document.readyState === "loading") {
