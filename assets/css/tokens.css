@@ -68,7 +68,11 @@
   --nav-gap: 1.5rem;
   --lang-gap: 0.5rem;
 
-  /* Language dropdown menu (desktop defaults) */
+  /* Inline language switch */
+  --lang-switch-gap: 0.15em;
+  --lang-switch-nav-gap: clamp(0.75rem, 1.5vw, 1.125rem);
+
+  /* Legacy dropdown tokens (scripts only) */
   --lang-item-min-height: 32px;
   --lang-item-padding-block: 6px;
   --lang-item-padding-inline: 10px;

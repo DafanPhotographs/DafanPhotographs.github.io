@@ -1,5 +1,6 @@
 // @ts-check
 const { test, expect } = require("@playwright/test");
+const { PNG } = require("pngjs");
 
 const HOME = "/";
 const MOTION_VIEWPORT = { width: 1440, height: 900 };
@@ -52,7 +53,7 @@ async function sceneDominatesViewport(page, index) {
  * @param {import("@playwright/test").Page} page
  */
 async function headerInvertBlend(page) {
-  return page.locator(".page-home .site-header--overlay .header-chrome-blend").first().evaluate((el) => {
+  return page.locator(".page-home .site-header--overlay").evaluate((el) => {
     const s = getComputedStyle(el);
     return { mixBlendMode: s.mixBlendMode, color: s.color };
   });
@@ -61,8 +62,7 @@ async function headerInvertBlend(page) {
 async function pickLang(page, lang) {
   const current = await page.evaluate(() => document.documentElement.lang || localStorage.getItem("dafan-lang") || "zh");
   if (current === lang) return;
-  await page.locator(".lang-dropdown__trigger").click();
-  await page.locator(`.lang-dropdown__option[data-set-lang="${lang}"]`).click();
+  await page.locator(`.lang-switch__btn[data-set-lang="${lang}"]`).click();
 }
 
 async function wordmarkSourceWhite(page) {
@@ -74,6 +74,55 @@ function isWhiteSource(cssColor) {
   const m = cssColor.match(/rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/);
   if (m) return Number(m[1]) >= 250 && Number(m[2]) >= 250 && Number(m[3]) >= 250;
   return cssColor === "white" || cssColor === "#fff" || cssColor === "#ffffff";
+}
+
+/**
+ * Lowest RGB delta vs |255−bg| inside the G24 wordmark bbox (same-frame probe).
+ * @param {import("@playwright/test").Page} page
+ * @param {string} [selector]
+ */
+async function wordmarkCompositedInvertErr(page, selector = ".wordmark") {
+  const box = await page.locator(selector).first().boundingBox();
+  if (!box) return { ok: false, reason: "no-box" };
+  const vp = page.viewportSize();
+  const clip = { x: 0, y: 0, width: vp.width, height: Math.min(160, vp.height) };
+  await page.addStyleTag({
+    content:
+      "html.probe-hide-header-chrome .header-chrome { visibility: hidden !important; }",
+  });
+  await page.evaluate(() => document.documentElement.classList.add("probe-hide-header-chrome"));
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  const bgBuf = await page.screenshot({ clip });
+  await page.evaluate(() => document.documentElement.classList.remove("probe-hide-header-chrome"));
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  const fgBuf = await page.screenshot({ clip });
+  const bg = PNG.sync.read(bgBuf);
+  const fg = PNG.sync.read(fgBuf);
+  const x0 = Math.max(0, Math.floor(box.x));
+  const y0 = Math.max(0, Math.floor(box.y));
+  const x1 = Math.min(bg.width, Math.ceil(box.x + box.width));
+  const y1 = Math.min(bg.height, Math.ceil(box.y + box.height));
+  let minErr = Infinity;
+  let best = null;
+  for (let y = y0; y < y1; y += 1) {
+    for (let x = x0; x < x1; x += 1) {
+      const i = (bg.width * y + x) << 2;
+      const d =
+        Math.abs(fg.data[i] - bg.data[i]) +
+        Math.abs(fg.data[i + 1] - bg.data[i + 1]) +
+        Math.abs(fg.data[i + 2] - bg.data[i + 2]);
+      if (d < 40) continue;
+      const bgRgb = [bg.data[i], bg.data[i + 1], bg.data[i + 2]];
+      const compRgb = [fg.data[i], fg.data[i + 1], fg.data[i + 2]];
+      const expected = bgRgb.map((b) => Math.abs(255 - b));
+      const err = compRgb.reduce((sum, c, j) => sum + Math.abs(c - expected[j]), 0);
+      if (err < minErr) {
+        minErr = err;
+        best = { err, bgRgb, compRgb, expected, diffSum: d };
+      }
+    }
+  }
+  return { ok: true, minErr, best };
 }
 
 /**
@@ -371,6 +420,26 @@ test.describe("Home fullscreen stages", () => {
     expect(isWhiteSource(await wordmarkSourceWhite(page))).toBe(true);
   });
 
+  test("G24 wordmark: composited difference on bright sky (desktop overlay only)", async ({ page }) => {
+    const threshold = 48;
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(600);
+    const wm = await wordmarkCompositedInvertErr(page);
+    expect(wm.ok).toBe(true);
+    expect(wm.minErr).toBeLessThanOrEqual(threshold);
+    const nav = await wordmarkCompositedInvertErr(page, ".nav-link-label");
+    expect(nav.ok).toBe(true);
+    expect(nav.minErr).toBeLessThanOrEqual(threshold);
+
+    await page.setViewportSize(NARROW);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    const mobileHdr = await page.locator(".site-header").evaluate((el) => getComputedStyle(el).mixBlendMode);
+    expect(mobileHdr).toBe("normal");
+  });
+
   test("difference header 375/390/768/1440: white source, dropdown lang switch", async ({
     page,
   }) => {
@@ -385,13 +454,14 @@ test.describe("Home fullscreen stages", () => {
       await page.goto(HOME);
       await page.waitForLoadState("networkidle");
       const blend = await headerInvertBlend(page);
-      expect(blend.mixBlendMode).toBe("difference");
-      await expect(page.locator("[data-lang-current]")).toHaveText("中");
-      const src = await page.locator(".lang-dropdown__trigger").evaluate((el) => getComputedStyle(el).color);
-      expect(isWhiteSource(src)).toBe(true);
+      const desktopOverlay = w >= 768;
+      expect(blend.mixBlendMode).toBe(desktopOverlay ? "difference" : "normal");
+      await expect(page.locator('.lang-switch__btn[data-set-lang="zh"]')).toHaveAttribute("aria-checked", "true");
+      const src = await page.locator('.lang-switch__btn[data-set-lang="zh"]').evaluate((el) => getComputedStyle(el).color);
+      expect(isWhiteSource(src)).toBe(desktopOverlay);
       await pickLang(page, "en");
       await page.waitForTimeout(150);
-      await expect(page.locator("[data-lang-current]")).toHaveText("EN");
+      await expect(page.locator('.lang-switch__btn[data-set-lang="en"]')).toHaveAttribute("aria-checked", "true");
       await pickLang(page, "zh");
     }
   });
@@ -402,12 +472,12 @@ test.describe("Home fullscreen stages", () => {
     await page.waitForLoadState("networkidle");
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(450);
-    if ((await page.locator(".site-header--solid").count()) > 0) {
-      const hdr = await page.locator(".site-header").evaluate((el) => ({
-        blend: getComputedStyle(el).mixBlendMode,
-      }));
-      expect(hdr.blend).toBe("normal");
-    }
+    const closingHdr = await page.locator(".site-header").evaluate((el) => ({
+      blend: getComputedStyle(el).mixBlendMode,
+      solid: el.classList.contains("site-header--solid"),
+    }));
+    expect(closingHdr.solid).toBe(false);
+    expect(closingHdr.blend).toBe("difference");
 
     await page.goto("/works/");
     await page.waitForLoadState("networkidle");
@@ -474,7 +544,7 @@ test.describe("Home fullscreen stages", () => {
     expect(box && box.width).toBeGreaterThan(10);
   });
 
-  test("header solid only when photo rail has cleared header band", async ({ page }) => {
+  test("desktop: header stays overlay difference through closing", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
@@ -489,29 +559,32 @@ test.describe("Home fullscreen stages", () => {
     await page.waitForTimeout(400);
     geo = await headerPhotoGeometry(page);
     if (geo.endTop <= geo.headerH + 0.5) {
-      expect(geo.solid).toBe(true);
-      expect(geo.mode).toBe("solid");
+      expect(geo.solid).toBe(false);
+      expect(geo.mode).toBe("overlay");
     }
 
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.waitForTimeout(200);
+    await page.keyboard.press("End");
+    await page.waitForTimeout(500);
     geo = await headerPhotoGeometry(page);
     expect(geo.solid).toBe(false);
+    expect(geo.mode).toBe("overlay");
+    const blend = await headerInvertBlend(page);
+    expect(blend.mixBlendMode).toBe("difference");
   });
 
-  test("End with photo tail under header: may stay overlay until marker crosses header", async ({
-    page,
-  }) => {
-    await page.setViewportSize(MOTION_VIEWPORT);
+  test("375: mobile solid light bar after photo zone", async ({ page }) => {
+    await page.setViewportSize(NARROW);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
     await page.keyboard.press("End");
     await page.waitForTimeout(500);
     const geo = await headerPhotoGeometry(page);
-    expect(geo.solid).toBe(!geo.photoUnderHeader);
-    if (geo.photoUnderHeader) {
-      expect(geo.mode).toBe("overlay");
+    if (!geo.photoUnderHeader) {
+      expect(geo.solid).toBe(true);
+      expect(geo.mode).toBe("solid");
     }
+    const blend = await page.locator(".site-header").evaluate((el) => getComputedStyle(el).mixBlendMode);
+    expect(blend).toBe("normal");
   });
 
   test("slow wheel does not skip more than one scene forward", async ({ page }) => {
@@ -878,7 +951,7 @@ test.describe("Home fullscreen stages", () => {
     }
   });
 
-  test("closing daofor screen: tagline, series links, CTA, solid header", async ({ page }) => {
+  test("closing daofor screen: tagline, series links, CTA, desktop difference header", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
@@ -888,10 +961,11 @@ test.describe("Home fullscreen stages", () => {
     await expect(page.locator(".home-tagline-repeat")).toHaveCount(0);
     await expect(page.locator('.home-closing__link[href="./works/bipenggou/"]')).toBeVisible();
     await expect(page.locator(".home-closing__cta.lang-zh-only")).toHaveAttribute("href", /contact/);
-    const hdr = await page.locator(".site-header--solid").count();
-    expect(hdr).toBeGreaterThan(0);
-    const wordmarkColor = await page.locator(".site-header--solid .wordmark").evaluate((el) => getComputedStyle(el).color);
-    expect(isWhiteSource(wordmarkColor)).toBe(false);
+    await expect(page.locator(".site-header--overlay")).toBeVisible();
+    const wordmarkColor = await page.locator(".site-header--overlay .wordmark").evaluate((el) => getComputedStyle(el).color);
+    expect(isWhiteSource(wordmarkColor)).toBe(true);
+    const blend = await headerInvertBlend(page);
+    expect(blend.mixBlendMode).toBe("difference");
   });
 
 });

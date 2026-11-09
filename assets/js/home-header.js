@@ -13,6 +13,8 @@
     header.setAttribute("data-header-mode", solid ? "solid" : "overlay");
   }
 
+  var mobileSolidMq = window.matchMedia("(max-width: 767.98px)");
+
   /** Solid when the header band no longer sits over the photo rail (marker top at or above header bottom). */
   function headerLeavesPhotoZone() {
     var headerH = header.getBoundingClientRect().height;
@@ -20,9 +22,21 @@
     return endTop <= headerH + 0.5;
   }
 
+  /** Desktop: white source + difference through closing; mobile only: opaque light bar past photos. */
+  function useMobileSolidBar() {
+    return mobileSolidMq.matches;
+  }
+
+  function removeLegacyStrokePortals() {
+    document.getElementById("header-stroke-portals")?.remove();
+    document.getElementById("ab-stroke-portal-light")?.remove();
+    document.getElementById("ab-stroke-portal-dark")?.remove();
+  }
+
   function syncHeaderMode() {
+    removeLegacyStrokePortals();
     var pastPhoto = headerLeavesPhotoZone();
-    setSolid(pastPhoto);
+    setSolid(pastPhoto && useMobileSolidBar());
     document.body.classList.toggle("home-past-photo-zone", pastPhoto);
   }
 

@@ -21,8 +21,7 @@ const ALL_CHECK_WIDTHS = [320, 375, 390, 768, 1440];
 async function pickLang(page, lang) {
   const current = await page.evaluate(() => document.documentElement.lang || localStorage.getItem("dafan-lang") || "zh");
   if (current === lang) return;
-  await page.locator(".lang-dropdown__trigger").click();
-  await page.locator(`.lang-dropdown__option[data-set-lang="${lang}"]`).click();
+  await page.locator(`.lang-switch__btn[data-set-lang="${lang}"]`).click();
 }
 
 /**
@@ -30,7 +29,7 @@ async function pickLang(page, lang) {
  */
 async function langToggleLayoutOk(page) {
   return page.evaluate(() => {
-    const el = document.querySelector(".lang-dropdown");
+    const el = document.querySelector(".lang-switch");
     const header = document.querySelector(".site-header");
     if (!el || !header) return { ok: false, reason: "missing" };
     const rect = el.getBoundingClientRect();
@@ -102,15 +101,17 @@ async function expectLangExclusive(page, lang) {
 async function expectLangToggleOperable(page) {
   const layout = await langToggleLayoutOk(page);
   expect(layout.ok, JSON.stringify(layout)).toBeTruthy();
-  await expect(page.locator(".lang-dropdown")).toBeVisible();
-  await expect(page.locator(".lang-dropdown__trigger")).toBeEnabled();
-  await page.locator(".lang-dropdown__trigger").click();
+  await expect(page.locator(".lang-switch")).toBeVisible();
+  await expect(page.locator(".lang-switch__btn")).toHaveCount(2);
   const currentLang = await page.evaluate(() => document.documentElement.lang || "zh");
   const alt = currentLang === "en" ? "zh" : "en";
-  await expect(page.locator(`.lang-dropdown__option[data-set-lang="${currentLang}"]`)).toBeHidden();
-  await expect(page.locator(`.lang-dropdown__option[data-set-lang="${alt}"]`)).toBeEnabled();
-  await expect(page.locator(".lang-dropdown__menu .lang-dropdown__option:visible")).toHaveCount(1);
-  await page.keyboard.press("Escape");
+  await expect(page.locator(`.lang-switch__btn[data-set-lang="${currentLang}"]`)).toHaveAttribute(
+    "aria-checked",
+    "true"
+  );
+  await expect(page.locator(`.lang-switch__btn[data-set-lang="${alt}"]`)).toBeEnabled();
+  await page.locator(`.lang-switch__btn[data-set-lang="${alt}"]`).click();
+  await expect(page.locator("html")).toHaveAttribute("lang", alt);
 }
 
 test.describe("QA F3 — header language toggle on narrow viewports", () => {
