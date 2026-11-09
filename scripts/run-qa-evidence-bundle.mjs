@@ -58,6 +58,7 @@ const requiredSteps = [
     "lang-readability-before",
   ],
   ["READABILITY_TAG=after node scripts/lang-readability-baseline.mjs", {}, "lang-readability-after"],
+  ["node scripts/header-stroke-portal-evidence.mjs", {}, "header-stroke-portal-evidence"],
 ];
 
 try {
@@ -84,7 +85,7 @@ try {
 
   const testLog = `${OUT}/playwright-qa-regression.log`;
   testStatus = run(
-    `PLAYWRIGHT_BASE_URL=http://127.0.0.1:8765 npx playwright test tests/lang-switch.spec.js tests/header-lang-toggle.spec.js tests/home-stages.spec.js --reporter=line 2>&1 | tee "${testLog}"`,
+    `PLAYWRIGHT_BASE_URL=http://127.0.0.1:8765 npx playwright test tests/lang-switch.spec.js tests/header-lang-toggle.spec.js tests/home-stages.spec.js tests/header-stroke-portal.spec.js --reporter=line 2>&1 | tee "${testLog}"`,
     {},
     { label: "playwright-regression" }
   );
@@ -152,6 +153,14 @@ const artifacts = [
   "before-lang-readability-1440-zh-bright-user-baseline.png",
   "after-lang-readability-1440-zh-bright-user-baseline.png",
   "user-baseline-lang-switch-1440-zh-bright.png",
+  "header-stroke-portal-evidence.json",
+  "header-stroke-portal-stroke-only.png",
+  "header-stroke-1440-bright-overlay-zh-header.png",
+  "header-stroke-1440-dark-forest-overlay-zh-header.png",
+  "header-stroke-1440-closing-solid-zh-header.png",
+  "header-stroke-375-bright-overlay-zh-header.png",
+  "header-stroke-375-closing-solid-zh-header.png",
+  "header-stroke-1440-focus-tab.png",
 ];
 
 const jsonMustMatchHead = [
@@ -160,6 +169,7 @@ const jsonMustMatchHead = [
   "after-fix-wordmark-evidence.json",
   "qa-interaction-evidence.json",
   "qa-home-regression-evidence.json",
+  "header-stroke-portal-evidence.json",
 ];
 for (const name of jsonMustMatchHead) {
   const p = path.join(OUT, name);
@@ -211,5 +221,7 @@ execSync(
   `zip -j "${zipPath}" ${existing.map((p) => `"${p}"`).join(" ")} "${OUT}/pr26-evidence-v2-manifest.json"`,
   { stdio: "inherit" }
 );
+
+run("node scripts/package-static-preview.mjs", {}, { label: "package-static-preview" });
 
 console.log(JSON.stringify({ zipPath, captureHead, testStatus, fileCount: existing.length }, null, 2));

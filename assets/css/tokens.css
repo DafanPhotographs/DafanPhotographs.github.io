@@ -2,6 +2,13 @@
   /* Brand: G-optical-24px English DaFan wordmark (inline SVG) */
   --brand-mark-height: 24px;
 
+  /* Home overlay header stroke portals (normal compositing, outside difference ancestor) */
+  --header-stroke-light: #ffffff;
+  --header-stroke-dark: #1a120e;
+  --header-stroke-width-light: 0.45px;
+  --header-stroke-width-dark: 0.35px;
+  --header-stroke-svg-scale: 1.25;
+
   /* Color — near-white / near-black */
   --color-bg: #ffffff;
   --color-bg-soft: #f7f7f7;

@@ -102,6 +102,32 @@ button {
   background: transparent !important;
 }
 
+/* Body-level stroke portals: decorative, non-interactive, hidden in solid (white bar) mode */
+.header-stroke-portals {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 41;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.header-stroke-portal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  mix-blend-mode: normal;
+  isolation: isolate;
+}
+
+.header-stroke-portals[hidden] {
+  display: none !important;
+}
+
 .page-home .site-header .header-chrome-blend {
   display: flex;
   align-items: center;
