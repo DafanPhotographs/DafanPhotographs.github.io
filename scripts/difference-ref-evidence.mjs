@@ -160,6 +160,11 @@ const report = {
   ],
 };
 
+const canonical = frames.find((f) => f.tag === "1440-bright" && f.lang === "zh" && f.pixel?.probePath);
+if (canonical) {
+  fs.copyFileSync(canonical.pixel.probePath, `${OUT}/difference-ref-pixel-probe-nav.png`);
+}
+
 const outJson = `${OUT}/difference-ref-evidence.json`;
 fs.writeFileSync(outJson, JSON.stringify(report, null, 2));
 
