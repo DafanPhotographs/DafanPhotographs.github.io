@@ -923,8 +923,27 @@ test.describe("Home fullscreen stages", () => {
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
     await expect(page.locator("[data-hero-copy-pin], [data-hero-scene-title]")).toHaveCount(0);
-    const blend = await page.locator(".home-scene-title-blend").first().evaluate((el) => getComputedStyle(el).mixBlendMode);
+    const blend = await page.locator(".home-scene-chrome").first().evaluate((el) => getComputedStyle(el).mixBlendMode);
     expect(blend).toBe("difference");
+    const innerBlend = await page
+      .locator(".home-scene-title-blend")
+      .first()
+      .evaluate((el) => getComputedStyle(el).mixBlendMode);
+    expect(innerBlend).toBe("normal");
+    // the title layer must live outside the scaled stage and cover the viewport
+    const placement = await page.evaluate(() => {
+      const title = document.querySelector('[data-home-scene="1"] .home-scene-title');
+      const chrome = document.querySelector('[data-home-scene="1"] .home-scene-chrome');
+      const r = chrome.getBoundingClientRect();
+      return {
+        inStage: !!title.closest(".home-scene-stage"),
+        chrome: [Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)],
+        vw: window.innerWidth,
+        vh: window.innerHeight,
+      };
+    });
+    expect(placement.inStage).toBe(false);
+    expect(placement.chrome).toEqual([0, 0, placement.vw, placement.vh]);
     const y0 = await page.locator('[data-home-scene="0"] .home-scene-title').evaluate((el) => el.getBoundingClientRect().top);
     await jumpTo(page, 1350);
     await page.waitForTimeout(250);
@@ -939,6 +958,58 @@ test.describe("Home fullscreen stages", () => {
     await page.waitForTimeout(450);
     const yBack = await page.locator('[data-home-scene="0"] .home-scene-title').evaluate((el) => el.getBoundingClientRect().top);
     expect(Math.abs(yBack - y0)).toBeLessThan(80);
+  });
+
+  test("photo rail: scene title actually inverts against the photo", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    await jumpTo(page, 900);
+    await page.waitForTimeout(300);
+    // Neutral white backdrop isolates the difference compositing from photo variance:
+    // white source + white backdrop must render black glyphs.
+    await page.addStyleTag({
+      content: `
+        .home-scene.is-stage-active .home-scene-stage { background: #fff !important; }
+        .home-scene.is-stage-active .home-scene-stage img { visibility: hidden !important; }
+      `,
+    });
+    await page.waitForTimeout(120);
+    const title = page.locator('[data-home-scene="1"] .home-scene-title');
+    const box = await title.boundingBox();
+    expect(box).not.toBeNull();
+    const clip = {
+      x: Math.max(0, Math.floor(box.x) - 4),
+      y: Math.max(0, Math.floor(box.y) - 4),
+      width: Math.ceil(box.width) + 8,
+      height: Math.ceil(box.height) + 8,
+    };
+    const shown = await page.screenshot({ clip });
+    await page.addStyleTag({
+      content: ".home-scene.is-stage-active .home-scene-chrome{visibility:hidden!important;}",
+    });
+    await page.waitForTimeout(150);
+    const hidden = await page.screenshot({ clip });
+    const a = PNG.sync.read(shown);
+    const b = PNG.sync.read(hidden);
+    let changed = 0;
+    let dark = 0;
+    let minLum = 255;
+    for (let i = 0; i < a.data.length; i += 4) {
+      const delta =
+        Math.abs(a.data[i] - b.data[i]) +
+        Math.abs(a.data[i + 1] - b.data[i + 1]) +
+        Math.abs(a.data[i + 2] - b.data[i + 2]);
+      if (delta < 60) continue;
+      changed += 1;
+      const lum = 0.2126 * a.data[i] + 0.7152 * a.data[i + 1] + 0.0722 * a.data[i + 2];
+      minLum = Math.min(minLum, lum);
+      if (lum < 120) dark += 1;
+    }
+    // difference(white text, white backdrop) must be black; an inert blend stays white.
+    expect(changed).toBeGreaterThan(80);
+    expect(minLum).toBeLessThan(40);
+    expect(dark / changed).toBeGreaterThan(0.5);
   });
 
   test("1440: scene1→2 mid: next band peeks and incoming window is mid-open", async ({ page }) => {
