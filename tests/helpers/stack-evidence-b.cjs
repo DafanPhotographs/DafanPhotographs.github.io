@@ -11,6 +11,9 @@ const {
 const { readTargetStackMeta } = require("./stack-visibility-metrics.cjs");
 
 async function pushWheelSample(page, sceneIndex, samples, tag) {
+  // With Lenis the evidence run pins lerp=1 (see wheelFullStackTraversal), so one
+  // animation frame is enough for scrollY to reach the wheel target.
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   await waitForScrubStable(
     page,
     () =>
@@ -28,6 +31,12 @@ async function pushWheelSample(page, sceneIndex, samples, tag) {
  * Full stack: entry → late/p1 → return; wheel pairs |ΔscrollY|≤2; live PNG at pair time.
  */
 async function wheelFullStackTraversal(page, sceneIndex, outDir, opts = {}) {
+  // Pair equality (|ΔscrollY| ≤ 2px) is measured for layout/stack composition, not for
+  // the smoothing curve; pin Lenis to instant so wheel steps land exactly on target.
+  // The smooth-scroll contract is covered by the dedicated inertia test.
+  await page.evaluate(() => {
+    if (window.__lenis && window.__lenis.options) window.__lenis.options.lerp = 1;
+  });
   const deltasToTry = opts.deltasToTry || [28, 24, 20];
   let best = null;
 

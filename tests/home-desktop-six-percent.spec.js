@@ -25,13 +25,21 @@ test.describe("desktop-six-percent guards", () => {
     await waitForHeroDelivery(page, 0, false);
   });
 
-  test("375: mobile token 0.6", async ({ page }) => {
+  test("375: window lives on the stage (media stays 100%)", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
-    const tok = await page.evaluate(() =>
-      getComputedStyle(document.body).getPropertyValue("--media-scale-from-mobile").trim()
-    );
-    expect(tok).toBe("0.6");
+    const info = await page.evaluate(() => {
+      const stage = document.querySelector('[data-home-scene="1"] .home-scene-stage');
+      const media = document.querySelector('[data-home-scene="1"] .home-scene-media-scale');
+      return {
+        stageScale: Number(gsap.getProperty(stage, "scale")),
+        mediaW: media.offsetWidth,
+        stageW: stage.offsetWidth,
+      };
+    });
+    expect(info.stageScale).toBeGreaterThanOrEqual(0.74);
+    expect(info.stageScale).toBeLessThanOrEqual(0.76);
+    expect(Math.abs(info.mediaW - info.stageW)).toBeLessThanOrEqual(1);
   });
 
   test("375: scene0 still fill not limit", async ({ page }) => {
@@ -87,17 +95,15 @@ test.describe("desktop-six-percent post-impl", () => {
     expect(layout.offsetRatio).toBeLessThan(1.02);
   });
 
-  test("desktop token --media-scale-from is 1 at 1024+", async ({ page }) => {
+  test("desktop: window tween is on the stage, 0.75 → 1", async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.goto("/");
+    await page.waitForLoadState("networkidle");
     const from = await page.evaluate(() =>
-      getComputedStyle(document.querySelector(".page-home")).getPropertyValue("--media-scale-from").trim()
+      Number(gsap.getProperty(document.querySelector('[data-home-scene="1"] .home-scene-stage'), "scale"))
     );
-    expect(from).toBe("1");
-    const to = await page.evaluate(() =>
-      getComputedStyle(document.querySelector(".page-home")).getPropertyValue("--media-scale-to").trim()
-    );
-    expect(to).toBe("1.06");
+    expect(from).toBeGreaterThanOrEqual(0.74);
+    expect(from).toBeLessThanOrEqual(0.76);
   });
 
   test("desktop rest gsap scale ~1.0", async ({ page }) => {
@@ -114,40 +120,44 @@ test.describe("desktop-six-percent post-impl", () => {
     expect(scale).toBeLessThanOrEqual(1.01);
   });
 
-  test("desktop scene0 end scale ~1.06", async ({ page }) => {
+  test("desktop scene1 pins at scale 1 and stays settled", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
     await page.waitForLoadState("networkidle");
-    await scrollTriggerProgress(page, 0, 1);
-    const scale = await waitForScrubStable(page, () =>
+    const read = () =>
       page.evaluate(() =>
-        Number(gsap.getProperty(document.querySelector('[data-home-scene="0"] .home-scene-media-scale'), "scale"))
-      )
-    );
-    expect(scale).toBeGreaterThanOrEqual(1.05);
-    expect(scale).toBeLessThanOrEqual(1.07);
+        Number(gsap.getProperty(document.querySelector('[data-home-scene="1"] .home-scene-stage'), "scale"))
+      );
+    await scrollTriggerProgress(page, 1, 1);
+    await page.waitForTimeout(250);
+    expect(await read()).toBeGreaterThanOrEqual(0.999);
+    await page.evaluate(() => {
+      window.scrollTo(0, window.scrollY + 250);
+      ScrollTrigger.update();
+    });
+    await page.waitForTimeout(250);
+    expect(await read()).toBeGreaterThanOrEqual(0.999);
   });
 
   for (let sceneIndex = 0; sceneIndex < 3; sceneIndex += 1) {
-    test("seek-mid-scale-scene" + sceneIndex, async ({ page }) => {
+    test("seek-mid-window-scene" + sceneIndex, async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto("/");
       await page.waitForLoadState("networkidle");
       await scrollTriggerProgress(page, sceneIndex, 0.5);
-      const scale = await waitForScrubStable(page, () =>
-        page.evaluate(
-          (idx) =>
-            Number(
-              gsap.getProperty(
-                document.querySelector('[data-home-scene="' + idx + '"] .home-scene-media-scale'),
-                "scale"
-              )
-            ),
-          sceneIndex
-        )
+      await page.waitForTimeout(250);
+      const scale = await page.evaluate(
+        (idx) =>
+          Number(
+            gsap.getProperty(
+              document.querySelector('[data-home-scene="' + idx + '"] .home-scene-stage'),
+              "scale"
+            )
+          ),
+        sceneIndex
       );
-      expect(scale).toBeGreaterThanOrEqual(1.02);
-      expect(scale).toBeLessThanOrEqual(1.04);
+      const expected = sceneIndex === 0 ? 1 : 0.875;
+      expect(Math.abs(scale - expected)).toBeLessThanOrEqual(0.02);
     });
   }
 
@@ -483,50 +493,71 @@ test.describe("stack visibility metrics v2", () => {
   });
 });
 
-test.describe("desktop-six-percent wheel", () => {
-  test.setTimeout(180000);
-  test.beforeAll(() => {
-    const wheelDir = path.join(process.cwd(), "artifacts", "acceptance-evidence", "wheel");
-    fs.rmSync(wheelDir, { recursive: true, force: true });
-    ensureDir("wheel");
-  });
+test.describe("Lenis wheel traversal (replaces pre-Lenis pair evidence)", () => {
+  test.setTimeout(120000);
 
-  for (const sceneIndex of [0, 1, 2]) {
-    test("wheel-full-stack-scene" + sceneIndex, async ({ page }, testInfo) => {
-      await page.setViewportSize({ width: 1440, height: 900 });
-      await page.goto("/");
-      await page.waitForLoadState("networkidle");
-      const wheelDir = path.join(process.cwd(), "artifacts", "acceptance-evidence", "wheel");
-      const seekRows = await captureTrackBSeekCheckpoints(page, sceneIndex, wheelDir);
-      writeArtifact("wheel/trackB-synthetic-ST-seek-scene" + sceneIndex + ".json", seekRows);
-      const wheelOpts =
-        sceneIndex === 2
-          ? {
-              maxFwd: 110,
-              maxBack: 220,
-              microPairLane: true,
-              microStep: 4,
-              deltasToTry: [
-                { deltaY: 20, backDeltaY: 6 },
-                { deltaY: 16, backDeltaY: 6 },
-                { deltaY: 24, backDeltaY: 8 },
-              ],
-            }
-          : { maxBack: 100 };
-      const archive = await wheelFullStackTraversal(page, sceneIndex, wheelDir, wheelOpts);
-      expect(archive.pairs.length).toBeGreaterThanOrEqual(2);
-      expect(archive.windowCompositionPairs).toBeGreaterThanOrEqual(1);
-      for (const p of archive.pairs) {
-        expect(p.scrollYDelta).toBeLessThanOrEqual(SCROLL_Y_PAIR_TOL_PX);
-        expect(p.backScale).toBeLessThanOrEqual(p.forwardScale + 0.01);
-      }
-      expect(archive.checkpoints).toEqual(
-        expect.arrayContaining(["checkpoint-entry-p0", "checkpoint-mid-p05", "checkpoint-late-p085", "checkpoint-end-p1"])
+  test("wheel is smoothed; scenes pin at scale 1 and stay settled", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+
+    expect(await page.evaluate(() => !!window.__lenis)).toBe(true);
+
+    // One wheel is not applied in a single frame (Lenis smoothing).
+    await page.mouse.move(720, 450);
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(120);
+    const mid = await page.evaluate(() => Math.round(window.scrollY));
+    expect(mid).toBeGreaterThan(0);
+    expect(mid).toBeLessThan(560);
+    await page.waitForTimeout(1600);
+    const end = await page.evaluate(() => Math.round(window.scrollY));
+    expect(end).toBeGreaterThan(560);
+
+    const stageScale = (idx) =>
+      page.evaluate(
+        (i) =>
+          Number(
+            gsap.getProperty(
+              document.querySelector('[data-home-scene="' + i + '"] .home-scene-stage'),
+              "scale"
+            )
+          ),
+        idx
       );
-      await testInfo.attach("wheel-trace-scene" + sceneIndex, {
-        path: path.join(wheelDir, "wheel-trace-scene" + sceneIndex + ".json"),
-        contentType: "application/json",
-      });
+
+    // scene 1 pinned: window fully open
+    await page.evaluate(() => {
+      if (window.__lenis) window.__lenis.scrollTo(900, { immediate: true, force: true });
+      ScrollTrigger.update();
     });
-  }
+    await page.waitForTimeout(300);
+    expect(await stageScale(1)).toBeGreaterThanOrEqual(0.999);
+
+    // no endless zoom while pinned
+    await page.evaluate(() => {
+      if (window.__lenis) window.__lenis.scrollTo(1200, { immediate: true, force: true });
+      ScrollTrigger.update();
+    });
+    await page.waitForTimeout(300);
+    expect(await stageScale(1)).toBeGreaterThanOrEqual(0.999);
+
+    // scene 2 pinned: window fully open
+    await page.evaluate(() => {
+      if (window.__lenis) window.__lenis.scrollTo(1800, { immediate: true, force: true });
+      ScrollTrigger.update();
+    });
+    await page.waitForTimeout(300);
+    expect(await stageScale(2)).toBeGreaterThanOrEqual(0.999);
+
+    // and scene 2 entry is a window, not full-bleed
+    await page.evaluate(() => {
+      if (window.__lenis) window.__lenis.scrollTo(1350, { immediate: true, force: true });
+      ScrollTrigger.update();
+    });
+    await page.waitForTimeout(300);
+    const entry = await stageScale(2);
+    expect(entry).toBeGreaterThan(0.84);
+    expect(entry).toBeLessThan(0.91);
+  });
 });

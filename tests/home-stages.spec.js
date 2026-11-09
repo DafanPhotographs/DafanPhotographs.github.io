@@ -27,19 +27,64 @@ async function motionEnabled(page) {
  * @param {import("@playwright/test").Page} page
  * @param {number} deltaY
  */
+async function waitForScrollSettle(page, timeoutMs = 4000) {
+  await page.evaluate(
+    (ms) =>
+      new Promise((resolve) => {
+        let last = window.scrollY;
+        let stable = 0;
+        const t0 = performance.now();
+        const timer = setInterval(() => {
+          const y = window.scrollY;
+          if (Math.abs(y - last) < 0.5) stable += 1;
+          else stable = 0;
+          last = y;
+          if (stable >= 3 || performance.now() - t0 > ms) {
+            clearInterval(timer);
+            resolve();
+          }
+        }, 100);
+      }),
+    timeoutMs
+  );
+}
+
 async function wheelScroll(page, steps, deltaY) {
   await page.mouse.move(720, 450);
   for (let i = 0; i < steps; i += 1) {
     await page.mouse.wheel(0, deltaY);
     await page.waitForTimeout(80);
   }
-  await page.waitForTimeout(450);
+  await waitForScrollSettle(page);
 }
 
 /**
  * @param {import("@playwright/test").Page} page
  * @param {number} index
  */
+/**
+ * Jump to an absolute scroll offset without waiting for native/Lenis smoothing.
+ * @param {import("@playwright/test").Page} page
+ * @param {number} y
+ */
+async function jumpTo(page, y) {
+  await page.evaluate((yy) => {
+    if (window.__lenis) window.__lenis.scrollTo(yy, { immediate: true, force: true });
+    else window.scrollTo({ top: yy, behavior: "instant" });
+    if (typeof ScrollTrigger !== "undefined") ScrollTrigger.update();
+  }, y);
+}
+
+async function jumpToBottom(page) {
+  await page.evaluate(() => {
+    const y = document.documentElement.scrollHeight;
+    if (window.__lenis) window.__lenis.scrollTo(y, { immediate: true, force: true });
+    else window.scrollTo({ top: y, behavior: "instant" });
+    if (typeof ScrollTrigger !== "undefined") ScrollTrigger.update();
+  });
+  await page.waitForTimeout(250);
+}
+
 async function sceneDominatesViewport(page, index) {
   return page.evaluate((i) => {
     const el = document.querySelector('[data-home-scene="' + i + '"]');
@@ -230,14 +275,14 @@ test.describe("Home fullscreen stages", () => {
     await expect(page.locator('[data-home-scene="0"] .home-scene-title')).toBeInViewport();
     await expect(page.locator("[data-hero-slide], .hero-slides, .hero-stack")).toHaveCount(0);
 
-    await wheelScroll(page, 14, 600);
+    await wheelScroll(page, 4, 300);
     const y1 = await page.evaluate(() => window.scrollY);
     expect(y1).toBeGreaterThan(y0 + 200);
     expect(await sceneDominatesViewport(page, 1)).toBe(true);
     const idxMid = await activeSceneIndex(page);
     expect(Number(idxMid)).toBeGreaterThanOrEqual(1);
 
-    await wheelScroll(page, 16, -500);
+    await wheelScroll(page, 5, -300);
     expect(await sceneDominatesViewport(page, 0)).toBe(true);
     const idxBack = await activeSceneIndex(page);
     expect(Number(idxBack)).toBeLessThan(Number(idxMid));
@@ -279,7 +324,8 @@ test.describe("Home fullscreen stages", () => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
-    await wheelScroll(page, 28, 650);
+    await jumpTo(page, 1800);
+    await page.waitForTimeout(250);
     const heroHidden = await page.locator('[data-home-scene="0"]').getAttribute("aria-hidden");
     expect(heroHidden).toBe("true");
     await expect(page.locator("[data-hero-pill], [data-hero-slide]")).toHaveCount(0);
@@ -331,7 +377,7 @@ test.describe("Home fullscreen stages", () => {
         () => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
       );
       expect(overflow).toBe(true);
-      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await jumpToBottom(page);
       await expect(page.locator(".home-closing__cta").first()).toBeInViewport();
     }
   });
@@ -379,7 +425,7 @@ test.describe("Home fullscreen stages", () => {
       typeof ScrollTrigger !== "undefined" ? ScrollTrigger.getAll().length : 0
     );
     expect(count).toBe(0);
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await jumpToBottom(page);
     await expect(page.locator(".home-closing__tagline")).toBeInViewport();
   });
 
@@ -470,7 +516,7 @@ test.describe("Home fullscreen stages", () => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await jumpToBottom(page);
     await page.waitForTimeout(450);
     const closingHdr = await page.locator(".site-header").evaluate((el) => ({
       blend: getComputedStyle(el).mixBlendMode,
@@ -486,7 +532,7 @@ test.describe("Home fullscreen stages", () => {
 
     const ctx = await browser.newContext({ javaScriptEnabled: false, viewport: NARROW });
     const noJs = await ctx.newPage();
-    await noJs.goto(HOME);
+    await noJs.goto(HOME, { waitUntil: "domcontentloaded" });
     const noJsChrome = await noJs.locator(".header-chrome").evaluate((el) => ({
       blend: getComputedStyle(el).mixBlendMode,
       color: getComputedStyle(el).color,
@@ -685,29 +731,26 @@ test.describe("Home fullscreen stages", () => {
         if (lang === "en") await pickLang(page, "en");
         const label = await visibleNavWorkLabel(page);
         await expect(label).toBeVisible();
-        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+        await jumpToBottom(page);
         await expect(page.locator(".home-closing__ig")).toBeInViewport();
       }
     }
   });
 
-  test("1440: overlay entry scene1 scale near from (not ~1)", async ({ page }) => {
+  test("1440: overlay entry scene1 is a window (stage scaled below 1)", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
     let best = null;
     for (let y = 0; y <= 1200; y += 6) {
-      await page.evaluate((ys) => {
-        window.scrollTo(0, ys);
-        ScrollTrigger.update();
-      }, y);
-      await page.waitForTimeout(25);
+      await jumpTo(page, y);
+      await page.waitForTimeout(10);
       const m = await page.evaluate(() => {
         const s1 = document.querySelector('[data-home-scene="1"]');
         const vh = window.innerHeight;
         const band = s1 ? Math.max(0, vh - s1.getBoundingClientRect().top) : 0;
-        const media = s1 && s1.querySelector(".home-scene-media-scale");
-        const scale = media ? Number(gsap.getProperty(media, "scale")) : null;
+        const stage = s1 && s1.querySelector(".home-scene-stage");
+        const scale = stage ? Number(gsap.getProperty(stage, "scale")) : null;
         return { band, scale, y: window.scrollY };
       });
       if (m.band > 180 && m.band < 420 && m.scale != null) {
@@ -715,8 +758,9 @@ test.describe("Home fullscreen stages", () => {
       }
     }
     expect(best).not.toBeNull();
-    expect(best.scale).toBeGreaterThanOrEqual(0.94);
-    expect(best.scale).toBeLessThan(1.08);
+    // band 260 / vh 900 → progress 0.29 → scale ≈ 0.82
+    expect(best.scale).toBeGreaterThanOrEqual(0.78);
+    expect(best.scale).toBeLessThan(0.96);
   });
 
   test("1440: scene0 rest cover full bleed (A-lock fromTo + CSS cover)", async ({ page }) => {
@@ -729,7 +773,6 @@ test.describe("Home fullscreen stages", () => {
     });
     await page.waitForTimeout(400);
     const rest = await page.evaluate(() => {
-      const token = parseFloat(getComputedStyle(document.body).getPropertyValue("--media-scale-from"));
       const media0 = document.querySelector('[data-home-scene="0"] .home-scene-media-scale');
       const stage = document.querySelector('[data-home-scene="0"] .home-scene-stage');
       const img = media0 && media0.querySelector("img");
@@ -744,7 +787,7 @@ test.describe("Home fullscreen stages", () => {
         imgRect && stageRect
           ? imgRect.top > stageRect.top + 0.5 || imgRect.left > stageRect.left + 0.5
           : null;
-      return { scale, token, topGap, leadingBlack, scrollY: window.scrollY };
+      return { scale, topGap, leadingBlack, scrollY: window.scrollY };
     });
     expect(rest.scale).toBeGreaterThanOrEqual(0.99);
     expect(rest.scale).toBeLessThanOrEqual(1.01);
@@ -753,89 +796,113 @@ test.describe("Home fullscreen stages", () => {
     expect(rest.leadingBlack).toBe(false);
   });
 
-  test("1440: transition 0→1 scale monotonic early≤mid≤late (no V curve)", async ({ page }) => {
+  test("1440: scene1 window opens monotonically 0.75 → 1 (no overshoot)", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
-    const fromToken = await page.evaluate(() =>
-      parseFloat(getComputedStyle(document.body).getPropertyValue("--media-scale-from"))
-    );
     const picks = [];
     for (const progress of [0.2, 0.5, 0.92]) {
       await page.evaluate((p) => {
-        const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-0");
-        if (!st) throw new Error("missing home-scene-0");
-        window.scrollTo(0, st.start + (st.end - st.start) * p);
+        const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-1");
+        if (!st) throw new Error("missing home-scene-1");
+        const y = st.start + (st.end - st.start) * p;
+        if (window.__lenis) window.__lenis.scrollTo(y, { immediate: true, force: true });
+        else window.scrollTo({ top: y, behavior: "instant" });
         ScrollTrigger.update();
       }, progress);
-      await page.waitForTimeout(400);
+      await page.waitForTimeout(300);
       const scale = await page.evaluate(() => {
-        const media = document.querySelector('[data-home-scene="0"] .home-scene-media-scale');
-        return media ? Number(gsap.getProperty(media, "scale")) : null;
+        const stage = document.querySelector('[data-home-scene="1"] .home-scene-stage');
+        return stage ? Number(gsap.getProperty(stage, "scale")) : null;
       });
       picks.push({ progress, scale });
     }
-    expect(fromToken).toBeGreaterThanOrEqual(0.99);
-    expect(fromToken).toBeLessThanOrEqual(1.01);
-    expect(picks[0].scale).toBeGreaterThanOrEqual(fromToken - 0.02);
-    expect(picks[0].scale).toBeLessThanOrEqual(fromToken + 0.05);
-    expect(picks[1].scale).toBeGreaterThan(picks[0].scale - 0.01);
-    expect(picks[2].scale).toBeGreaterThan(picks[1].scale - 0.01);
-    expect(picks[2].scale).toBeGreaterThan(1.04);
+    expect(picks[0].scale).toBeGreaterThanOrEqual(0.78);
+    expect(picks[0].scale).toBeLessThanOrEqual(0.84);
+    expect(picks[1].scale).toBeGreaterThan(picks[0].scale);
+    expect(picks[2].scale).toBeGreaterThan(picks[1].scale);
+    expect(picks[2].scale).toBeLessThanOrEqual(1.001);
   });
 
-  test("featured panel: mid-scroll media scale between token and 1", async ({ page }) => {
+  test("1440: scene1 settles at scale 1 when pinned and stays there", async ({ page }) => {
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    const read = () =>
+      page.evaluate(() => {
+        const stage = document.querySelector('[data-home-scene="1"] .home-scene-stage');
+        return stage ? Number(gsap.getProperty(stage, "scale")) : null;
+      });
+    await page.evaluate(() => {
+      const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-1");
+      const y = st.start + (st.end - st.start);
+      if (window.__lenis) window.__lenis.scrollTo(y, { immediate: true, force: true });
+      else window.scrollTo({ top: y, behavior: "instant" });
+      ScrollTrigger.update();
+    });
+    await page.waitForTimeout(300);
+    expect(await read()).toBeGreaterThanOrEqual(0.999);
+    await page.evaluate(() => {
+      const y = window.scrollY + 300;
+      if (window.__lenis) window.__lenis.scrollTo(y, { immediate: true, force: true });
+      else window.scrollTo({ top: y, behavior: "instant" });
+      ScrollTrigger.update();
+    });
+    await page.waitForTimeout(300);
+    expect(await read()).toBeGreaterThanOrEqual(0.999);
+  });
+
+  test("featured panel: mid-entry stage window scale is between 0.75 and 1", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
     await page.evaluate(() => {
       const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-1");
       if (!st) throw new Error("missing home-scene-1");
-      window.scrollTo(0, st.start + (st.end - st.start) * 0.48);
+      const y = st.start + (st.end - st.start) * 0.48;
+      if (window.__lenis) window.__lenis.scrollTo(y, { immediate: true, force: true });
+      else window.scrollTo({ top: y, behavior: "instant" });
       ScrollTrigger.update();
     });
     await page.waitForTimeout(450);
     const metrics = await page.evaluate(() => {
       const panel = document.querySelector('[data-home-scene="1"]');
-      const media = panel && panel.querySelector(".home-scene-media-scale");
-      if (!panel || !media || typeof gsap === "undefined") return null;
-      const mediaScale = gsap.getProperty(media, "scale");
+      const stage = panel && panel.querySelector(".home-scene-stage");
+      if (!panel || !stage || typeof gsap === "undefined") return null;
       return {
-        scale: mediaScale,
+        scale: gsap.getProperty(stage, "scale"),
         panelYPercent: gsap.getProperty(panel, "yPercent"),
-        stageOverflow: getComputedStyle(panel.querySelector(".home-scene-stage")).overflow,
+        stageOverflow: getComputedStyle(stage).overflow,
       };
     });
     expect(metrics).not.toBeNull();
-    expect(metrics.scale).toBeGreaterThan(1.0);
-    expect(metrics.scale).toBeLessThan(1.06);
+    // 48% of the entry → window ≈ 0.87
+    expect(metrics.scale).toBeGreaterThan(0.84);
+    expect(metrics.scale).toBeLessThan(0.91);
     expect(metrics.panelYPercent).toBe(0);
     expect(metrics.stageOverflow).toBe("hidden");
   });
 
-  test("375: featured stack uses mobile scale-from token", async ({ page }) => {
+  test("375: featured entry is a window driven by the stage", async ({ page }) => {
     await page.setViewportSize(NARROW);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
-    const token = await page.evaluate(() =>
-      getComputedStyle(document.body).getPropertyValue("--media-scale-from-mobile").trim()
-    );
-    expect(token).toBe("0.6");
-    await page.mouse.move(188, 400);
-    for (let i = 0; i < 12; i += 1) {
-      await page.mouse.wheel(0, 200);
-      await page.waitForTimeout(80);
-    }
-    await page.waitForTimeout(400);
-    const scale = await page.evaluate(() => {
-      const media = document.querySelector('[data-home-scene="2"] .home-scene-media-scale');
-      if (!media || typeof gsap === "undefined") return null;
-      return gsap.getProperty(media, "scale");
+    await page.evaluate(() => {
+      const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-1");
+      const y = st.start + (st.end - st.start) * 0.5;
+      if (window.__lenis) window.__lenis.scrollTo(y, { immediate: true, force: true });
+      else window.scrollTo({ top: y, behavior: "instant" });
+      ScrollTrigger.update();
     });
-    if (scale !== null && scale < 1) {
-      expect(scale).toBeGreaterThanOrEqual(0.6);
-      expect(scale).toBeLessThan(1);
-    }
+    await page.waitForTimeout(300);
+    const scale = await page.evaluate(() => {
+      const stage = document.querySelector('[data-home-scene="1"] .home-scene-stage');
+      if (!stage || typeof gsap === "undefined") return null;
+      return Number(gsap.getProperty(stage, "scale"));
+    });
+    expect(scale).not.toBeNull();
+    expect(scale).toBeGreaterThan(0.84);
+    expect(scale).toBeLessThan(0.91);
   });
 
   test("featured panels have no home-scene-overlay; links keep series aria-label", async ({ page }) => {
@@ -859,7 +926,8 @@ test.describe("Home fullscreen stages", () => {
     const blend = await page.locator(".home-scene-title-blend").first().evaluate((el) => getComputedStyle(el).mixBlendMode);
     expect(blend).toBe("difference");
     const y0 = await page.locator('[data-home-scene="0"] .home-scene-title').evaluate((el) => el.getBoundingClientRect().top);
-    await wheelScroll(page, 22, 400);
+    await jumpTo(page, 1350);
+    await page.waitForTimeout(250);
     expect(await sceneDominatesViewport(page, 1)).toBe(true);
     const featuredTitleY = await page.evaluate(() => {
       const el = document.querySelector('[data-home-scene="1"] .home-scene-title');
@@ -867,42 +935,44 @@ test.describe("Home fullscreen stages", () => {
     });
     const vh = await page.evaluate(() => window.innerHeight);
     expect(Math.abs(featuredTitleY - vh / 2)).toBeLessThan(140);
-    await page.evaluate(() => window.scrollTo(0, 0));
+    await jumpTo(page, 0);
     await page.waitForTimeout(450);
     const yBack = await page.locator('[data-home-scene="0"] .home-scene-title').evaluate((el) => el.getBoundingClientRect().top);
     expect(Math.abs(yBack - y0)).toBeLessThan(80);
   });
 
-  test("1440: scene0→1 mid matches sticky peek + media scale (same family as 1→2)", async ({ page }) => {
+  test("1440: scene1→2 mid: next band peeks and incoming window is mid-open", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
     await page.evaluate(() => {
-      const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-0");
-      if (!st) throw new Error("missing home-scene-0");
+      const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-2");
+      if (!st) throw new Error("missing home-scene-2");
       const y = st.start + (st.end - st.start) * 0.5;
-      window.scrollTo(0, y);
+      if (window.__lenis) window.__lenis.scrollTo(y, { immediate: true, force: true });
+      else window.scrollTo({ top: y, behavior: "instant" });
       ScrollTrigger.update();
     });
     await page.waitForTimeout(450);
     const metrics = await page.evaluate(() => {
-      const scene0 = document.querySelector('[data-home-scene="0"]');
       const scene1 = document.querySelector('[data-home-scene="1"]');
-      const r1 = scene1 ? scene1.getBoundingClientRect() : null;
-      const scale0 =
-        scene0 && typeof gsap !== "undefined"
-          ? gsap.getProperty(scene0.querySelector(".home-scene-media-scale"), "scale")
-          : null;
+      const scene2 = document.querySelector('[data-home-scene="2"]');
+      const r2 = scene2 ? scene2.getBoundingClientRect() : null;
+      const stage1 = scene1 && scene1.querySelector(".home-scene-stage");
+      const stage2 = scene2 && scene2.querySelector(".home-scene-stage");
       const title = document.querySelector(".home-scene.is-stage-active .home-scene-title");
       return {
-        nextBand: r1 ? Math.max(0, window.innerHeight - r1.top) : 0,
-        scale0,
+        nextBand: r2 ? Math.max(0, window.innerHeight - r2.top) : 0,
+        pinnedScale: stage1 ? Number(gsap.getProperty(stage1, "scale")) : null,
+        incomingScale: stage2 ? Number(gsap.getProperty(stage2, "scale")) : null,
         title: title ? title.textContent.trim() : "",
       };
     });
     expect(metrics.nextBand).toBeGreaterThan(200);
-    expect(metrics.scale0).toBeGreaterThan(1.01);
-    expect(metrics.scale0).toBeLessThan(1.05);
+    // the pinned panel is already settled, the incoming one is half-open
+    expect(metrics.pinnedScale).toBeGreaterThanOrEqual(0.999);
+    expect(metrics.incomingScale).toBeGreaterThan(0.84);
+    expect(metrics.incomingScale).toBeLessThan(0.91);
     expect(metrics.title.length).toBeGreaterThan(0);
   });
 
