@@ -95,10 +95,10 @@ button {
     border-color var(--duration-fast) var(--ease-out);
 }
 
-/* Photo overlay: difference on chrome-blend clusters (menu = scheme A, no panel) */
+/* Overlay: difference on fixed header (inner chrome-blend + GSAP-scaled rail broke G24 SVG invert). */
 .page-home .site-header--overlay {
   isolation: auto;
-  mix-blend-mode: normal;
+  mix-blend-mode: difference;
   background: transparent !important;
 }
 
@@ -109,7 +109,7 @@ button {
   gap: var(--space-5);
   flex: 1;
   min-width: 0;
-  mix-blend-mode: difference;
+  mix-blend-mode: normal;
   color: #fff;
 }
 
