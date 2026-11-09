@@ -235,6 +235,7 @@ const blockers = [];
 if (volumeIncomplete) blockers.push("volume");
 if (wheelGate !== "Pass") blockers.push("wheel");
 if (!staticHashMatch) blockers.push("staticHash");
+if (compositionGate !== "Pass") blockers.push("compositionTrackB");
 manifest.acceptanceGates.overall = blockers.length ? "Incomplete" : "Pass";
 
 writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify(manifest, null, 2));
