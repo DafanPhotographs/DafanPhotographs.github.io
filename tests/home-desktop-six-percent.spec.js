@@ -9,17 +9,14 @@ const {
   readLayoutMediaRatio,
   isHeroLimitUrl,
   isHeroFillUrl,
-  sampleWheelTrace,
-  pairScaleAtSameScrollY,
+  wheelRoundTripEntryMidBack,
   screenshotStageAtSample,
   attachCloudinaryResponseLog,
   readSceneVisibilityMeta,
   SCENE_PUBLIC,
+  SCROLL_Y_PAIR_TOL_PX,
 } = require("./helpers/home-scroll-stable.cjs");
-
-const WHEEL_FORWARD = 12;
-const WHEEL_BACK = 16;
-const WHEEL_DELTA = 250;
+const { writeArtifact, ensureDir } = require("./helpers/acceptance-artifacts.cjs");
 
 test.describe("desktop-six-percent guards", () => {
   test("768: scene0 fill delivery", async ({ page }) => {
@@ -44,9 +41,43 @@ test.describe("desktop-six-percent guards", () => {
     const src = await page.locator('[data-home-scene="0"] img').evaluate((img) => img.currentSrc);
     expect(src).not.toContain("c_limit");
   });
+
+  test("mobile zero-limit request journal", async ({ page }) => {
+    const journal = { initial: [], afterScroll: [] };
+    const isLimit = (u) => u.includes("c_limit") && u.includes("dafan/series");
+    page.on("request", (req) => {
+      const u = req.url();
+      if (isLimit(u)) journal.afterScroll.push({ t: Date.now(), url: u });
+    });
+    for (const vp of [
+      { w: 375, h: 812, label: "375" },
+      { w: 768, h: 1024, label: "768" },
+    ]) {
+      journal[vp.label] = { limitRequests: [], scenes: [] };
+      journal.afterScroll.length = 0;
+      await page.setViewportSize({ width: vp.w, height: vp.h });
+      await page.goto("/");
+      await page.waitForLoadState("networkidle");
+      for (let i = 0; i < 3; i += 1) {
+        await scrollTriggerProgress(page, i, 0.2);
+        const src = await page.locator('[data-home-scene="' + i + '"] img').evaluate((img) => img.currentSrc);
+        journal[vp.label].scenes.push({ sceneIndex: i, currentSrc: src });
+      }
+      journal[vp.label].limitRequests = [...journal.afterScroll];
+      expect(journal[vp.label].limitRequests.length).toBe(0);
+      for (const row of journal[vp.label].scenes) {
+        expect(row.currentSrc).toContain("c_fill");
+        expect(row.currentSrc).not.toContain("c_limit");
+      }
+    }
+    writeArtifact("journals/mobile-zero-limit.json", journal);
+  });
 });
 
 test.describe("desktop-six-percent post-impl", () => {
+  test.beforeAll(() => {
+    ensureDir("journals");
+  });
   test("desktop layout: media-scale layout box ~100% of stage", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
@@ -150,6 +181,8 @@ test.describe("desktop-six-percent post-impl", () => {
     expect(info.sources).toBe(0);
     expect(info.state).toBe("fill");
     expect(info.currentSrc).toContain("c_fill");
+    expect(info.cycle).toBe("1");
+    writeArtifact("journals/fallback-limit-to-fill.json", info);
   });
 
   test("fallback: fill abort => failed", async ({ page }) => {
@@ -159,10 +192,68 @@ test.describe("desktop-six-percent post-impl", () => {
     );
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
-    await page.waitForFunction(
-      () => document.querySelector('[data-home-scene="0"] img').dataset.heroPictureState === "failed",
-      { timeout: 15000 }
-    );
+    const end = await page.evaluate(() => {
+      const img = document.querySelector('[data-home-scene="0"] img');
+      return {
+        state: img.dataset.heroPictureState,
+        cycle: img.dataset.heroFallbackCycle,
+      };
+    });
+    expect(end.state).toBe("failed");
+    expect(end.cycle).toBe("1");
+    writeArtifact("journals/fallback-double-abort-failed.json", end);
+  });
+
+  test("fallback: same-cycle error after fill does not retry", async ({ page }) => {
+    await page.route((url) => isHeroLimitUrl(url, "bipenggou"), (route) => route.abort());
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await waitForHeroDelivery(page, 0, false);
+    const before = await page.evaluate(() => {
+      const img = document.querySelector('[data-home-scene="0"] img');
+      return { state: img.dataset.heroPictureState, cycle: img.dataset.heroFallbackCycle, src: img.src };
+    });
+    expect(before.state).toBe("fill");
+    await page.evaluate(() => {
+      const img = document.querySelector('[data-home-scene="0"] img');
+      img.src = "https://invalid.example/broken.jpg";
+    });
+    await page.evaluate(() => {
+      const img = document.querySelector('[data-home-scene="0"] img');
+      img.dispatchEvent(new Event("error"));
+    });
+    const after = await page.evaluate(() => {
+      const img = document.querySelector('[data-home-scene="0"] img');
+      return { state: img.dataset.heroPictureState, cycle: img.dataset.heroFallbackCycle };
+    });
+    expect(after.state).toBe("failed");
+    expect(after.cycle).toBe(before.cycle);
+    writeArtifact("journals/fallback-same-cycle-no-retry.json", { before, after });
+  });
+
+  test("fallback: resize after fill increments cycle and restores source", async ({ page }) => {
+    await page.route((url) => isHeroLimitUrl(url, "bipenggou"), (route) => route.abort());
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await waitForHeroDelivery(page, 0, false);
+    const c1 = await page.locator('[data-home-scene="0"] img').getAttribute("data-hero-fallback-cycle");
+    expect(c1).toBe("1");
+    await page.setViewportSize({ width: 1023, height: 768 });
+    await waitForHeroDelivery(page, 0, false);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForFunction(() => {
+      const img = document.querySelector('[data-home-scene="0"] img');
+      const pic = img.closest("picture");
+      return (
+        img.dataset.heroPictureState === "" &&
+        pic &&
+        pic.querySelectorAll("source").length === 1 &&
+        Number(img.dataset.heroFallbackCycle) >= 2
+      );
+    });
+    const c2 = await page.locator('[data-home-scene="0"] img').getAttribute("data-hero-fallback-cycle");
+    expect(Number(c2)).toBeGreaterThan(Number(c1));
+    writeArtifact("journals/fallback-resize-new-cycle.json", { c1, c2 });
   });
 
   test("resize 1024-1023-1024 without reload", async ({ page }) => {
@@ -175,42 +266,76 @@ test.describe("desktop-six-percent post-impl", () => {
     });
     const tag = (p) => journal.filter((j) => j.phase === p).length;
 
+    async function snapPhase() {
+      return page.evaluate(() => {
+        const img = document.querySelector('[data-home-scene="0"] img');
+        const media = document.querySelector('[data-home-scene="0"] .home-scene-media-scale');
+        const stage = document.querySelector('[data-home-scene="0"] .home-scene-stage');
+        return {
+          currentSrc: img.currentSrc,
+          viewport: { w: window.innerWidth, h: window.innerHeight },
+          layoutRatio: media.offsetWidth / stage.offsetWidth,
+          scale: media ? Number(gsap.getProperty(media, "scale")) : null,
+        };
+      });
+    }
+    const phases = {};
+
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.goto("/");
     await waitForHeroDelivery(page, 0, true);
     journal.forEach((j) => {
       if (j.phase === "pending") j.phase = "after_first_1024";
     });
+    phases.after_first_1024 = await snapPhase();
 
     await page.setViewportSize({ width: 1023, height: 768 });
     await waitForHeroDelivery(page, 0, false);
     journal.forEach((j) => {
       if (j.phase === "pending") j.phase = "after_1023";
     });
+    phases.after_1023 = await snapPhase();
 
     await page.setViewportSize({ width: 1024, height: 768 });
     await waitForHeroDelivery(page, 0, true);
     journal.forEach((j) => {
       if (j.phase === "pending") j.phase = "after_second_1024";
     });
+    phases.after_second_1024 = await snapPhase();
 
+    const payload = {
+      total: journal.length,
+      byPhase: {
+        after_first_1024: tag("after_first_1024"),
+        after_1023: tag("after_1023"),
+        after_second_1024: tag("after_second_1024"),
+      },
+      urls: journal,
+      delivery: phases,
+    };
+    writeArtifact("journals/resize-1024-1023-1024.json", payload);
     expect(journal.length).toBeGreaterThanOrEqual(1);
+    expect(phases.after_1023.currentSrc).toContain("c_fill");
+    expect(phases.after_second_1024.currentSrc).toContain("c_limit");
     await test.info().attach("resize-journal", {
-      body: JSON.stringify(
-        {
-          total: journal.length,
-          byPhase: {
-            after_first_1024: tag("after_first_1024"),
-            after_1023: tag("after_1023"),
-            after_second_1024: tag("after_second_1024"),
-          },
-          urls: journal,
-        },
-        null,
-        2
-      ),
+      body: JSON.stringify(payload, null, 2),
       contentType: "application/json",
     });
+  });
+
+  test("lazy load attrs and focus on active scene link", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    const lazy = await page.evaluate(() => {
+      const img2 = document.querySelector('[data-home-scene="2"] img');
+      return { loading: img2.loading, fetchpriority: img2.getAttribute("fetchpriority") };
+    });
+    expect(lazy.loading).toBe("lazy");
+    await page.keyboard.press("Tab");
+    const focusHref = await page.evaluate(() => document.activeElement && document.activeElement.getAttribute("href"));
+    writeArtifact("journals/lazy-focus.json", { lazy, firstTabHref: focusHref });
+    expect(focusHref).toBeTruthy();
   });
 
   test("qingdao loads after scene2 reveal (phased log)", async ({ page }) => {
@@ -304,30 +429,55 @@ test.describe("desktop-six-percent post-impl", () => {
   });
 });
 
-const WHEEL_START_PROGRESS = [0.35, 0.42, 0.15];
+const WHEEL_DELTAS = [32, 28, 24];
+
+test.describe("desktop-six-percent wheel", () => {
+  test.beforeAll(() => {
+    const wheelDir = path.join(process.cwd(), "artifacts", "acceptance-evidence", "wheel");
+    fs.rmSync(wheelDir, { recursive: true, force: true });
+    ensureDir("wheel");
+  });
 
 for (const sceneIndex of [0, 1, 2]) {
   test("wheel-roundtrip-scene" + sceneIndex + "-matched-scrollY", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
     await page.waitForLoadState("networkidle");
-    await scrollTriggerProgress(page, sceneIndex, WHEEL_START_PROGRESS[sceneIndex]);
-    const samples = await sampleWheelTrace(page, sceneIndex, WHEEL_FORWARD, WHEEL_BACK, WHEEL_DELTA);
-    const forward = samples.filter((s) => s.tag.startsWith("fwd-"));
-    const backward = samples.filter((s) => s.tag.startsWith("back-"));
-    let pairs = pairScaleAtSameScrollY(forward, backward, 130);
-    if (pairs.length < 2) {
-      pairs = pairScaleAtSameScrollY(forward, backward, 180);
+    let wheelResult = null;
+    let lastPairs = [];
+    for (const deltaY of WHEEL_DELTAS) {
+      wheelResult = await wheelRoundTripEntryMidBack(page, sceneIndex, { deltaY });
+      lastPairs = wheelResult.pairs;
+      if (lastPairs.length >= 2) break;
     }
-    expect(pairs.length, "need ≥2 scrollY pairs; tune WHEEL_* constants").toBeGreaterThanOrEqual(2);
+    const archive = {
+      sceneIndex,
+      pairTolerancePx: SCROLL_Y_PAIR_TOL_PX,
+      deltasTried: WHEEL_DELTAS,
+      wheelConfig: wheelResult.wheelConfig,
+      samples: wheelResult.samples,
+      pairs: lastPairs,
+      scrollYDeltas: lastPairs.map((p) => p.scrollYDelta),
+    };
+    const wheelDir = path.join(process.cwd(), "artifacts", "acceptance-evidence", "wheel");
+    fs.mkdirSync(wheelDir, { recursive: true });
+  const jsonPath = path.join(wheelDir, "wheel-trace-scene" + sceneIndex + ".json");
+    fs.writeFileSync(jsonPath, JSON.stringify(archive, null, 2));
 
-    const outDir = testInfo.outputPath("wheel-scene" + sceneIndex);
-    fs.mkdirSync(outDir, { recursive: true });
+    expect(
+      lastPairs.length,
+      "r4 requires ≥2 pairs with |ΔscrollY|≤" + SCROLL_Y_PAIR_TOL_PX + "px; got deltas " + JSON.stringify(archive.scrollYDeltas)
+    ).toBeGreaterThanOrEqual(2);
+    for (const p of lastPairs) {
+      expect(p.scrollYDelta).toBeLessThanOrEqual(SCROLL_Y_PAIR_TOL_PX);
+      expect(p.backScale).toBeLessThanOrEqual(p.forwardScale + 0.01);
+    }
+
     const shotMeta = [];
     let compositionPairs = 0;
-    for (let i = 0; i < Math.min(pairs.length, 4); i += 1) {
-      const pair = pairs[i];
-      expect(pair.backScale).toBeLessThanOrEqual(pair.forwardScale + 0.01);
+    for (let i = 0; i < Math.min(lastPairs.length, 4); i += 1) {
+      const pair = lastPairs[i];
+      const pngPath = path.join(wheelDir, "scene" + sceneIndex + "-pair" + i + "-wheel-对照-scrollTo.png");
       await page.evaluate((y) => {
         window.scrollTo(0, y);
         ScrollTrigger.update();
@@ -341,34 +491,40 @@ for (const sceneIndex of [0, 1, 2]) {
       const live = {
         ...(await readSceneVisibilityMeta(page, sceneIndex)),
         scrollY: pair.scrollY,
-        scale: pair.forwardScale,
+        scrollYDelta: pair.scrollYDelta,
+        note: "scrollTo对照 only; pairing from real wheel samples",
       };
-      const shot = await screenshotStageAtSample(
-        page,
-        sceneIndex,
-        live,
-        path.join(outDir, "pair" + i + "-same-scrollY.png")
-      );
+      const shot = await screenshotStageAtSample(page, sceneIndex, live, pngPath);
       const proof = !!(pair.compositionProof && shot.compositionProof);
       if (proof) compositionPairs += 1;
       shotMeta.push({
-        pair: i,
+        pairIndex: i,
         scrollY: pair.scrollY,
+        scrollYDelta: pair.scrollYDelta,
         forwardScale: pair.forwardScale,
         backScale: pair.backScale,
+        forwardProgress: pair.forwardMeta.progress,
+        backProgress: pair.backMeta.progress,
         compositionProof: proof,
-        shot,
+        obscured: shot.obscured,
+        visibleSceneIndices: shot.visibleSceneIndices,
+        screenshot: path.basename(pngPath),
+        pairingMode: "real-wheel-same-scrollY",
       });
     }
+    archive.shotMeta = shotMeta;
+    archive.compositionPairs = compositionPairs;
+    fs.writeFileSync(jsonPath, JSON.stringify(archive, null, 2));
     await testInfo.attach("wheel-trace-scene" + sceneIndex, {
-      body: JSON.stringify({ samples, pairs, shotMeta, compositionPairs }, null, 2),
+      path: jsonPath,
       contentType: "application/json",
     });
     if (compositionPairs < 1) {
       testInfo.annotations.push({
         type: "compositionIncomplete",
-        description: "No unobscured same-scrollY pair for scene " + sceneIndex,
+        description: "Wheel pairs exist but no unobscured stage for scene " + sceneIndex,
       });
     }
   });
 }
+});

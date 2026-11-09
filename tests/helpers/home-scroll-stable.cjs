@@ -152,36 +152,58 @@ async function pushWheelSample(page, sceneIndex, samples, tag) {
   samples.push({ tag, ...row, ...vis });
 }
 
-async function sampleWheelTrace(page, sceneIndex, forwardSteps, backSteps, deltaY, opts = {}) {
-  const minPairs = opts.minPairs ?? 2;
-  const maxExtraBack = opts.maxExtraBack ?? 28;
+/** r4: same scroll position = |ΔscrollY| ≤ this (px); not “nearest neighbor” at loose tolerance */
+const SCROLL_Y_PAIR_TOL_PX = 2;
+
+/**
+ * Real wheel: scene entry → mid progress → scroll back. Small deltaY for ±2px pairing.
+ */
+async function wheelRoundTripEntryMidBack(page, sceneIndex, opts = {}) {
+  const deltaY = opts.deltaY ?? 32;
+  const maxFwd = opts.maxFwd ?? 90;
+  const maxBack = opts.maxBack ?? 110;
+  const midProgress = opts.midProgress ?? 0.48;
   const samples = [];
   await page.mouse.move(720, 450);
-  await pushWheelSample(page, sceneIndex, samples, "start");
-  for (let i = 0; i < forwardSteps; i += 1) {
+  await scrollTriggerProgress(page, sceneIndex, 0);
+  await pushWheelSample(page, sceneIndex, samples, "entry-rest");
+
+  let fwdCount = 0;
+  for (let i = 0; i < maxFwd; i += 1) {
     await page.mouse.wheel(0, deltaY);
     await pushWheelSample(page, sceneIndex, samples, "fwd-" + i);
+    fwdCount = i + 1;
+    const prog = await page.evaluate((idx) => {
+      const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-" + idx);
+      return st ? st.progress : 0;
+    }, sceneIndex);
+    if (prog >= midProgress) break;
   }
-  for (let i = 0; i < backSteps; i += 1) {
+
+  let backCount = 0;
+  for (let i = 0; i < maxBack; i += 1) {
     await page.mouse.wheel(0, -deltaY);
     await pushWheelSample(page, sceneIndex, samples, "back-" + i);
+    backCount = i + 1;
+    const prog = await page.evaluate((idx) => {
+      const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-" + idx);
+      return st ? st.progress : 0;
+    }, sceneIndex);
+    if (prog <= 0.08) break;
   }
-  const startY = samples[0].scrollY;
-  let extra = 0;
-  while (extra < maxExtraBack) {
-    const forward = samples.filter((s) => s.tag.startsWith("fwd-"));
-    const backward = samples.filter((s) => s.tag.startsWith("back-"));
-    if (pairScaleAtSameScrollY(forward, backward, 130).length >= minPairs) break;
-    const last = samples[samples.length - 1];
-    if (last.scrollY <= startY + 50) break;
-    await page.mouse.wheel(0, -deltaY);
-    await pushWheelSample(page, sceneIndex, samples, "back-extra-" + extra);
-    extra += 1;
-  }
-  return samples;
+
+  const forward = samples.filter((s) => s.tag.startsWith("fwd-"));
+  const backward = samples.filter((s) => s.tag.startsWith("back-"));
+  const pairs = pairScaleAtSameScrollY(forward, backward, SCROLL_Y_PAIR_TOL_PX);
+
+  return {
+    samples,
+    pairs,
+    wheelConfig: { deltaY, forwardSteps: fwdCount, backSteps: backCount, midProgress, pairTolerancePx: SCROLL_Y_PAIR_TOL_PX },
+  };
 }
 
-function pairScaleAtSameScrollY(forward, backward, tolerancePx = 24) {
+function pairScaleAtSameScrollY(forward, backward, tolerancePx = SCROLL_Y_PAIR_TOL_PX) {
   const fwd = forward.filter((s) => s.tag.startsWith("fwd-"));
   const back = backward.filter((s) => s.tag.startsWith("back-"));
   const pairs = [];
@@ -278,6 +300,7 @@ function classifyHeroBytesRow(row) {
 
 module.exports = {
   SCENE_PUBLIC,
+  SCROLL_Y_PAIR_TOL_PX,
   isHeroLimitUrl,
   isHeroFillUrl,
   waitForScrubStable,
@@ -285,7 +308,7 @@ module.exports = {
   readLayoutMediaRatio,
   waitForHeroDelivery,
   readSceneVisibilityMeta,
-  sampleWheelTrace,
+  wheelRoundTripEntryMidBack,
   pairScaleAtSameScrollY,
   screenshotStageAtSample,
   attachCloudinaryResponseLog,
