@@ -95,37 +95,24 @@ button {
     border-color var(--duration-fast) var(--ease-out);
 }
 
-/* Overlay: difference on fixed header (inner chrome-blend + GSAP-scaled rail broke G24 SVG invert). */
-.page-home .site-header--overlay {
-  isolation: auto;
-  mix-blend-mode: difference;
-  background: transparent !important;
+/*
+ * Home overlay: desktop = white source + whole-bar difference (reference-site direction).
+ * Mobile overlay = opaque light bar + dark text, no difference over photos.
+ */
+@media (min-width: 768px) {
+  .page-home .site-header--overlay {
+    isolation: auto;
+    mix-blend-mode: difference;
+    background: transparent !important;
+  }
 }
 
-/* Body-level stroke portals: decorative, non-interactive, hidden in solid (white bar) mode */
-.header-stroke-portals {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 41;
-  border: 0;
-  margin: 0;
-  padding: 0;
-}
-
-.header-stroke-portal {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-  mix-blend-mode: normal;
-  isolation: isolate;
-}
-
-.header-stroke-portals[hidden] {
-  display: none !important;
+@media (max-width: 767.98px) {
+  .page-home .site-header--overlay {
+    mix-blend-mode: normal;
+    background: var(--header-bg);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
+  }
 }
 
 .page-home .site-header .header-chrome-blend {
@@ -139,8 +126,10 @@ button {
   mix-blend-mode: normal;
 }
 
-.page-home .site-header--overlay .header-chrome-blend {
-  color: #fff;
+@media (min-width: 768px) {
+  .page-home .site-header--overlay .header-chrome-blend {
+    color: #fff;
+  }
 }
 
 .page-home .site-header .header-inner {
@@ -158,35 +147,49 @@ button {
   mix-blend-mode: normal;
 }
 
-.page-home .site-header--overlay .header-chrome {
-  color: #fff;
+@media (min-width: 768px) {
+  .page-home .site-header--overlay .header-chrome {
+    color: #fff;
+  }
+
+  .page-home .site-header--overlay .header-chrome-blend .wordmark,
+  .page-home .site-header--overlay .header-chrome-blend .nav-link-label,
+  .page-home .site-header--overlay .header-chrome-blend .lang-switch__btn,
+  .page-home .site-header--overlay .header-chrome-blend .lang-switch__sep,
+  .page-home .site-header--overlay .lang-switch__btn {
+    color: #fff;
+    text-shadow: none;
+  }
+
+  .page-home .site-header--overlay .nav-decor {
+    display: none;
+  }
+
+  .page-home .site-header--overlay .site-nav a:hover .nav-link-label,
+  .page-home .site-header--overlay .lang-switch__btn:hover {
+    opacity: 1;
+  }
+
+  .page-home .site-header--overlay .header-chrome-blend .wordmark:focus-visible,
+  .page-home .site-header--overlay .header-chrome-blend .site-nav a:focus-visible,
+  .page-home .site-header--overlay .lang-switch__btn:focus-visible {
+    isolation: isolate;
+    mix-blend-mode: normal;
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: 3px;
+  }
 }
 
-.page-home .site-header--overlay .header-chrome-blend .wordmark,
-.page-home .site-header--overlay .header-chrome-blend .nav-link-label,
-.page-home .site-header--overlay .header-chrome-blend .lang-switch__btn,
-.page-home .site-header--overlay .header-chrome-blend .lang-switch__sep,
-.page-home .site-header--overlay .lang-switch__btn {
-  color: #fff;
-  text-shadow: none;
-}
-
-.page-home .site-header--overlay .nav-decor {
-  display: none;
-}
-
-.page-home .site-header--overlay .site-nav a:hover .nav-link-label,
-.page-home .site-header--overlay .lang-switch__btn:hover {
-  opacity: 1;
-}
-
-.page-home .site-header--overlay .header-chrome-blend .wordmark:focus-visible,
-.page-home .site-header--overlay .header-chrome-blend .site-nav a:focus-visible,
-.page-home .site-header--overlay .lang-switch__btn:focus-visible {
-  isolation: isolate;
-  mix-blend-mode: normal;
-  outline: var(--focus-ring-width) solid var(--color-focus);
-  outline-offset: 3px;
+@media (max-width: 767.98px) {
+  .page-home .site-header--overlay .header-chrome,
+  .page-home .site-header--overlay .header-chrome-blend .wordmark,
+  .page-home .site-header--overlay .header-chrome-blend .nav-link-label,
+  .page-home .site-header--overlay .header-chrome-blend .lang-switch__btn,
+  .page-home .site-header--overlay .header-chrome-blend .lang-switch__sep,
+  .page-home .site-header--overlay .lang-switch__btn {
+    color: var(--color-text);
+    text-shadow: none;
+  }
 }
 
 .page-home .site-header--solid {

@@ -420,20 +420,24 @@ test.describe("Home fullscreen stages", () => {
     expect(isWhiteSource(await wordmarkSourceWhite(page))).toBe(true);
   });
 
-  test("G24 wordmark: composited difference on bright sky (1440 + 375)", async ({ page }) => {
+  test("G24 wordmark: composited difference on bright sky (desktop overlay only)", async ({ page }) => {
     const threshold = 48;
-    for (const vp of [MOTION_VIEWPORT, NARROW]) {
-      await page.setViewportSize(vp);
-      await page.goto(HOME);
-      await page.waitForLoadState("networkidle");
-      await page.waitForTimeout(600);
-      const wm = await wordmarkCompositedInvertErr(page);
-      expect(wm.ok).toBe(true);
-      expect(wm.minErr).toBeLessThanOrEqual(threshold);
-      const nav = await wordmarkCompositedInvertErr(page, ".nav-link-label");
-      expect(nav.ok).toBe(true);
-      expect(nav.minErr).toBeLessThanOrEqual(threshold);
-    }
+    await page.setViewportSize(MOTION_VIEWPORT);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(600);
+    const wm = await wordmarkCompositedInvertErr(page);
+    expect(wm.ok).toBe(true);
+    expect(wm.minErr).toBeLessThanOrEqual(threshold);
+    const nav = await wordmarkCompositedInvertErr(page, ".nav-link-label");
+    expect(nav.ok).toBe(true);
+    expect(nav.minErr).toBeLessThanOrEqual(threshold);
+
+    await page.setViewportSize(NARROW);
+    await page.goto(HOME);
+    await page.waitForLoadState("networkidle");
+    const mobileHdr = await page.locator(".site-header").evaluate((el) => getComputedStyle(el).mixBlendMode);
+    expect(mobileHdr).toBe("normal");
   });
 
   test("difference header 375/390/768/1440: white source, dropdown lang switch", async ({
@@ -450,10 +454,11 @@ test.describe("Home fullscreen stages", () => {
       await page.goto(HOME);
       await page.waitForLoadState("networkidle");
       const blend = await headerInvertBlend(page);
-      expect(blend.mixBlendMode).toBe("difference");
+      const desktopOverlay = w >= 768;
+      expect(blend.mixBlendMode).toBe(desktopOverlay ? "difference" : "normal");
       await expect(page.locator('.lang-switch__btn[data-set-lang="zh"]')).toHaveAttribute("aria-checked", "true");
       const src = await page.locator('.lang-switch__btn[data-set-lang="zh"]').evaluate((el) => getComputedStyle(el).color);
-      expect(isWhiteSource(src)).toBe(true);
+      expect(isWhiteSource(src)).toBe(desktopOverlay);
       await pickLang(page, "en");
       await page.waitForTimeout(150);
       await expect(page.locator('.lang-switch__btn[data-set-lang="en"]')).toHaveAttribute("aria-checked", "true");

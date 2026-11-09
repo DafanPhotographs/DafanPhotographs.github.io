@@ -20,7 +20,14 @@
     return endTop <= headerH + 0.5;
   }
 
+  function removeLegacyStrokePortals() {
+    document.getElementById("header-stroke-portals")?.remove();
+    document.getElementById("ab-stroke-portal-light")?.remove();
+    document.getElementById("ab-stroke-portal-dark")?.remove();
+  }
+
   function syncHeaderMode() {
+    removeLegacyStrokePortals();
     var pastPhoto = headerLeavesPhotoZone();
     setSolid(pastPhoto);
     document.body.classList.toggle("home-past-photo-zone", pastPhoto);
