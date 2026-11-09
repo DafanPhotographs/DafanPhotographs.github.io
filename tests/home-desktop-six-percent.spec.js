@@ -430,6 +430,58 @@ test.describe("desktop-six-percent post-impl", () => {
 });
 
 const { wheelFullStackTraversal, captureTrackBSeekCheckpoints } = require("./helpers/stack-evidence-b.cjs");
+const { readTargetStackMeta } = require("./helpers/stack-visibility-metrics.cjs");
+
+test.describe("stack visibility metrics v2", () => {
+  test("bbox ratio alone does not imply window eligible when pixel dominant differs", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    await page.evaluate(() => ScrollTrigger.refresh());
+    await scrollTriggerProgress(page, 0, 0.85);
+    await waitForScrubStable(
+      page,
+      () =>
+        page.evaluate(() => {
+          const m = document.querySelector('[data-home-scene="0"] .home-scene-media-scale');
+          return m ? Number(gsap.getProperty(m, "scale")) : 0;
+        }),
+      { maxMs: 4000, stableFrames: 2, interval: 40 }
+    );
+    const meta = await readTargetStackMeta(page, 0);
+    expect(meta.metricsVersion).toBe("stack-visibility-v2-pixel-grid");
+    if (meta.pixelDominantSceneIndex !== 0) {
+      expect(meta.targetPixelVisibleRatio).toBeLessThan(0.35);
+      expect(meta.windowCompositionEligible).toBe(false);
+      expect(meta.compositionProofReason).toMatch(/pixel_dominant/);
+    }
+    await test.info().attach("scene0-late-stack-meta", {
+      body: JSON.stringify(meta, null, 2),
+      contentType: "application/json",
+    });
+  });
+
+  test("scene0 progress 0.35: viewport center still target publicId", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    await scrollTriggerProgress(page, 0, 0.35);
+    const meta = await readTargetStackMeta(page, 0);
+    expect(meta.viewportCenterPublicId).toBe("bipenggou");
+    expect(meta.targetPixelVisibleRatio).toBeGreaterThan(0.35);
+    expect(meta.targetPublicId).toBe("bipenggou");
+  });
+
+  test("scene0 ST p0.5 scrollTo: center may already be next scene (not wheel mid)", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    await scrollTriggerProgress(page, 0, 0.5);
+    const meta = await readTargetStackMeta(page, 0);
+    expect(meta.targetPublicId).toBe("bipenggou");
+    expect(meta.currentSrc).toContain("bipenggou");
+  });
+});
 
 test.describe("desktop-six-percent wheel", () => {
   test.setTimeout(180000);
@@ -446,7 +498,7 @@ test.describe("desktop-six-percent wheel", () => {
       await page.waitForLoadState("networkidle");
       const wheelDir = path.join(process.cwd(), "artifacts", "acceptance-evidence", "wheel");
       const seekRows = await captureTrackBSeekCheckpoints(page, sceneIndex, wheelDir);
-      writeArtifact("wheel/trackB-seek-scene" + sceneIndex + ".json", seekRows);
+      writeArtifact("wheel/trackB-synthetic-ST-seek-scene" + sceneIndex + ".json", seekRows);
       const wheelOpts =
         sceneIndex === 2
           ? {

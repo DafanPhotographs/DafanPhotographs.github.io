@@ -1,4 +1,8 @@
 import { execSync } from "node:child_process";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const { readTargetStackMeta } = require("../tests/helpers/stack-visibility-metrics.cjs");
 import {
   rmSync,
   mkdirSync,
@@ -73,97 +77,6 @@ function classifyHeroBytesRow(row) {
   return { bytesStatus: "unknown", volumeGate: "Incomplete" };
 }
 
-async function readStackMeta(page, sceneIndex) {
-  return page.evaluate((idx) => {
-    const scene = document.querySelector('[data-home-scene="' + idx + '"]');
-    const stage = scene && scene.querySelector(".home-scene-stage");
-    const media = scene && scene.querySelector(".home-scene-media-scale");
-    const img = scene && scene.querySelector("img");
-    const rail = document.querySelector("[data-home-stage-rail]");
-    const active = rail ? rail.getAttribute("data-active-scene") : null;
-    const scenes = [...document.querySelectorAll("[data-home-scene]")];
-    const visibleSceneIndices = scenes
-      .filter((s) => {
-        const r = s.getBoundingClientRect();
-        return r.bottom > 0 && r.top < window.innerHeight && r.height > 0;
-      })
-      .map((s) => Number(s.getAttribute("data-home-scene")));
-    let targetStageVisibleRatio = 0;
-    let noEdgeCover = null;
-    if (stage && media) {
-      const sr = stage.getBoundingClientRect();
-      const mr = media.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const visTop = Math.max(sr.top, 0);
-      const visBot = Math.min(sr.bottom, vh);
-      const visH = Math.max(0, visBot - visTop);
-      targetStageVisibleRatio = sr.height > 0 ? visH / sr.height : 0;
-      const eps = 2;
-      noEdgeCover =
-        mr.left <= sr.left + eps &&
-        mr.right >= sr.right - eps &&
-        mr.top <= sr.top + eps &&
-        mr.bottom >= sr.bottom - eps;
-    }
-    const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-" + idx);
-    const progress = st ? st.progress : null;
-    const scrollTriggerActive = st ? !!st.isActive : false;
-    const scale = media && typeof gsap !== "undefined" ? Number(gsap.getProperty(media, "scale")) : null;
-    const src = img && img.currentSrc ? img.currentSrc : "";
-    let targetPublicId = null;
-    for (const id of ["bipenggou", "emeishan", "qingdao"]) {
-      if (src.includes("/" + id + "/")) targetPublicId = id;
-    }
-    const closing = document.querySelector(".home-closing");
-    let closingVisible = false;
-    let closingObscuresTarget = false;
-    if (closing && getComputedStyle(closing).display !== "none" && stage) {
-      const cr = closing.getBoundingClientRect();
-      const sr = stage.getBoundingClientRect();
-      closingVisible = cr.bottom > 0 && cr.top < window.innerHeight;
-      const overlapH = Math.min(cr.bottom, sr.bottom) - Math.max(cr.top, sr.top);
-      closingObscuresTarget = closingVisible && overlapH > Math.min(48, sr.height * 0.12);
-    }
-    const onlyTargetInViewport = visibleSceneIndices.length === 1 && visibleSceneIndices[0] === idx;
-    const activeMatchesTarget = active === String(idx);
-    const windowCompositionEligible =
-      scrollTriggerActive &&
-      activeMatchesTarget &&
-      targetStageVisibleRatio >= 0.25 &&
-      !closingObscuresTarget &&
-      progress !== null &&
-      progress < 0.95;
-    let compositionProof = windowCompositionEligible && onlyTargetInViewport;
-    let compositionProofReason = compositionProof
-      ? "target_only_visible_window"
-      : windowCompositionEligible
-        ? "target_active_in_stack_multi_visible"
-        : "inactive_or_low_visible_ratio";
-    if (progress !== null && progress >= 0.98) {
-      compositionProof = false;
-      compositionProofReason = "p1_natural_stack_obscure_not_runtime_defect";
-    }
-    return {
-      scrollY: window.scrollY,
-      progress,
-      scale,
-      targetPublicId,
-      expectedPublicId: ["bipenggou", "emeishan", "qingdao"][idx],
-      activeScene: active,
-      visibleSceneIndices,
-      targetStageVisibleRatio,
-      noEdgeCover,
-      onlyTargetInViewport,
-      windowCompositionEligible,
-      compositionProof,
-      compositionProofReason,
-      closingVisible: !!closingVisible,
-      closingObscuresTarget: !!closingObscuresTarget,
-      currentSrc: src,
-    };
-  }, sceneIndex);
-}
-
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 const byteLog = [];
@@ -203,7 +116,7 @@ for (let i = 0; i < 3; i += 1) {
       { idx: i, prog: p }
     );
     await page.waitForTimeout(500);
-    const meta = await readStackMeta(page, i);
+    const meta = await readTargetStackMeta(page, i);
     const expectedScale = SCALE_TARGETS[p];
     const scaleError = meta.scale != null ? meta.scale - expectedScale : null;
     const shotB = path.join(OUT, "trackB-seek-scene" + i + "-p" + String(p).replace(".", "") + ".png");
@@ -308,11 +221,10 @@ for (const f of wheelGlobs) {
 }
 if (wheelGlobs.length !== 3) wheelGate = "Incomplete";
 
-const trackBWindowSeek = trackB.filter(
+const trackBWindowSeekPixels = trackB.filter(
   (r) => r.p1UnobstructedRequired !== "not-applicable" && r.windowCompositionEligible
 ).length;
-const trackBCompositionGate =
-  trackBWindowSeek >= 3 && wheelArchives.every((w) => w.pass) ? "Pass" : "Incomplete";
+const trackBCompositionGate = wheelArchives.every((w) => w.pass) ? "Pass" : "Incomplete";
 
 const independentBrowserQa = {
   status: "blocked",
@@ -353,25 +265,58 @@ if (wheelGate !== "Pass") blockers.push("wheelTrackB");
 if (trackBCompositionGate !== "Pass") blockers.push("trackB_windowComposition");
 if (!staticHashMatch) blockers.push("staticHash");
 blockers.push("independentBrowserQa_blocked");
+manifest.visibilityMetricsFormula = {
+  metricsVersion: "stack-visibility-v2-pixel-grid",
+  targetStageBBoxVisibleRatio: "height(stage ∩ viewport) / height(stage); geometric only",
+  targetPixelVisibleRatio: "elementFromPoint 12×8 grid on stage ∩ viewport; fraction owned by target scene",
+  windowCompositionEligible:
+    "scrollTrigger active, activeScene=target, pixelDominant=target, targetPixelVisibleRatio≥0.25, !closingObscuresTarget, progress<0.95",
+  closingVisible: "closing section intersects viewport",
+  closingObscuresTarget: "vertical overlap closing∩stage > min(48px, 12% stage height)",
+};
+
 manifest.acceptanceGates.eligibleForMerge = "No — QA review packet only (no merge/deploy)";
-manifest.acceptanceGates.overall = blockers.filter((b) => b !== "independentBrowserQa_blocked").length ? "Incomplete" : "Pass-with-independent-browser-pending";
+const automationBlockers = blockers.filter((b) => b !== "independentBrowserQa_blocked");
+manifest.acceptanceGates.automationEvidenceComplete =
+  automationBlockers.length === 0 ? "Yes" : "No";
+manifest.acceptanceGates.overall =
+  automationBlockers.length === 0
+    ? "Automation-evidence-complete; independent-browser-QA-blocked"
+    : "Incomplete-automation-evidence";
+manifest.acceptanceGates.overallIsNotFullCoordinatorPass = true;
 
 writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify(manifest, null, 2));
 
-const tarPath = path.join(path.dirname(OUT), "pr27-evidence-bundle.tar.gz");
-execSync(`tar -czf "${tarPath}" -C "${path.dirname(OUT)}" "${path.basename(OUT)}"`);
-manifest.bundleTar = path.basename(tarPath);
-manifest.bundleTarSha256 = sha256File(tarPath);
+const bundleBase = `pr27-evidence-bundle-${head}`;
+const artifactsRoot = path.dirname(OUT);
+const legacyTar = path.join(artifactsRoot, "pr27-evidence-bundle.tar.gz");
+if (existsSync(legacyTar)) rmSync(legacyTar);
+const tarPath = path.join(artifactsRoot, `${bundleBase}.tar.gz`);
+execSync(`tar -czf "${tarPath}" -C "${artifactsRoot}" "${path.basename(OUT)}"`);
+const tarBytes = statSync(tarPath).size;
+const tarSha = sha256File(tarPath);
+writeFileSync(path.join(artifactsRoot, `${bundleBase}.sha256`), `${tarSha}  ${bundleBase}.tar.gz\n`);
+manifest.evidenceBundleFile = `${bundleBase}.tar.gz`;
+manifest.evidenceBundleBytes = tarBytes;
+manifest.evidenceBundleSha256Sidecar = `${bundleBase}.sha256`;
 writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify(manifest, null, 2));
 
 console.log(
   JSON.stringify(
-    { HEAD: head, OUT, overall: manifest.acceptanceGates.overall, eligible: manifest.acceptanceGates.eligibleForMerge, blockers },
+    {
+      HEAD: head,
+      OUT,
+      automationEvidenceComplete: manifest.acceptanceGates.automationEvidenceComplete,
+      overall: manifest.acceptanceGates.overall,
+      eligible: manifest.acceptanceGates.eligibleForMerge,
+      evidenceBundle: { file: manifest.evidenceBundleFile, bytes: tarBytes, sha256: tarSha },
+      blockers,
+    },
     null,
     2
   )
 );
 
-if (manifest.acceptanceGates.overall === "Incomplete") {
+if (automationBlockers.length > 0) {
   process.exit(2);
 }

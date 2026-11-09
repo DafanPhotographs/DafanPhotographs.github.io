@@ -23,6 +23,8 @@ mkdir -p /opt/cursor/artifacts/pr27-acceptance
 rm -rf /opt/cursor/artifacts/pr27-acceptance/*
 cp -a artifacts/home-desktop-six-evidence-out/. /opt/cursor/artifacts/pr27-acceptance/
 cp -a artifacts/acceptance-evidence/. /opt/cursor/artifacts/pr27-acceptance/acceptance-evidence/ 2>/dev/null || true
-cp -f artifacts/pr27-evidence-bundle.tar.gz /opt/cursor/artifacts/pr27-evidence-bundle.tar.gz 2>/dev/null || true
+cp -f "artifacts/pr27-evidence-bundle-${HEAD}.tar.gz" "/opt/cursor/artifacts/pr27-evidence-bundle-${HEAD}.tar.gz" 2>/dev/null || true
+cp -f "artifacts/pr27-evidence-bundle-${HEAD}.sha256" "/opt/cursor/artifacts/pr27-evidence-bundle-${HEAD}.sha256" 2>/dev/null || true
+rm -f /opt/cursor/artifacts/pr27-evidence-bundle.tar.gz 2>/dev/null || true
 echo "DONE HEAD=$HEAD evidence_exit=$EVIDENCE_EXIT"
 exit "${EVIDENCE_EXIT:-0}"

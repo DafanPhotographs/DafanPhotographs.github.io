@@ -8,100 +8,7 @@ const {
   SCENE_PUBLIC,
   pairScaleAtSameScrollY,
 } = require("./home-scroll-stable.cjs");
-
-/**
- * Target-scene stack metadata (real DOM, no hiding other panels).
- */
-async function readTargetStackMeta(page, sceneIndex) {
-  return page.evaluate((idx) => {
-    const scene = document.querySelector('[data-home-scene="' + idx + '"]');
-    const stage = scene && scene.querySelector(".home-scene-stage");
-    const media = scene && scene.querySelector(".home-scene-media-scale");
-    const img = scene && scene.querySelector("img");
-    const rail = document.querySelector("[data-home-stage-rail]");
-    const active = rail ? rail.getAttribute("data-active-scene") : null;
-    const scenes = [...document.querySelectorAll("[data-home-scene]")];
-    const visibleSceneIndices = scenes
-      .filter((s) => {
-        const r = s.getBoundingClientRect();
-        return r.bottom > 0 && r.top < window.innerHeight && r.height > 0;
-      })
-      .map((s) => Number(s.getAttribute("data-home-scene")));
-    let targetStageVisibleRatio = 0;
-    let noEdgeCover = null;
-    if (stage && media) {
-      const sr = stage.getBoundingClientRect();
-      const mr = media.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const visTop = Math.max(sr.top, 0);
-      const visBot = Math.min(sr.bottom, vh);
-      const visH = Math.max(0, visBot - visTop);
-      targetStageVisibleRatio = sr.height > 0 ? visH / sr.height : 0;
-      const eps = 2;
-      noEdgeCover =
-        mr.left <= sr.left + eps &&
-        mr.right >= sr.right - eps &&
-        mr.top <= sr.top + eps &&
-        mr.bottom >= sr.bottom - eps;
-    }
-    const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-" + idx);
-    const progress = st ? st.progress : null;
-    const scrollTriggerActive = st ? !!st.isActive : false;
-    const scale = media && typeof gsap !== "undefined" ? Number(gsap.getProperty(media, "scale")) : null;
-    const src = img && img.currentSrc ? img.currentSrc : "";
-    let targetPublicId = null;
-    for (const id of ["bipenggou", "emeishan", "qingdao"]) {
-      if (src.includes("/" + id + "/")) targetPublicId = id;
-    }
-    const closing = document.querySelector(".home-closing");
-    let closingVisible = false;
-    let closingObscuresTarget = false;
-    if (closing && getComputedStyle(closing).display !== "none" && stage) {
-      const cr = closing.getBoundingClientRect();
-      const sr = stage.getBoundingClientRect();
-      closingVisible = cr.bottom > 0 && cr.top < window.innerHeight;
-      const overlapH = Math.min(cr.bottom, sr.bottom) - Math.max(cr.top, sr.top);
-      closingObscuresTarget = closingVisible && overlapH > Math.min(48, sr.height * 0.12);
-    }
-    const onlyTargetInViewport = visibleSceneIndices.length === 1 && visibleSceneIndices[0] === idx;
-    const activeMatchesTarget = active === String(idx);
-    const windowCompositionEligible =
-      scrollTriggerActive &&
-      activeMatchesTarget &&
-      targetStageVisibleRatio >= 0.25 &&
-      !closingObscuresTarget &&
-      progress !== null &&
-      progress < 0.95;
-    let compositionProof = windowCompositionEligible && onlyTargetInViewport;
-    let compositionProofReason = compositionProof
-      ? "target_only_visible_window"
-      : windowCompositionEligible
-        ? "target_active_in_stack_multi_visible"
-        : "inactive_or_low_visible_ratio";
-    if (progress !== null && progress >= 0.98 && !activeMatchesTarget) {
-      compositionProof = false;
-      compositionProofReason = "p1_natural_stack_next_scene_active_active=" + active;
-    }
-    return {
-      scrollY: window.scrollY,
-      progress,
-      scale,
-      targetPublicId,
-      expectedPublicId: ["bipenggou", "emeishan", "qingdao"][idx],
-      activeScene: active,
-      visibleSceneIndices,
-      targetStageVisibleRatio,
-      noEdgeCover,
-      onlyTargetInViewport,
-      windowCompositionEligible,
-      compositionProof,
-      compositionProofReason,
-      closingVisible: !!closingVisible,
-      closingObscuresTarget: !!closingObscuresTarget,
-      currentSrc: src,
-    };
-  }, sceneIndex);
-}
+const { readTargetStackMeta } = require("./stack-visibility-metrics.cjs");
 
 async function pushWheelSample(page, sceneIndex, samples, tag) {
   await waitForScrubStable(
@@ -333,6 +240,9 @@ async function maybeCheckpointScreenshot(page, sceneIndex, row, outDir, name, ch
 }
 
 async function captureTrackBSeekCheckpoints(page, sceneIndex, outDir) {
+  await page.evaluate(() => {
+    if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh();
+  });
   const points = [
     { p: 0, label: "entry-p0" },
     { p: 0.5, label: "mid-p05" },
@@ -342,15 +252,33 @@ async function captureTrackBSeekCheckpoints(page, sceneIndex, outDir) {
   const rows = [];
   for (const pt of points) {
     await scrollTriggerProgress(page, sceneIndex, pt.p);
-    await page.waitForTimeout(400);
+    await waitForScrubStable(
+      page,
+      () =>
+        page.evaluate((idx) => {
+          const media = document.querySelector('[data-home-scene="' + idx + '"] .home-scene-media-scale');
+          return media ? Number(gsap.getProperty(media, "scale")) : 0;
+        }, sceneIndex),
+      { maxMs: 4000, stableFrames: 2, interval: 40 }
+    );
     const meta = await readTargetStackMeta(page, sceneIndex);
-    const shotPath = path.join(outDir, "trackB-seek-scene" + sceneIndex + "-" + pt.label + ".png");
+    const shotPath = path.join(
+      outDir,
+      "trackB-synthetic-ST-seek-scene" + sceneIndex + "-" + pt.label + ".png"
+    );
     await page.locator('[data-home-scene="' + sceneIndex + '"] .home-scene-stage').screenshot({ path: shotPath });
     const expectedScale = pt.p === 0 ? 1 : pt.p === 0.5 ? 1.03 : pt.p >= 0.85 ? 1.06 : null;
+    const stProgress = await page.evaluate((idx) => {
+      const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-" + idx);
+      return st ? st.progress : null;
+    }, sceneIndex);
     rows.push({
-      evidenceTrack: "B-real-stack-seek",
+      evidenceTrack: "B-synthetic-ST-seek-NOT-wheel",
+      samplingMode: "scrollTrigger-progress-scrollTo-only",
+      notComparableToWheelTrace: true,
       checkpoint: pt.label,
-      progress: pt.p,
+      scrollTriggerProgressSetpoint: pt.p,
+      scrollTriggerProgressObserved: stProgress,
       expectedScale,
       actualScale: meta.scale,
       scaleError: expectedScale != null && meta.scale != null ? meta.scale - expectedScale : null,
