@@ -62,8 +62,7 @@ async function headerInvertBlend(page) {
 async function pickLang(page, lang) {
   const current = await page.evaluate(() => document.documentElement.lang || localStorage.getItem("dafan-lang") || "zh");
   if (current === lang) return;
-  await page.locator(".lang-dropdown__trigger").click();
-  await page.locator(`.lang-dropdown__option[data-set-lang="${lang}"]`).click();
+  await page.locator(`.lang-switch__btn[data-set-lang="${lang}"]`).click();
 }
 
 async function wordmarkSourceWhite(page) {
@@ -452,12 +451,12 @@ test.describe("Home fullscreen stages", () => {
       await page.waitForLoadState("networkidle");
       const blend = await headerInvertBlend(page);
       expect(blend.mixBlendMode).toBe("difference");
-      await expect(page.locator("[data-lang-current]")).toHaveText("中");
-      const src = await page.locator(".lang-dropdown__trigger").evaluate((el) => getComputedStyle(el).color);
+      await expect(page.locator('.lang-switch__btn[data-set-lang="zh"]')).toHaveAttribute("aria-checked", "true");
+      const src = await page.locator('.lang-switch__btn[data-set-lang="zh"]').evaluate((el) => getComputedStyle(el).color);
       expect(isWhiteSource(src)).toBe(true);
       await pickLang(page, "en");
       await page.waitForTimeout(150);
-      await expect(page.locator("[data-lang-current]")).toHaveText("EN");
+      await expect(page.locator('.lang-switch__btn[data-set-lang="en"]')).toHaveAttribute("aria-checked", "true");
       await pickLang(page, "zh");
     }
   });

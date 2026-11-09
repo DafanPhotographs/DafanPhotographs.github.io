@@ -17,6 +17,8 @@
       "aria.lang.en": "English",
       "lang.option.zh": "中",
       "lang.option.en": "EN",
+      "lang.switch.zh": "中文",
+      "lang.switch.en": "English",
       "footer.copy.zh": "© 2026 大樊",
       "footer.copy.en": "© 2026 DaFan",
       "footer.city": "成都",
@@ -87,6 +89,8 @@
       "aria.lang.en": "English",
       "lang.option.zh": "中",
       "lang.option.en": "EN",
+      "lang.switch.zh": "中文",
+      "lang.switch.en": "English",
       "footer.copy.zh": "© 2026 大樊",
       "footer.copy.en": "© 2026 DaFan",
       "footer.city": "Chengdu",
@@ -191,23 +195,13 @@
 
     document.querySelectorAll(".lang-btn").forEach(function (btn) {
       const isActive = btn.getAttribute("data-set-lang") === lang;
-      const inMenu = btn.closest(".lang-dropdown__menu");
-
-      if (inMenu) {
-        const row = btn.closest("li");
-        if (row) row.hidden = isActive;
-        btn.classList.remove("is-active");
-        btn.setAttribute("aria-pressed", "false");
-        btn.setAttribute("aria-selected", "false");
+      btn.classList.toggle("is-active", isActive);
+      if (btn.getAttribute("role") === "radio") {
+        btn.setAttribute("aria-checked", isActive ? "true" : "false");
+        btn.tabIndex = isActive ? 0 : -1;
       } else {
-        btn.classList.toggle("is-active", isActive);
         btn.setAttribute("aria-pressed", isActive ? "true" : "false");
-        btn.setAttribute("aria-selected", isActive ? "true" : "false");
       }
-    });
-
-    document.querySelectorAll("[data-lang-current]").forEach(function (el) {
-      el.textContent = lang === "en" ? "EN" : "中";
     });
 
     localStorage.setItem(STORAGE_KEY, lang);

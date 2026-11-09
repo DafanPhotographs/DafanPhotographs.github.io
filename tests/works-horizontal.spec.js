@@ -72,8 +72,7 @@ test.describe("Works horizontal motion (PR #10 port on #11)", () => {
     fired = await page.evaluate(() => window.__worksFilterFired === true);
     expect(fired).toBe(true);
     await expect(page.locator('.nav-link-label.lang-zh-only[data-i18n="nav.work"]')).toBeVisible();
-    await page.locator(".lang-dropdown__trigger").click();
-    await page.locator('.lang-dropdown__option[data-set-lang="en"]').click();
+    await page.locator('.lang-switch__btn[data-set-lang="en"]').click();
     await expect(page.locator(".lang-en-only.nav-link-label").filter({ hasText: "Work" })).toBeVisible();
     await expect.poll(async () => motionActive(page)).toBe(true);
   });

@@ -62,28 +62,16 @@
             <span class="nav-link-label lang-en-only" data-i18n="nav.contact">Contact</span>
           </a>
         </nav>
-        <div class="lang-dropdown" data-lang-dropdown>
-          <div class="lang-dropdown__trigger-wrap">
-            <button type="button" class="lang-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false" data-i18n-aria="aria.langMenu">
-              <span class="lang-dropdown__current" data-lang-current>中</span>
-              <span class="lang-dropdown__chev" aria-hidden="true"></span>
-            </button>
-          </div>
-          <ul class="lang-dropdown__menu" role="listbox" hidden>
-            <li role="presentation">
-              <button type="button" class="lang-dropdown__option lang-btn" role="option" data-set-lang="zh" data-i18n-aria="aria.lang.zh">
-                <span class="lang-dropdown__label" data-i18n="lang.option.zh">中</span>
-                <span class="lang-dropdown__check" aria-hidden="true"></span>
-              </button>
-            </li>
-            <li role="presentation">
-              <button type="button" class="lang-dropdown__option lang-btn" role="option" data-set-lang="en" data-i18n-aria="aria.lang.en">
-                <span class="lang-dropdown__label" data-i18n="lang.option.en">EN</span>
-                <span class="lang-dropdown__check" aria-hidden="true"></span>
-              </button>
-            </li>
-          </ul>
+        <div class="lang-switch" data-lang-switch role="radiogroup" data-i18n-aria="aria.langMenu">
+          <button type="button" class="lang-switch__btn lang-btn" role="radio" data-set-lang="zh" aria-checked="true" data-i18n-aria="aria.lang.zh">
+            <span class="lang-switch__label" data-i18n="lang.switch.zh">中文</span>
+          </button>
+          <span class="lang-switch__sep" aria-hidden="true">/</span>
+          <button type="button" class="lang-switch__btn lang-btn" role="radio" data-set-lang="en" aria-checked="false" data-i18n-aria="aria.lang.en">
+            <span class="lang-switch__label" data-i18n="lang.switch.en">English</span>
+          </button>
         </div>
+
       </div>
     </div>
   </header>
@@ -117,7 +105,7 @@
   </footer>
 
   <script src="../assets/js/i18n.js"></script>
-  <script src="../assets/js/lang-dropdown.js"></script>
+  <script src="../assets/js/lang-switch.js"></script>
   <script src="../assets/js/main.js"></script>
 </body>
 </html>
