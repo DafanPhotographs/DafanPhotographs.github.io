@@ -1,7 +1,41 @@
 // @ts-check
 const { test, expect } = require("@playwright/test");
+const { PNG } = require("pngjs");
 
 const HOME = "/";
+
+async function compositedInvertErr(page, selector) {
+  const box = await page.locator(selector).first().boundingBox();
+  if (!box) return { ok: false };
+  const vp = page.viewportSize();
+  const clip = { x: 0, y: 0, width: vp.width, height: Math.min(160, vp.height) };
+  await page.addStyleTag({
+    content: "html.probe-hide-header-chrome .header-chrome { visibility: hidden !important; }",
+  });
+  await page.evaluate(() => document.documentElement.classList.add("probe-hide-header-chrome"));
+  const bgBuf = await page.screenshot({ clip });
+  await page.evaluate(() => document.documentElement.classList.remove("probe-hide-header-chrome"));
+  const fgBuf = await page.screenshot({ clip });
+  const bg = PNG.sync.read(bgBuf);
+  const fg = PNG.sync.read(fgBuf);
+  let minErr = Infinity;
+  for (let y = Math.floor(box.y); y < Math.ceil(box.y + box.height); y++) {
+    for (let x = Math.floor(box.x); x < Math.ceil(box.x + box.width); x++) {
+      const i = (bg.width * y + x) << 2;
+      const d =
+        Math.abs(fg.data[i] - bg.data[i]) +
+        Math.abs(fg.data[i + 1] - bg.data[i + 1]) +
+        Math.abs(fg.data[i + 2] - bg.data[i + 2]);
+      if (d < 40) continue;
+      const bgRgb = [bg.data[i], bg.data[i + 1], bg.data[i + 2]];
+      const compRgb = [fg.data[i], fg.data[i + 1], fg.data[i + 2]];
+      const expected = bgRgb.map((b) => Math.abs(255 - b));
+      const err = compRgb.reduce((s, c, j) => s + Math.abs(c - expected[j]), 0);
+      if (err < minErr) minErr = err;
+    }
+  }
+  return { ok: true, minErr };
+}
 
 async function clickLang(page, lang) {
   await page.locator(`.lang-switch__btn[data-set-lang="${lang}"]`).click();
@@ -59,6 +93,33 @@ test.describe("Language switch (inline preview)", () => {
     await clickLang(page, "en");
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth);
     expect(overflow).toBeLessThanOrEqual(376);
+  });
+
+  test("home overlay: nav and lang share header difference compositing", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(HOME);
+    await page.waitForTimeout(600);
+    await page.evaluate(() => {
+      const el = document.querySelector('[data-home-scene="1"]');
+      if (el) el.scrollIntoView({ block: "start" });
+      if (typeof ScrollTrigger !== "undefined") ScrollTrigger.update();
+    });
+    await page.waitForTimeout(650);
+    const nav = await compositedInvertErr(page, ".nav-link-label");
+    const zh = await compositedInvertErr(page, '.lang-switch__btn[data-set-lang="zh"]');
+    expect(nav.ok).toBe(true);
+    expect(zh.ok).toBe(true);
+    expect(nav.minErr).toBeLessThanOrEqual(12);
+    expect(zh.minErr).toBeLessThanOrEqual(12);
+    await page.evaluate(() => {
+      const el = document.querySelector('[data-home-scene="2"]');
+      if (el) el.scrollIntoView({ block: "start" });
+    });
+    await page.waitForTimeout(650);
+    const navDark = await compositedInvertErr(page, ".nav-link-label");
+    const zhDark = await compositedInvertErr(page, '.lang-switch__btn[data-set-lang="zh"]');
+    expect(navDark.minErr).toBeLessThanOrEqual(4);
+    expect(zhDark.minErr).toBeLessThanOrEqual(4);
   });
 
   test("home overlay: equal opacity on both labels", async ({ page }) => {

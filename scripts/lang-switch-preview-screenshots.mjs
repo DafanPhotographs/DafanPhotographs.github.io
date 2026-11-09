@@ -80,9 +80,13 @@ const plans = [
   ["1440-zh-dark", { width: 1440, height: 900 }, "zh", "forest"],
   ["1440-en-dark", { width: 1440, height: 900 }, "en", "forest"],
   ["1440-zh-closing", { width: 1440, height: 900 }, "zh", "closing"],
+  ["1440-en-closing", { width: 1440, height: 900 }, "en", "closing"],
   ["375-zh-bright", { width: 375, height: 812 }, "zh", "hero"],
   ["375-en-bright", { width: 375, height: 812 }, "en", "hero"],
   ["375-zh-dark", { width: 375, height: 812 }, "zh", "forest"],
+  ["375-en-dark", { width: 375, height: 812 }, "en", "forest"],
+  ["375-zh-closing", { width: 375, height: 812 }, "zh", "closing"],
+  ["375-en-closing", { width: 375, height: 812 }, "en", "closing"],
 ];
 
 for (const [tag, vp, lang, backdrop] of plans) {
