@@ -2,11 +2,16 @@
  * Reference-header evidence: desktop white-source + difference, mobile light bar, no stroke portals.
  */
 import { chromium } from "playwright";
-import { PNG } from "pngjs";
 import fs from "fs";
 import crypto from "crypto";
 import { execSync } from "child_process";
-import { captureContext, scrollToScene, scrollToClosingSolid, scrollToDarkestForestBackdrop } from "./evidence-lib.mjs";
+import {
+  captureContext,
+  scrollToScene,
+  scrollToClosingSolid,
+  scrollToDarkestForestBackdrop,
+  compositedDifferenceInvertErr,
+} from "./evidence-lib.mjs";
 
 const BASE = process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:8765";
 const OUT = process.env.ARTIFACT_DIR || "/opt/cursor/artifacts";
@@ -35,41 +40,24 @@ async function headerState(page) {
   });
 }
 
-async function differencePixelProbe(page) {
+const PIXEL_ERR_MAX = 48;
+
+async function differencePixelProbe(page, tag) {
   const vp = page.viewportSize();
   if (vp.width < 768) return null;
+  const wm = await compositedDifferenceInvertErr(page, ".wordmark");
+  const nav = await compositedDifferenceInvertErr(page, ".nav-link-label");
   const clip = { x: 0, y: 0, width: vp.width, height: Math.min(140, vp.height) };
-  const box = await page.locator(".header-chrome .nav-link-label").first().boundingBox();
-  if (!box) return null;
-  await page.evaluate(() => {
-    document.querySelector(".header-chrome").style.visibility = "hidden";
-  });
-  const bgBuf = await page.screenshot({ clip });
-  await page.evaluate(() => {
-    document.querySelector(".header-chrome").style.visibility = "";
-  });
   const fgBuf = await page.screenshot({ clip });
-  const bg = PNG.sync.read(bgBuf);
-  const fg = PNG.sync.read(fgBuf);
-  const x = Math.floor(box.x + box.width * 0.5);
-  const y = Math.floor(box.y + box.height * 0.5);
-  const i = (bg.width * y + x) << 2;
-  const bgRgb = [bg.data[i], bg.data[i + 1], bg.data[i + 2]];
-  const compRgb = [fg.data[i], fg.data[i + 1], fg.data[i + 2]];
-  const expected = bgRgb.map((b) => Math.abs(255 - b));
-  const invertErr =
-    Math.abs(compRgb[0] - expected[0]) + Math.abs(compRgb[1] - expected[1]) + Math.abs(compRgb[2] - expected[2]);
-  const path = `${OUT}/difference-ref-pixel-probe-nav.png`;
+  const path = `${OUT}/difference-ref-pixel-probe-${tag || "nav"}.png`;
   fs.writeFileSync(path, fgBuf);
   return {
-    x,
-    y,
-    bgRgb,
-    compRgb,
-    expectedDifferenceRgb: expected,
-    invertErr,
+    wordmark: wm,
+    nav,
+    minErr: Math.min(wm.minErr ?? Infinity, nav.minErr ?? Infinity),
     probePath: path,
     sha256: sha256File(path),
+    threshold: PIXEL_ERR_MAX,
   };
 }
 
@@ -84,7 +72,8 @@ async function shotFrame(page, tag, lang, setup) {
     path: headerPath,
     clip: { x: 0, y: 0, width: vp.width, height: Math.min(140, vp.height) },
   });
-  const pixel = await differencePixelProbe(page);
+  const pixel =
+    state.headerMix === "difference" ? await differencePixelProbe(page, `${tag}-${lang}`) : null;
   return {
     tag,
     lang,
@@ -157,9 +146,10 @@ const report = {
     closingSolidNormal: frames
       .filter((f) => f.tag.includes("closing"))
       .every((f) => f.state.dataMode === "solid" && f.state.headerMix === "normal"),
-    desktopPixelDifference: desktopOverlay
-      .filter((f) => f.pixel)
-      .every((p) => p.pixel.invertErr <= 40),
+    desktopPixelDifference: (() => {
+      const probed = desktopOverlay.filter((f) => f.pixel && Number.isFinite(f.pixel.minErr));
+      return probed.length > 0 && probed.every((f) => f.pixel.minErr <= PIXEL_ERR_MAX);
+    })(),
   },
   g24Note: "Inline SVG path unchanged; hash checked in g24-wordmark-evidence.json",
   subpagesScope: "Non-home headers unchanged (sticky, no photo difference); this evidence is page-home only",

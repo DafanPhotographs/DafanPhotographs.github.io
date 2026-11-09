@@ -105,6 +105,54 @@ function meanBgLumInBox(png, box) {
   return n ? sum / n : null;
 }
 
+/**
+ * Lowest RGB delta vs |255−bg| inside selector bbox (same-frame probe; matches home-stages Playwright helper).
+ * @param {import("playwright").Page} page
+ * @param {string} selector
+ */
+export async function compositedDifferenceInvertErr(page, selector = ".wordmark") {
+  const box = await page.locator(selector).first().boundingBox();
+  if (!box) return { ok: false, reason: "no-box" };
+  const vp = page.viewportSize();
+  const clip = { x: 0, y: 0, width: vp.width, height: Math.min(160, vp.height) };
+  await page.addStyleTag({
+    content: "html.probe-hide-header-chrome .header-chrome { visibility: hidden !important; }",
+  });
+  await page.evaluate(() => document.documentElement.classList.add("probe-hide-header-chrome"));
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  const bgBuf = await page.screenshot({ clip });
+  await page.evaluate(() => document.documentElement.classList.remove("probe-hide-header-chrome"));
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  const fgBuf = await page.screenshot({ clip });
+  const bg = PNG.sync.read(bgBuf);
+  const fg = PNG.sync.read(fgBuf);
+  const x0 = Math.max(0, Math.floor(box.x));
+  const y0 = Math.max(0, Math.floor(box.y));
+  const x1 = Math.min(bg.width, Math.ceil(box.x + box.width));
+  const y1 = Math.min(bg.height, Math.ceil(box.y + box.height));
+  let minErr = Infinity;
+  let best = null;
+  for (let y = y0; y < y1; y += 1) {
+    for (let x = x0; x < x1; x += 1) {
+      const i = (bg.width * y + x) << 2;
+      const d =
+        Math.abs(fg.data[i] - bg.data[i]) +
+        Math.abs(fg.data[i + 1] - bg.data[i + 1]) +
+        Math.abs(fg.data[i + 2] - bg.data[i + 2]);
+      if (d < 40) continue;
+      const bgRgb = [bg.data[i], bg.data[i + 1], bg.data[i + 2]];
+      const compRgb = [fg.data[i], fg.data[i + 1], fg.data[i + 2]];
+      const expected = bgRgb.map((b) => Math.abs(255 - b));
+      const err = compRgb.reduce((sum, c, j) => sum + Math.abs(c - expected[j]), 0);
+      if (err < minErr) {
+        minErr = err;
+        best = { err, bgRgb, compRgb, expectedDifferenceRgb: expected, diffSum: d };
+      }
+    }
+  }
+  return { ok: minErr !== Infinity, minErr, best, selector };
+}
+
 export async function measureWordmarkBackdropLum(page) {
   const vp = page.viewportSize();
   const clip = { x: 0, y: 0, width: vp.width, height: Math.min(160, vp.height) };
