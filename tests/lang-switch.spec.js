@@ -139,6 +139,25 @@ test.describe("Language switch (inline preview)", () => {
     expect(colors[1]).toMatch(/255,\s*255,\s*255/);
   });
 
+  test("1440 solid closing: language control stays far right", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(HOME);
+    await page.waitForTimeout(600);
+    await page.keyboard.press("End");
+    await page.waitForTimeout(650);
+    await expect(page.locator(".site-header--solid")).toBeVisible();
+    const layout = await page.evaluate(() => {
+      const wm = document.querySelector(".wordmark")?.getBoundingClientRect();
+      const lang = document.querySelector(".lang-switch")?.getBoundingClientRect();
+      const nav = document.querySelector(".site-nav")?.getBoundingClientRect();
+      return { wmTop: wm?.top, langTop: lang?.top, navTop: nav?.top, langRight: lang?.right, langLeft: lang?.left };
+    });
+    expect(layout.langRight).toBeGreaterThan(1380);
+    expect(Math.abs((layout.wmTop ?? 0) - (layout.langTop ?? 0))).toBeLessThan(2);
+    expect(Math.abs((layout.navTop ?? 0) - (layout.langTop ?? 0))).toBeLessThan(2);
+    expect(layout.langLeft).toBeGreaterThan(900);
+  });
+
   test("works page switches language", async ({ page }) => {
     await page.goto("/works/");
     await clickLang(page, "en");

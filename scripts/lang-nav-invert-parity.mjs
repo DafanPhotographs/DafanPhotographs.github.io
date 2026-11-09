@@ -5,11 +5,10 @@
 import { chromium } from "playwright";
 import { PNG } from "pngjs";
 import fs from "fs";
-import { execSync } from "child_process";
+import { captureContext, scrollToScene } from "./evidence-lib.mjs";
 
 const BASE = process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:8765";
 const OUT = process.env.ARTIFACT_DIR || "/opt/cursor/artifacts";
-const HEAD = execSync("git rev-parse HEAD", { encoding: "utf8" }).trim();
 
 function luminance([r, g, b]) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
@@ -132,6 +131,6 @@ const summary = frames.map((f) => {
 
 await browser.close();
 
-const report = { head: HEAD, capturedAt: new Date().toISOString(), frames, summary };
+const report = { ...captureContext(), frames, summary };
 fs.writeFileSync(`${OUT}/lang-nav-invert-parity.json`, JSON.stringify(report, null, 2));
 console.log(JSON.stringify(summary, null, 2));

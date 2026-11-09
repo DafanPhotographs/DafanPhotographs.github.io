@@ -3,38 +3,15 @@
  */
 import { chromium } from "playwright";
 import fs from "fs";
-import { execSync } from "child_process";
+import {
+  captureContext,
+  scrollToScene,
+  scrollToClosingSolid,
+  scrollToDarkestForestBackdrop,
+} from "./evidence-lib.mjs";
 
 const BASE = process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:8765";
 const OUT = process.env.ARTIFACT_DIR || "/opt/cursor/artifacts";
-const HEAD = execSync("git rev-parse HEAD", { encoding: "utf8" }).trim();
-
-async function scrollToScene(page, id) {
-  await page.evaluate((sceneId) => {
-    const el = document.querySelector('[data-home-scene="' + sceneId + '"]');
-    if (el) el.scrollIntoView({ block: "start" });
-    if (typeof ScrollTrigger !== "undefined") ScrollTrigger.update();
-  }, id);
-  await page.waitForTimeout(600);
-}
-
-async function scrollToClosing(page) {
-  for (let i = 0; i < 14; i += 1) {
-    const done = await page.evaluate(() => {
-      const end = document.querySelector("[data-home-photo-zone-end]");
-      const header = document.querySelector(".site-header");
-      if (!end || !header) return false;
-      const hh = header.getBoundingClientRect().height;
-      if (end.getBoundingClientRect().top <= hh + 0.5) return true;
-      window.scrollTo(0, Math.max(0, end.getBoundingClientRect().top + window.scrollY - hh));
-      if (typeof ScrollTrigger !== "undefined") ScrollTrigger.update();
-      return false;
-    });
-    await page.waitForTimeout(200);
-    if (done) break;
-  }
-  await page.waitForTimeout(400);
-}
 
 async function shot(page, tag, vp, lang, backdrop) {
   await page.setViewportSize(vp);
@@ -42,22 +19,49 @@ async function shot(page, tag, vp, lang, backdrop) {
   await page.waitForTimeout(500);
   await page.locator(`.lang-switch__btn[data-set-lang="${lang}"]`).click();
   await page.waitForTimeout(200);
+  let backdropPick = null;
   if (backdrop === "hero") await page.evaluate(() => window.scrollTo(0, 0));
-  else if (backdrop === "forest") await scrollToScene(page, "2");
-  else if (backdrop === "closing") await scrollToClosing(page);
+  else if (backdrop === "forest") {
+    if (vp.width < 768) backdropPick = await scrollToDarkestForestBackdrop(page, "2");
+    else await scrollToScene(page, "2");
+  } else if (backdrop === "closing") backdropPick = await scrollToClosingSolid(page);
 
   const headerPath = `${OUT}/lang-switch-${tag}.png`;
   await page.screenshot({
     path: headerPath,
     clip: { x: 0, y: 0, width: vp.width, height: Math.min(140, vp.height) },
   });
+  const fullPath = backdrop === "closing" ? `${OUT}/lang-switch-${tag}-full.png` : null;
+  if (fullPath) await page.screenshot({ path: fullPath, fullPage: false });
+
   const layout = await page.evaluate(() => {
+    const header = document.querySelector(".site-header");
     const wm = document.querySelector(".wordmark")?.getBoundingClientRect();
     const lang = document.querySelector(".lang-switch")?.getBoundingClientRect();
+    const nav = document.querySelector(".site-nav")?.getBoundingClientRect();
     const active = document.querySelector('.lang-switch__btn[aria-checked="true"]');
+  const chromeRules = [];
+    for (const rule of [...document.styleSheets].flatMap((ss) => {
+      try {
+        return [...ss.cssRules];
+      } catch {
+        return [];
+      }
+    })) {
+      if (rule.selectorText && /header-chrome|lang-switch|site-header--solid/.test(rule.selectorText)) {
+        chromeRules.push(rule.selectorText);
+      }
+    }
     return {
+      headerClasses: header?.className,
+      dataHeaderMode: header?.getAttribute("data-header-mode"),
+      scrollY: window.scrollY,
       wmRight: wm?.right,
       langLeft: lang?.left,
+      langRight: lang?.right,
+      navLeft: nav?.left,
+      navRight: nav?.right,
+      rightGap: lang ? window.innerWidth - lang.right : null,
       gap: lang && wm ? lang.left - wm.right : null,
       activeLabel: active?.textContent?.trim(),
       activeUnderline: active ? getComputedStyle(active).textDecorationLine : null,
@@ -65,9 +69,11 @@ async function shot(page, tag, vp, lang, backdrop) {
       inactiveOpacity: document.querySelector('.lang-switch__btn[aria-checked="false"]')
         ? getComputedStyle(document.querySelector('.lang-switch__btn[aria-checked="false"]')).opacity
         : null,
+      blendDisplay: getComputedStyle(document.querySelector(".header-chrome-blend") || document.body).display,
+      matchingRuleSamples: chromeRules.slice(0, 8),
     };
   });
-  return { tag, headerPath, layout };
+  return { tag, headerPath, fullPath, backdropPick, layout };
 }
 
 const browser = await chromium.launch();
@@ -94,6 +100,6 @@ for (const [tag, vp, lang, backdrop] of plans) {
 }
 await browser.close();
 
-const report = { head: HEAD, capturedAt: new Date().toISOString(), shots };
+const report = { ...captureContext(), shots };
 fs.writeFileSync(`${OUT}/lang-switch-preview-evidence.json`, JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));

@@ -5,11 +5,18 @@ import { chromium } from "playwright";
 import { PNG } from "pngjs";
 import fs from "fs";
 import { execSync } from "child_process";
+import {
+  captureContext,
+  scrollToScene,
+  scrollToClosingSolid,
+  scrollToDarkestForestBackdrop,
+  sha256File,
+} from "./evidence-lib.mjs";
 
 const BASE = process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:8765";
 const OUT = process.env.ARTIFACT_DIR || "/opt/cursor/artifacts";
 const PREFIX = process.env.EVIDENCE_PREFIX || "g24";
-const HEAD = execSync("git rev-parse HEAD", { encoding: "utf8" }).trim();
+const BASELINE_MAIN = process.env.WORDMARK_BASELINE_SHA || "76f6d61529a5cbc8aa31f270f6ada6197fd3c664";
 
 function sampleInvertErr(bgBuf, fgBuf, box) {
   const bg = PNG.sync.read(bgBuf);
@@ -69,34 +76,6 @@ async function capture(page, tag, vp) {
   };
 }
 
-async function scrollToScene(page, id) {
-  await page.evaluate((sceneId) => {
-    const el = document.querySelector('[data-home-scene="' + sceneId + '"]');
-    if (el) el.scrollIntoView({ block: "start" });
-    if (typeof ScrollTrigger !== "undefined") ScrollTrigger.update();
-  }, id);
-  await page.waitForTimeout(650);
-}
-
-async function scrollToClosingSolid(page) {
-  for (let i = 0; i < 14; i += 1) {
-    const done = await page.evaluate(() => {
-      const end = document.querySelector("[data-home-photo-zone-end]");
-      const header = document.querySelector(".site-header");
-      if (!end || !header) return false;
-      const hh = header.getBoundingClientRect().height;
-      if (end.getBoundingClientRect().top <= hh + 0.5) return true;
-      const y = end.getBoundingClientRect().top + window.scrollY - hh;
-      window.scrollTo(0, Math.max(0, y));
-      if (typeof ScrollTrigger !== "undefined") ScrollTrigger.update();
-      return false;
-    });
-    await page.waitForTimeout(200);
-    if (done) break;
-  }
-  await page.waitForTimeout(400);
-}
-
 const browser = await chromium.launch();
 const page = await browser.newPage();
 await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
@@ -118,14 +97,39 @@ await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
 await page.waitForTimeout(500);
 await page.evaluate(() => window.scrollTo(0, 0));
 scenarios.push(await capture(page, "375-bright-sky", vp375));
-await scrollToScene(page, "1");
-scenarios.push(await capture(page, "375-dark-forest", vp375));
+const dark375Pick = await scrollToDarkestForestBackdrop(page, "2");
+scenarios.push({
+  backdropPick: dark375Pick,
+  ...(await capture(page, "375-dark-forest", vp375)),
+});
 await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
 await scrollToClosingSolid(page);
 scenarios.push(await capture(page, "375-closing-white", vp375));
 
 await browser.close();
 
-const report = { capturedAt: new Date().toISOString(), head: HEAD, baseUrl: BASE, prefix: PREFIX, scenarios };
+const beforeFixMeta =
+  PREFIX === "before-fix"
+    ? {
+        beforeFixMethod: "single_file_css_swap",
+        description:
+          "assets/css/base.css temporarily replaced with content from baseline commit; all other runtime paths remain at captureGitSha. Not a full git checkout of baseline.",
+        baselineCommit: BASELINE_MAIN,
+        swappedFile: "assets/css/base.css",
+        swappedFileBaselineSha256: execSync(`git show ${BASELINE_MAIN}:assets/css/base.css | sha256sum`, {
+          encoding: "utf8",
+        })
+          .trim()
+          .split(/\s+/)[0],
+        captureTreeCssSha256: sha256File("assets/css/base.css"),
+      }
+    : undefined;
+
+const report = {
+  ...captureContext(),
+  prefix: PREFIX,
+  beforeFixMeta,
+  scenarios,
+};
 fs.writeFileSync(`${OUT}/${PREFIX}-wordmark-evidence.json`, JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));

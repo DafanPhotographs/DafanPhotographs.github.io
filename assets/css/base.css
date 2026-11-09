@@ -102,14 +102,18 @@ button {
   background: transparent !important;
 }
 
-.page-home .site-header--overlay .header-chrome-blend {
+.page-home .site-header .header-chrome-blend {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-5);
   flex: 1;
   min-width: 0;
+  width: 100%;
   mix-blend-mode: normal;
+}
+
+.page-home .site-header--overlay .header-chrome-blend {
   color: #fff;
 }
 
@@ -118,7 +122,7 @@ button {
   height: 100%;
 }
 
-.page-home .site-header--overlay .header-chrome {
+.page-home .site-header .header-chrome {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -126,6 +130,9 @@ button {
   width: 100%;
   height: 100%;
   mix-blend-mode: normal;
+}
+
+.page-home .site-header--overlay .header-chrome {
   color: #fff;
 }
 
@@ -164,6 +171,31 @@ button {
 
 .page-home .site-header--solid .header-chrome {
   color: inherit;
+}
+
+/*
+ * Desktop solid (closing white): keep G24 left + nav/lang right on one flex row.
+ * Overlay had flex on --overlay only; solid fell back to block flow → two-row stack in QA.
+ */
+@media (min-width: 768px) {
+  .page-home .site-header--solid .header-chrome,
+  .page-home .site-header--solid .header-chrome-blend {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .page-home .site-header--solid .header-cluster {
+    display: flex;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .page-home .site-header--solid .wordmark {
+    flex-shrink: 0;
+  }
 }
 
 .page-home .site-header--solid .wordmark,
@@ -403,6 +435,20 @@ html.no-js .page-home .site-header .header-chrome-blend {
   font-size: var(--type-lang);
   font-weight: var(--type-lang-weight);
   letter-spacing: var(--tracking-nav);
+  line-height: 1.25;
+}
+
+/* Overlay (desktop): match nav typographic weight so lang reads as strong as nav-link-label */
+@media (min-width: 768px) {
+  .page-home .site-header--overlay .lang-switch {
+    font-size: var(--type-nav);
+    font-weight: var(--type-nav-weight);
+  }
+
+  .page-home .site-header--overlay .lang-switch__btn[aria-checked="true"] {
+    text-underline-offset: 0.35em;
+    text-decoration-thickness: var(--underline-thickness);
+  }
 }
 
 .site-header .lang-switch__btn,
