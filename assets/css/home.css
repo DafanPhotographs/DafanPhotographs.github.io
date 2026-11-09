@@ -1,8 +1,8 @@
-/* Home — full-viewport photo stages (sticky stack + media scale via home-stages.js) */
+/* Home — full-viewport photo stages (sticky stack + entry "window" scale via home-stages.js) */
 
 .page-home {
-  --media-scale-from: 0.75;
-  --media-scale-from-mobile: 0.6;
+  /* 入场"开窗"强度：0.75 ≈ daofor 实测值；0.85 更克制，0.7 更戏剧 */
+  --window-scale-from: 0.75;
   --scene-title-size: 24px;
   --scene-title-size-mobile: 17px;
 }
@@ -111,8 +111,10 @@ html[lang="en"] .home-scene-title {
   min-height: 100%;
 }
 
-.home-stage-rail--motion .home-scene-media-scale {
-  transform-origin: center center;
+.home-stage-rail--motion .home-scene-stage {
+  transform-origin: 50% 50%;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .home-scene-stage {
@@ -134,10 +136,7 @@ html[lang="en"] .home-scene-title {
 
 .home-scene-media-scale {
   position: absolute;
-  width: calc(100% / var(--media-scale-from));
-  height: calc(100% / var(--media-scale-from));
-  left: 50%;
-  top: 50%;
+  inset: 0;
   transform-origin: center center;
 }
 
@@ -389,11 +388,6 @@ html[lang="en"] .home-closing__tagline {
 }
 
 @media (max-width: 1023.98px) {
-  .home-scene-media-scale {
-    width: calc(100% / var(--media-scale-from-mobile));
-    height: calc(100% / var(--media-scale-from-mobile));
-  }
-
   .home-scene-title {
     font-size: var(--scene-title-size-mobile);
     max-width: 52vw;
@@ -443,16 +437,6 @@ html[lang="en"] .home-closing__tagline {
 }
 
 @media (min-width: 1024px) {
-  .page-home {
-    --media-scale-from: 1;
-    --media-scale-to: 1.06;
-  }
-
-  .page-home .home-scene-media-scale {
-    width: 100%;
-    height: 100%;
-  }
-
   .home-scene-media-scale .home-scene-picture {
     display: block;
     width: 100%;
@@ -462,7 +446,7 @@ html[lang="en"] .home-closing__tagline {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-stage-rail--motion .home-scene-media-scale {
+  .home-stage-rail--motion .home-scene-stage {
     transform: none !important;
   }
 

@@ -17,32 +17,37 @@
     rail.classList.toggle("home-stage-rail--motion", on);
   }
 
-  function cssTokenSource() {
-    if (document.body && document.body.classList.contains("page-home")) {
-      return document.body;
-    }
-    if (rail) return rail;
-    return document.documentElement;
+  /* Window entry: stage starts at --window-scale-from and reaches 1 exactly when it pins. */
+  var LENIS_LERP = 0.1; /* 0.1 ≈ daofor's smoothing; larger = tighter */
+
+  function readWindowScaleFrom() {
+    if (!document.body || !document.body.classList.contains("page-home")) return 0.75;
+    var raw = getComputedStyle(document.body).getPropertyValue("--window-scale-from").trim();
+    var n = parseFloat(raw);
+    return isFinite(n) ? n : 0.75;
   }
 
-  function readMediaScaleFrom() {
-    var root = cssTokenSource();
-    var mobile = window.matchMedia("(max-width: 1023.98px)").matches;
-    var prop = mobile ? "--media-scale-from-mobile" : "--media-scale-from";
-    var raw = getComputedStyle(root).getPropertyValue(prop).trim();
-    var n = parseFloat(raw);
-    if (!isFinite(n)) return mobile ? 0.6 : 1;
-    return n;
+  var lenis = null;
+
+  function lenisTick(time) {
+    if (lenis) lenis.raf(time * 1000);
   }
 
-  function readMediaScaleTo() {
-    var root = cssTokenSource();
-    var mobile = window.matchMedia("(max-width: 1023.98px)").matches;
-    if (mobile) return 1;
-    var raw = getComputedStyle(root).getPropertyValue("--media-scale-to").trim();
-    var n = parseFloat(raw);
-    if (!isFinite(n)) return 1.06;
-    return n;
+  function initSmoothScroll() {
+    if (lenis || typeof window.Lenis === "undefined") return;
+    lenis = new window.Lenis({ lerp: LENIS_LERP, smoothWheel: true });
+    window.__lenis = lenis;
+    lenis.on("scroll", ScrollTrigger.update);
+    gsap.ticker.add(lenisTick);
+    gsap.ticker.lagSmoothing(0);
+  }
+
+  function destroySmoothScroll() {
+    if (!lenis) return;
+    gsap.ticker.remove(lenisTick);
+    lenis.destroy();
+    lenis = null;
+    delete window.__lenis;
   }
 
   var heroPictureControlsInited = false;
@@ -184,6 +189,8 @@
     triggers = [];
     scenes.forEach(function (scene) {
       gsap.set(scene, { clearProps: "transform" });
+      var stage = scene.querySelector(".home-scene-stage");
+      if (stage) gsap.set(stage, { clearProps: "transform" });
       var media = scene.querySelector(".home-scene-media-scale");
       if (media) gsap.set(media, { clearProps: "transform" });
     });
@@ -224,47 +231,57 @@
     };
   }
 
+  /**
+   * daofor-style entry: the whole stage is a "window" that grows from 75% to 100%.
+   * The tween ends at `top top` (the moment the stage pins), so the image SETTLES
+   * and stays still while pinned - no endless zoom.
+   */
   function buildFeaturedStickyScale(scene, index) {
-    var media = scene.querySelector(".home-scene-media-scale");
-    if (!media) return;
+    var stage = scene.querySelector(".home-scene-stage");
+    if (!stage) return;
 
     var handlers = sceneScrollHandlers(index);
-    var mediaPos = { xPercent: -50, yPercent: -50 };
 
-    /* Option A (A-lock): monotonic from→1; rest cover via oversized media + object-fit (CSS). */
-    gsap.set(media, Object.assign({ transformOrigin: "center center" }, mediaPos));
-
-    var tween = gsap.fromTo(
-      media,
-      Object.assign(
-        {
-          scale: function () {
-            return readMediaScaleFrom();
-          },
-        },
-        mediaPos
-      ),
-      Object.assign(
-        {
-          scale: function () {
-            return readMediaScaleTo();
-          },
-          ease: "none",
-          immediateRender: false,
-          scrollTrigger: Object.assign(
+    /* First stage is already in place on load; nothing to animate. */
+    if (index === 0) {
+      gsap.set(stage, { scale: 1 });
+      triggers.push(
+        ScrollTrigger.create(
+          Object.assign(
             {
               trigger: scene,
-              start: index === 0 ? "top top" : "top bottom",
-              end: "bottom top",
-              scrub: 0.65,
-              invalidateOnRefresh: true,
+              start: "top bottom",
+              end: "top top",
               id: "home-scene-" + index,
             },
             handlers
-          ),
-        },
-        mediaPos
-      )
+          )
+        )
+      );
+      return;
+    }
+
+    gsap.set(stage, { transformOrigin: "50% 50%" });
+
+    var tween = gsap.fromTo(
+      stage,
+      { scale: readWindowScaleFrom },
+      {
+        scale: 1,
+        ease: "none",
+        immediateRender: true,
+        scrollTrigger: Object.assign(
+          {
+            trigger: scene,
+            start: "top bottom",
+            end: "top top",
+            scrub: true,
+            invalidateOnRefresh: true,
+            id: "home-scene-" + index,
+          },
+          handlers
+        ),
+      }
     );
 
     if (tween.scrollTrigger) triggers.push(tween.scrollTrigger);
@@ -275,6 +292,7 @@
     setMotionClass(true);
     setActiveScene(0);
     ensureHeroPictureControls();
+    initSmoothScroll();
 
     scenes.forEach(function (scene, index) {
       buildFeaturedStickyScale(scene, index);
@@ -309,7 +327,8 @@
     var scene = scenes[index];
     if (!scene) return;
     var top = scene.getBoundingClientRect().top + window.pageYOffset;
-    window.scrollTo(0, Math.max(0, top));
+    if (lenis) lenis.scrollTo(Math.max(0, top), { immediate: true });
+    else window.scrollTo(0, Math.max(0, top));
     setActiveScene(index);
   }
 
@@ -324,6 +343,7 @@
   }
 
   function teardownMotion() {
+    destroySmoothScroll();
     killTriggers();
     if (unbindLayout) {
       unbindLayout();

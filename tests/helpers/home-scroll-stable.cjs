@@ -49,7 +49,9 @@ async function scrollTriggerProgress(page, sceneIndex, progress) {
       if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh();
       const st = ScrollTrigger.getAll().find((t) => t.vars && t.vars.id === "home-scene-" + idx);
       if (!st) throw new Error("missing home-scene-" + idx);
-      window.scrollTo(0, st.start + (st.end - st.start) * p);
+      const y = st.start + (st.end - st.start) * p;
+      if (window.__lenis) window.__lenis.scrollTo(y, { immediate: true, force: true });
+      else window.scrollTo(0, y);
       ScrollTrigger.update();
     },
     { idx: sceneIndex, p: progress }
