@@ -429,102 +429,52 @@ test.describe("desktop-six-percent post-impl", () => {
   });
 });
 
-const WHEEL_DELTAS = [32, 28, 24];
+const { wheelFullStackTraversal, captureTrackBSeekCheckpoints } = require("./helpers/stack-evidence-b.cjs");
 
 test.describe("desktop-six-percent wheel", () => {
+  test.setTimeout(180000);
   test.beforeAll(() => {
     const wheelDir = path.join(process.cwd(), "artifacts", "acceptance-evidence", "wheel");
     fs.rmSync(wheelDir, { recursive: true, force: true });
     ensureDir("wheel");
   });
 
-for (const sceneIndex of [0, 1, 2]) {
-  test("wheel-roundtrip-scene" + sceneIndex + "-matched-scrollY", async ({ page }, testInfo) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
-    let wheelResult = null;
-    let lastPairs = [];
-    for (const deltaY of WHEEL_DELTAS) {
-      wheelResult = await wheelRoundTripEntryMidBack(page, sceneIndex, { deltaY });
-      lastPairs = wheelResult.pairs;
-      if (lastPairs.length >= 2) break;
-    }
-    const archive = {
-      sceneIndex,
-      pairTolerancePx: SCROLL_Y_PAIR_TOL_PX,
-      deltasTried: WHEEL_DELTAS,
-      wheelConfig: wheelResult.wheelConfig,
-      samples: wheelResult.samples,
-      pairs: lastPairs,
-      scrollYDeltas: lastPairs.map((p) => p.scrollYDelta),
-    };
-    const wheelDir = path.join(process.cwd(), "artifacts", "acceptance-evidence", "wheel");
-    fs.mkdirSync(wheelDir, { recursive: true });
-  const jsonPath = path.join(wheelDir, "wheel-trace-scene" + sceneIndex + ".json");
-    fs.writeFileSync(jsonPath, JSON.stringify(archive, null, 2));
-
-    expect(
-      lastPairs.length,
-      "r4 requires ≥2 pairs with |ΔscrollY|≤" + SCROLL_Y_PAIR_TOL_PX + "px; got deltas " + JSON.stringify(archive.scrollYDeltas)
-    ).toBeGreaterThanOrEqual(2);
-    for (const p of lastPairs) {
-      expect(p.scrollYDelta).toBeLessThanOrEqual(SCROLL_Y_PAIR_TOL_PX);
-      expect(p.backScale).toBeLessThanOrEqual(p.forwardScale + 0.01);
-    }
-
-    const shotMeta = [];
-    let compositionPairs = 0;
-    for (let i = 0; i < Math.min(lastPairs.length, 4); i += 1) {
-      const pair = lastPairs[i];
-      const pngPath = path.join(wheelDir, "scene" + sceneIndex + "-pair" + i + "-wheel-对照-scrollTo.png");
-      await page.evaluate((y) => {
-        window.scrollTo(0, y);
-        ScrollTrigger.update();
-      }, pair.scrollY);
-      await waitForScrubStable(page, () =>
-        page.evaluate((idx) => {
-          const media = document.querySelector('[data-home-scene="' + idx + '"] .home-scene-media-scale');
-          return media ? Number(gsap.getProperty(media, "scale")) : 0;
-        }, sceneIndex)
+  for (const sceneIndex of [0, 1, 2]) {
+    test("wheel-full-stack-scene" + sceneIndex, async ({ page }, testInfo) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto("/");
+      await page.waitForLoadState("networkidle");
+      const wheelDir = path.join(process.cwd(), "artifacts", "acceptance-evidence", "wheel");
+      const seekRows = await captureTrackBSeekCheckpoints(page, sceneIndex, wheelDir);
+      writeArtifact("wheel/trackB-seek-scene" + sceneIndex + ".json", seekRows);
+      const wheelOpts =
+        sceneIndex === 2
+          ? {
+              maxFwd: 110,
+              maxBack: 220,
+              microPairLane: true,
+              microStep: 4,
+              deltasToTry: [
+                { deltaY: 20, backDeltaY: 6 },
+                { deltaY: 16, backDeltaY: 6 },
+                { deltaY: 24, backDeltaY: 8 },
+              ],
+            }
+          : { maxBack: 100 };
+      const archive = await wheelFullStackTraversal(page, sceneIndex, wheelDir, wheelOpts);
+      expect(archive.pairs.length).toBeGreaterThanOrEqual(2);
+      expect(archive.windowCompositionPairs).toBeGreaterThanOrEqual(1);
+      for (const p of archive.pairs) {
+        expect(p.scrollYDelta).toBeLessThanOrEqual(SCROLL_Y_PAIR_TOL_PX);
+        expect(p.backScale).toBeLessThanOrEqual(p.forwardScale + 0.01);
+      }
+      expect(archive.checkpoints).toEqual(
+        expect.arrayContaining(["checkpoint-entry-p0", "checkpoint-mid-p05", "checkpoint-late-p085", "checkpoint-end-p1"])
       );
-      const live = {
-        ...(await readSceneVisibilityMeta(page, sceneIndex)),
-        scrollY: pair.scrollY,
-        scrollYDelta: pair.scrollYDelta,
-        note: "scrollTo对照 only; pairing from real wheel samples",
-      };
-      const shot = await screenshotStageAtSample(page, sceneIndex, live, pngPath);
-      const proof = !!(pair.compositionProof && shot.compositionProof);
-      if (proof) compositionPairs += 1;
-      shotMeta.push({
-        pairIndex: i,
-        scrollY: pair.scrollY,
-        scrollYDelta: pair.scrollYDelta,
-        forwardScale: pair.forwardScale,
-        backScale: pair.backScale,
-        forwardProgress: pair.forwardMeta.progress,
-        backProgress: pair.backMeta.progress,
-        compositionProof: proof,
-        obscured: shot.obscured,
-        visibleSceneIndices: shot.visibleSceneIndices,
-        screenshot: path.basename(pngPath),
-        pairingMode: "real-wheel-same-scrollY",
+      await testInfo.attach("wheel-trace-scene" + sceneIndex, {
+        path: path.join(wheelDir, "wheel-trace-scene" + sceneIndex + ".json"),
+        contentType: "application/json",
       });
-    }
-    archive.shotMeta = shotMeta;
-    archive.compositionPairs = compositionPairs;
-    fs.writeFileSync(jsonPath, JSON.stringify(archive, null, 2));
-    await testInfo.attach("wheel-trace-scene" + sceneIndex, {
-      path: jsonPath,
-      contentType: "application/json",
     });
-    if (compositionPairs < 1) {
-      testInfo.annotations.push({
-        type: "compositionIncomplete",
-        description: "Wheel pairs exist but no unobscured stage for scene " + sceneIndex,
-      });
-    }
-  });
-}
+  }
 });
