@@ -91,7 +91,7 @@ await scrollToScene(page, "2");
 scenarios.push(await capture(page, "1440-dark-forest", vp1440));
 await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
 await scrollToClosingSolid(page);
-scenarios.push(await capture(page, "1440-closing-solid", vp1440));
+scenarios.push(await capture(page, "1440-closing-difference", vp1440));
 
 await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
 await page.waitForTimeout(500);

@@ -127,6 +127,25 @@ frames.push(await shotFrame(page, "767-breakpoint", "zh", async () => {}));
 await page.setViewportSize({ width: 768, height: 800 });
 await page.waitForTimeout(400);
 frames.push(await shotFrame(page, "768-breakpoint", "zh", async () => {}));
+
+const fullShots = [];
+for (const [vp, tag, prepare] of [
+  [{ width: 1440, height: 900 }, "1440-closing-full", async (p) => scrollToClosingSolid(p)],
+  [{ width: 1440, height: 900 }, "1440-bright-full", async (p) => p.evaluate(() => window.scrollTo(0, 0))],
+  [{ width: 375, height: 812 }, "375-bright-full", async (p) => p.evaluate(() => window.scrollTo(0, 0))],
+  [{ width: 375, height: 812 }, "375-closing-full", async (p) => scrollToClosingSolid(p)],
+]) {
+  const p = await browser.newPage({ viewport: vp });
+  await p.goto(`${BASE}/`, { waitUntil: "networkidle" });
+  await p.waitForTimeout(500);
+  await prepare(p);
+  await p.waitForTimeout(450);
+  const fullPath = `${OUT}/difference-ref-${tag}.png`;
+  await p.screenshot({ path: fullPath });
+  fullShots.push({ tag, fullPath, fullSha256: sha256File(fullPath) });
+  await p.close();
+}
+
 await browser.close();
 
 const desktopOverlay = frames.filter((f) => f.tag.startsWith("1440") && f.state?.headerMix === "difference");
@@ -135,7 +154,8 @@ const mobileOverlay = frames.filter((f) => f.tag.startsWith("375-bright"));
 const report = {
   captureGitSha: HEAD,
   capturedAt: new Date().toISOString(),
-  approach: "reference-site: desktop overlay white-source + header mix-blend-mode:difference; mobile overlay opaque bar; solid closing normal",
+  approach:
+    "reference-site: desktop overlay white-source + header mix-blend-mode:difference through closing; mobile opaque light bar + normal blend (solid class only ≤767px past photos)",
   cloudSelfTestOnly: true,
   notIndependentQaPass: true,
   acceptance: {
@@ -143,9 +163,17 @@ const report = {
     desktopOverlayDifference: desktopOverlay.length > 0 && desktopOverlay.every((f) => f.state.headerMix === "difference"),
     mobileOverlayNormal:
       mobileOverlay.every((f) => f.state.headerMix === "normal" && !f.state.portalRoot),
-    closingSolidNormal: frames
-      .filter((f) => f.tag.includes("closing"))
-      .every((f) => f.state.dataMode === "solid" && f.state.headerMix === "normal"),
+    closingDesktopDifference: frames
+      .filter((f) => f.tag.startsWith("1440") && f.tag.includes("closing"))
+      .every(
+        (f) =>
+          f.state.dataMode === "overlay" &&
+          f.state.headerMix === "difference" &&
+          /^rgb\(255,\s*255,\s*255\)$/.test(f.state.wordmarkColor || "")
+      ),
+    closingMobileNormal: frames
+      .filter((f) => f.tag.startsWith("375") && f.tag.includes("closing"))
+      .every((f) => f.state.headerMix === "normal"),
     desktopPixelDifference: (() => {
       const probed = desktopOverlay.filter((f) => f.pixel && Number.isFinite(f.pixel.minErr));
       return probed.length > 0 && probed.every((f) => f.pixel.minErr <= PIXEL_ERR_MAX);
@@ -154,6 +182,7 @@ const report = {
   g24Note: "Inline SVG path unchanged; hash checked in g24-wordmark-evidence.json",
   subpagesScope: "Non-home headers unchanged (sticky, no photo difference); this evidence is page-home only",
   frames,
+  fullShots,
   unverified: [
     "Independent browser QA (loopback blocked for agent)",
     "Mid-grey contrast on complex foliage — accepted limitation per product direction",

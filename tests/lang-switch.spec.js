@@ -139,13 +139,15 @@ test.describe("Language switch (inline preview)", () => {
     expect(colors[1]).toMatch(/255,\s*255,\s*255/);
   });
 
-  test("1440 solid closing: language control stays far right", async ({ page }) => {
+  test("1440 closing: overlay difference row, language far right", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(HOME);
     await page.waitForTimeout(600);
     await page.keyboard.press("End");
     await page.waitForTimeout(650);
-    await expect(page.locator(".site-header--solid")).toBeVisible();
+    await expect(page.locator(".site-header--overlay")).toBeVisible();
+    const blend = await page.locator(".site-header").evaluate((el) => getComputedStyle(el).mixBlendMode);
+    expect(blend).toBe("difference");
     const layout = await page.evaluate(() => {
       const wm = document.querySelector(".wordmark")?.getBoundingClientRect();
       const lang = document.querySelector(".lang-switch")?.getBoundingClientRect();
