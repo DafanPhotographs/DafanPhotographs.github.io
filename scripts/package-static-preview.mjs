@@ -18,6 +18,14 @@ fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
 const zipPath = `${OUT}/pr26-qa-static-preview-${HEAD.slice(0, 7)}.zip`;
 if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
 
-const paths = files.map((f) => path.join(process.cwd(), f.path));
-execSync(`zip -j "${zipPath}" ${paths.map((p) => `"${p}"`).join(" ")} "${manifestPath}"`, { stdio: "inherit" });
+const listPath = `${OUT}/pr26-qa-static-preview-filelist.txt`;
+fs.writeFileSync(
+  listPath,
+  files.map((f) => f.path).join("\n") + "\n",
+  "utf8"
+);
+execSync(`cd "${process.cwd()}" && zip -q "${zipPath}" -@ < "${listPath}" && zip -q -j "${zipPath}" "${manifestPath}"`, {
+  stdio: "inherit",
+  shell: "/bin/bash",
+});
 console.log(JSON.stringify({ zipPath, captureGitSha: HEAD, fileCount: files.length }, null, 2));
