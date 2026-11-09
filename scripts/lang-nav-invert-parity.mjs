@@ -89,15 +89,6 @@ async function frameProbes(page, label) {
   return { label, headerBlend, probes };
 }
 
-async function scrollToScene(page, id) {
-  await page.evaluate((sceneId) => {
-    const el = document.querySelector('[data-home-scene="' + sceneId + '"]');
-    if (el) el.scrollIntoView({ block: "start" });
-    if (typeof ScrollTrigger !== "undefined") ScrollTrigger.update();
-  }, id);
-  await page.waitForTimeout(650);
-}
-
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
