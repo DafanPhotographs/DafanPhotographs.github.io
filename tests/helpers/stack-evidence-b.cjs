@@ -243,6 +243,12 @@ async function captureTrackBSeekCheckpoints(page, sceneIndex, outDir) {
   await page.evaluate(() => {
     if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh();
   });
+  if (sceneIndex > 0) {
+    await scrollTriggerProgress(page, sceneIndex - 1, 0.92);
+    await page.waitForTimeout(350);
+  }
+  await scrollTriggerProgress(page, sceneIndex, 0);
+  await page.waitForTimeout(350);
   const points = [
     { p: 0, label: "entry-p0" },
     { p: 0.5, label: "mid-p05" },
@@ -276,9 +282,12 @@ async function captureTrackBSeekCheckpoints(page, sceneIndex, outDir) {
       evidenceTrack: "B-synthetic-ST-seek-NOT-wheel",
       samplingMode: "scrollTrigger-progress-scrollTo-only",
       notComparableToWheelTrace: true,
+      preferredEvidenceSource: "wheel-trace-scene" + sceneIndex + ".json",
       checkpoint: pt.label,
       scrollTriggerProgressSetpoint: pt.p,
       scrollTriggerProgressObserved: stProgress,
+      scrollTriggerSetpointDrift: stProgress != null ? Math.abs(stProgress - pt.p) : null,
+      setpointMatchesObserved: stProgress != null && Math.abs(stProgress - pt.p) <= 0.1,
       expectedScale,
       actualScale: meta.scale,
       scaleError: expectedScale != null && meta.scale != null ? meta.scale - expectedScale : null,
