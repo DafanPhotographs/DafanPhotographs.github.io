@@ -31,8 +31,92 @@
     var prop = mobile ? "--media-scale-from-mobile" : "--media-scale-from";
     var raw = getComputedStyle(root).getPropertyValue(prop).trim();
     var n = parseFloat(raw);
-    if (!isFinite(n)) return mobile ? 0.6 : 0.75;
+    if (!isFinite(n)) return mobile ? 0.6 : 1;
     return n;
+  }
+
+  function readMediaScaleTo() {
+    var root = cssTokenSource();
+    var mobile = window.matchMedia("(max-width: 1023.98px)").matches;
+    if (mobile) return 1;
+    var raw = getComputedStyle(root).getPropertyValue("--media-scale-to").trim();
+    var n = parseFloat(raw);
+    if (!isFinite(n)) return 1.06;
+    return n;
+  }
+
+  var heroPictureControlsInited = false;
+
+  function initHomeHeroPictureFallback() {
+    if (!document.body.classList.contains("page-home")) return;
+    document.querySelectorAll(".home-scene-media-scale img[data-cloud-fallback-fill]").forEach(function (img) {
+      if (img.dataset.heroPictureBound === "1") return;
+      img.dataset.heroPictureBound = "1";
+      if (!img.dataset.heroFallbackCycle) img.dataset.heroFallbackCycle = "1";
+      img.addEventListener("error", function () {
+        var state = img.dataset.heroPictureState || "";
+        if (state === "fill" || state === "failed" || state === "retrying") {
+          img.dataset.heroPictureState = "failed";
+          return;
+        }
+        var picture = img.closest("picture.home-scene-picture");
+        if (picture) {
+          picture.querySelectorAll("source").forEach(function (source) {
+            source.remove();
+          });
+        }
+        img.dataset.heroPictureState = "retrying";
+        var fillUrl = img.getAttribute("data-cloud-fallback-fill");
+        if (!fillUrl) {
+          img.dataset.heroPictureState = "failed";
+          return;
+        }
+        img.src = fillUrl;
+      });
+      img.addEventListener("load", function () {
+        if (img.dataset.heroPictureState === "retrying") {
+          img.dataset.heroPictureState = "fill";
+        }
+      });
+      if (img.complete && img.naturalWidth === 0) {
+        img.dispatchEvent(new Event("error"));
+      }
+    });
+  }
+
+  function initHomeHeroPictureResize() {
+    if (!document.body.classList.contains("page-home")) return;
+    var mq = window.matchMedia("(min-width: 1024px)");
+    function onChange() {
+      if (!mq.matches) return;
+      document.querySelectorAll("picture.home-scene-picture").forEach(function (picture) {
+        var img = picture.querySelector("img[data-cloud-fallback-fill]");
+        if (!img || img.dataset.heroPictureState !== "fill") return;
+        var srcset = picture.getAttribute("data-desktop-limit-srcset");
+        if (!srcset) return;
+        if (picture.querySelector("source")) return;
+        var source = document.createElement("source");
+        source.media = "(min-width: 1024px)";
+        source.srcset = srcset;
+        picture.insertBefore(source, img);
+        var cycle = parseInt(img.dataset.heroFallbackCycle || "1", 10);
+        if (!isFinite(cycle) || cycle < 1) cycle = 1;
+        img.dataset.heroFallbackCycle = String(cycle + 1);
+        img.dataset.heroPictureState = "";
+      });
+    }
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", onChange);
+    } else if (typeof mq.addListener === "function") {
+      mq.addListener(onChange);
+    }
+  }
+
+  function ensureHeroPictureControls() {
+    if (heroPictureControlsInited) return;
+    heroPictureControlsInited = true;
+    initHomeHeroPictureFallback();
+    initHomeHeroPictureResize();
   }
 
   function focusablesIn(scene) {
@@ -162,7 +246,9 @@
       ),
       Object.assign(
         {
-          scale: 1,
+          scale: function () {
+            return readMediaScaleTo();
+          },
           ease: "none",
           immediateRender: false,
           scrollTrigger: Object.assign(
@@ -188,6 +274,7 @@
     killTriggers();
     setMotionClass(true);
     setActiveScene(0);
+    ensureHeroPictureControls();
 
     scenes.forEach(function (scene, index) {
       buildFeaturedStickyScale(scene, index);

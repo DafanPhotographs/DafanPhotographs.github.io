@@ -715,8 +715,8 @@ test.describe("Home fullscreen stages", () => {
       }
     }
     expect(best).not.toBeNull();
-    expect(best.scale).toBeGreaterThanOrEqual(0.74);
-    expect(best.scale).toBeLessThan(0.88);
+    expect(best.scale).toBeGreaterThanOrEqual(0.94);
+    expect(best.scale).toBeLessThan(1.08);
   });
 
   test("1440: scene0 rest cover full bleed (A-lock fromTo + CSS cover)", async ({ page }) => {
@@ -746,8 +746,8 @@ test.describe("Home fullscreen stages", () => {
           : null;
       return { scale, token, topGap, leadingBlack, scrollY: window.scrollY };
     });
-    expect(rest.scale).toBeGreaterThanOrEqual(0.74);
-    expect(rest.scale).toBeLessThanOrEqual(0.76);
+    expect(rest.scale).toBeGreaterThanOrEqual(0.99);
+    expect(rest.scale).toBeLessThanOrEqual(1.01);
     expect(rest.topGap).not.toBeNull();
     expect(rest.topGap).toBeLessThan(2);
     expect(rest.leadingBlack).toBe(false);
@@ -775,12 +775,13 @@ test.describe("Home fullscreen stages", () => {
       });
       picks.push({ progress, scale });
     }
-    expect(fromToken).toBeLessThan(0.92);
+    expect(fromToken).toBeGreaterThanOrEqual(0.99);
+    expect(fromToken).toBeLessThanOrEqual(1.01);
     expect(picks[0].scale).toBeGreaterThanOrEqual(fromToken - 0.02);
     expect(picks[0].scale).toBeLessThanOrEqual(fromToken + 0.05);
     expect(picks[1].scale).toBeGreaterThan(picks[0].scale - 0.01);
     expect(picks[2].scale).toBeGreaterThan(picks[1].scale - 0.01);
-    expect(picks[2].scale).toBeGreaterThan(0.94);
+    expect(picks[2].scale).toBeGreaterThan(1.04);
   });
 
   test("featured panel: mid-scroll media scale between token and 1", async ({ page }) => {
@@ -806,8 +807,8 @@ test.describe("Home fullscreen stages", () => {
       };
     });
     expect(metrics).not.toBeNull();
-    expect(metrics.scale).toBeGreaterThan(0.75);
-    expect(metrics.scale).toBeLessThan(1);
+    expect(metrics.scale).toBeGreaterThan(1.0);
+    expect(metrics.scale).toBeLessThan(1.06);
     expect(metrics.panelYPercent).toBe(0);
     expect(metrics.stageOverflow).toBe("hidden");
   });
@@ -900,8 +901,8 @@ test.describe("Home fullscreen stages", () => {
       };
     });
     expect(metrics.nextBand).toBeGreaterThan(200);
-    expect(metrics.scale0).toBeGreaterThan(0.75);
-    expect(metrics.scale0).toBeLessThan(1);
+    expect(metrics.scale0).toBeGreaterThan(1.01);
+    expect(metrics.scale0).toBeLessThan(1.05);
     expect(metrics.title.length).toBeGreaterThan(0);
   });
 
