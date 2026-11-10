@@ -25,6 +25,7 @@
   var DEFAULT_SERIES_H = 1600;
 
   var CARD_INDENT = "      ";
+  var ARCHIVE_INDENT = "      ";
   var FILTER_INDENT = "    ";
   var HOME_LINKS_INDENT = "              ";
   var I18N_INDENT = "      ";
@@ -125,6 +126,27 @@
       "/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/" +
       series.publicPrefix +
       "/cover.jpg"
+    );
+  }
+
+  var ARCHIVE_AR = [
+    { cls: "ar-45", ar: "4:5", w: 1200, h: 1500 },
+    { cls: "ar-11", ar: "1:1", w: 1200, h: 1200 },
+    { cls: "ar-32", ar: "3:2", w: 1200, h: 800 },
+    { cls: "ar-34", ar: "3:4", w: 900, h: 1200 }
+  ];
+
+  function cloudinaryArchiveUrl(data, series, frameName, ar) {
+    return (
+      "https://res.cloudinary.com/" +
+      data.cloudName +
+      "/image/upload/c_fill,g_auto,ar_" +
+      ar +
+      ",w_1200,f_auto,q_auto/" +
+      series.publicPrefix +
+      "/" +
+      frameName +
+      ".jpg"
     );
   }
 
@@ -642,6 +664,31 @@
       .join("\n");
   }
 
+  function renderArchiveBlock(data) {
+    var items = [];
+    var maxFrames = 0;
+    data.series.forEach(function (series) {
+      maxFrames = Math.max(maxFrames, series.frames.length);
+    });
+    var index = 0;
+    for (var f = 0; f < maxFrames; f += 1) {
+      for (var i = 0; i < data.series.length; i += 1) {
+        var series = data.series[i];
+        var frame = series.frames[f];
+        if (!frame) continue;
+        var spec = ARCHIVE_AR[index % ARCHIVE_AR.length];
+        var loading = index < 3 ? "eager" : "lazy";
+        items.push(
+          ARCHIVE_INDENT + '<a class="archive-item ' + spec.cls + '" href="../works/' + series.slug + '/" data-category="' + escapeAttr(series.category) + '">\n' +
+          ARCHIVE_INDENT + '  <img src="' + escapeAttr(cloudinaryArchiveUrl(data, series, frame.name, spec.ar)) + '" alt="" data-i18n-alt="series.' + series.slug + '.alt.' + (f + 1) + '" width="' + spec.w + '" height="' + spec.h + '" loading="' + loading + '" decoding="async" data-cloud-fallback />\n' +
+          ARCHIVE_INDENT + "</a>"
+        );
+        index += 1;
+      }
+    }
+    return items.join("\n");
+  }
+
   function renderFiltersBlock(data) {
     var lines = [
       FILTER_INDENT + '<div class="filters" data-filter-root role="group" aria-label="Filter">',
@@ -758,6 +805,16 @@
     var first = content.search(/^ {6}<a class="series-card"/m);
     var lastClose = content.lastIndexOf("\n      </a>");
     if (first < 0 || lastClose < first) throw new Error("未找到 series-card 卡片区块");
+    return {
+      start: first,
+      end: lastClose + "\n      </a>".length
+    };
+  }
+
+  function findArchiveRegion(content) {
+    var first = content.search(/^ {6}<a class="archive-item/m);
+    var lastClose = content.lastIndexOf("\n      </a>");
+    if (first < 0 || lastClose < first) throw new Error("未找到 archive-item 图片区块");
     return {
       start: first,
       end: lastClose + "\n      </a>".length
@@ -986,14 +1043,14 @@
     worksHtml = syncBlock(worksHtml, "series:filters", renderFiltersBlock(data), FILTER_INDENT, findFiltersRegion);
     addWrite(FILE_PATHS.worksIndex, worksHtml);
 
-    // 5) 摄影页卡片
+    // 5) 摄影页档案墙（按系列帧生成）
     var photographyHtml = files[FILE_PATHS.photographyIndex];
     photographyHtml = syncBlock(
       photographyHtml,
-      "series:cards",
-      renderCardsBlock(data, { hrefPrefix: "../works/" }),
-      CARD_INDENT,
-      findCardsRegion
+      "series:archive",
+      renderArchiveBlock(data),
+      ARCHIVE_INDENT,
+      findArchiveRegion
     );
     addWrite(FILE_PATHS.photographyIndex, photographyHtml);
 
@@ -1074,6 +1131,7 @@
     migrateLegacyKeys: migrateLegacyKeys,
     renderSeriesPage: renderSeriesPage,
     renderCardsBlock: renderCardsBlock,
+    renderArchiveBlock: renderArchiveBlock,
     renderFiltersBlock: renderFiltersBlock,
     renderHomeSeriesLinks: renderHomeSeriesLinks,
     planSiteSync: planSiteSync,

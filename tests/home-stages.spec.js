@@ -253,12 +253,12 @@ async function headerPhotoGeometry(page) {
 /**
  * @param {import("@playwright/test").Page} page
  */
-async function visibleNavWorkLabel(page) {
+async function visibleNavPhotographyLabel(page) {
   const lang = await page.evaluate(() => document.documentElement.lang);
   const sel =
     lang === "en"
-      ? '.site-nav a[href="./works/"] .lang-en-only.nav-link-label'
-      : '.site-nav a[href="./works/"] .lang-zh-only.nav-link-label';
+      ? '.site-nav a[href$="photography/"] .lang-en-only.nav-link-label'
+      : '.site-nav a[href$="photography/"] .lang-zh-only.nav-link-label';
   return page.locator(sel);
 }
 
@@ -568,7 +568,7 @@ test.describe("Home fullscreen stages", () => {
   test("journey home → works → series → contact without dead ends", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
-    await page.locator('.site-nav a[href="./works/"]').click();
+    await page.locator('.home-closing__link[href="./works/"]').click();
     await expect(page).toHaveURL(/\/works\/$/);
     await page.locator('a[href="./bipenggou/"]').click();
     await expect(page).toHaveURL(/bipenggou/);
@@ -583,9 +583,9 @@ test.describe("Home fullscreen stages", () => {
     await page.goto(HOME);
     await pickLang(page, "en");
     await page.waitForTimeout(200);
-    const label = await visibleNavWorkLabel(page);
+    const label = await visibleNavPhotographyLabel(page);
     await expect(label).toBeVisible();
-    await expect(label).toHaveText("Work");
+    await expect(label).toHaveText("Photography");
     const box = await label.boundingBox();
     expect(box && box.width).toBeGreaterThan(10);
   });
@@ -729,7 +729,7 @@ test.describe("Home fullscreen stages", () => {
         await page.goto(HOME);
         await page.waitForLoadState("networkidle");
         if (lang === "en") await pickLang(page, "en");
-        const label = await visibleNavWorkLabel(page);
+        const label = await visibleNavPhotographyLabel(page);
         await expect(label).toBeVisible();
         await jumpToBottom(page);
         await expect(page.locator(".home-closing__ig")).toBeInViewport();

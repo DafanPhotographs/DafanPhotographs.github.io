@@ -10,9 +10,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+SC:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/css/base.css" />
   <link rel="stylesheet" href="../assets/css/works.css" />
+  <link rel="stylesheet" href="../assets/css/photography.css" />
 </head>
-<body>
-  <header class="site-header">
+<body class="page-photography">
+  <header class="site-header site-header--overlay">
     <div class="header-inner">
       <a class="wordmark" href="../" data-i18n-aria="aria.wordmark">
         <svg class="wordmark__mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 13 842 212" aria-hidden="true" focusable="false">
@@ -21,16 +22,6 @@
       </a>
       <div class="header-cluster">
         <nav class="site-nav" aria-label="Primary">
-          <a class="nav-link nav-link--stack" href="../works/">
-            <span class="nav-decor" aria-hidden="true">
-              <span class="nav-decor__layer nav-decor__layer--a lang-zh-only" data-i18n="nav.work">作品</span>
-              <span class="nav-decor__layer nav-decor__layer--b lang-zh-only" data-i18n="nav.work">作品</span>
-              <span class="nav-decor__layer nav-decor__layer--a lang-en-only" data-i18n="nav.work">Work</span>
-              <span class="nav-decor__layer nav-decor__layer--b lang-en-only" data-i18n="nav.work">Work</span>
-            </span>
-            <span class="nav-link-label lang-zh-only" data-i18n="nav.work">作品</span>
-            <span class="nav-link-label lang-en-only" data-i18n="nav.work">Work</span>
-          </a>
           <a class="nav-link nav-link--stack" href="./" aria-current="page">
             <span class="nav-decor" aria-hidden="true">
               <span class="nav-decor__layer nav-decor__layer--a lang-zh-only" data-i18n="nav.photography">摄影</span>
@@ -76,44 +67,56 @@
     </div>
   </header>
 
-  <main class="site-main">
-    <h1 class="page-title page-title--display" data-i18n="photography.title">摄影</h1>
-    <p class="page-lede" data-i18n="photography.lede">以系列为单位的风景与旅途片段。</p>
+  <main class="site-main site-main--photography">
+    <header class="photography-hero">
+      <h1 class="photography-hero__word">PHOTOGRAPHY</h1>
+      <div class="photography-hero__meta">
+        <span class="photography-hero__years">&copy;2024 &mdash; 2026</span>
+        <span class="photography-hero__rule" aria-hidden="true"></span>
+        <span class="photography-hero__lede" data-i18n="photography.lede">以系列为单位的风景与旅途片段。</span>
+      </div>
+    </header>
 
-    <div class="series-grid">
-      <!-- series:cards:start -->
-      <a class="series-card" href="../works/bipenggou/" data-category="landscape">
-        <div class="series-card-media">
-          <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/dafan/series/bipenggou/cover.jpg" alt="" data-i18n-alt="home.alt.bipenggou" width="2400" height="1500" loading="eager" decoding="async" data-cloud-fallback />
-        </div>
-        <div class="series-card-meta">
-          <h2 class="series-card-title" data-i18n="series.bipenggou.title">毕棚沟</h2>
-          <span class="series-card-year"><span data-i18n="series.bipenggou.year">2024</span> · <span data-i18n="series.bipenggou.cat">风景</span></span>
-          <span class="series-card-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
-        </div>
+    <section class="photography-archive" data-photography-archive aria-label="Photography archive">
+      <!-- series:archive:start -->
+      <a class="archive-item ar-45" href="../works/bipenggou/" data-category="landscape">
+        <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_4:5,w_1200,f_auto,q_auto/dafan/series/bipenggou/cover.jpg" alt="" data-i18n-alt="series.bipenggou.alt.1" width="1200" height="1500" loading="eager" decoding="async" data-cloud-fallback />
       </a>
-      <a class="series-card" href="../works/emeishan/" data-category="landscape">
-        <div class="series-card-media">
-          <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/dafan/series/emeishan/cover.jpg" alt="" data-i18n-alt="home.alt.emeishan" width="2400" height="1500" loading="lazy" decoding="async" data-cloud-fallback />
-        </div>
-        <div class="series-card-meta">
-          <h2 class="series-card-title" data-i18n="series.emeishan.title">峨眉山</h2>
-          <span class="series-card-year"><span data-i18n="series.emeishan.year">2024</span> · <span data-i18n="series.emeishan.cat">风景</span></span>
-          <span class="series-card-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
-        </div>
+      <a class="archive-item ar-11" href="../works/emeishan/" data-category="landscape">
+        <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_1:1,w_1200,f_auto,q_auto/dafan/series/emeishan/cover.jpg" alt="" data-i18n-alt="series.emeishan.alt.1" width="1200" height="1200" loading="eager" decoding="async" data-cloud-fallback />
       </a>
-      <a class="series-card" href="../works/qingdao/" data-category="travel">
-        <div class="series-card-media">
-          <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_16:10,w_2400,f_auto,q_auto/dafan/series/qingdao/cover.jpg" alt="" data-i18n-alt="home.alt.qingdao" width="2400" height="1500" loading="lazy" decoding="async" data-cloud-fallback />
-        </div>
-        <div class="series-card-meta">
-          <h2 class="series-card-title" data-i18n="series.qingdao.title">青岛</h2>
-          <span class="series-card-year"><span data-i18n="series.qingdao.year">2024</span> · <span data-i18n="series.qingdao.cat">旅行</span></span>
-          <span class="series-card-cta"><span data-i18n="card.view">查看</span> <span aria-hidden="true">→</span></span>
-        </div>
+      <a class="archive-item ar-32" href="../works/qingdao/" data-category="travel">
+        <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_3:2,w_1200,f_auto,q_auto/dafan/series/qingdao/cover.jpg" alt="" data-i18n-alt="series.qingdao.alt.1" width="1200" height="800" loading="eager" decoding="async" data-cloud-fallback />
       </a>
-      <!-- series:cards:end -->
-    </div>
+      <a class="archive-item ar-34" href="../works/bipenggou/" data-category="landscape">
+        <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_3:4,w_1200,f_auto,q_auto/dafan/series/bipenggou/02.jpg" alt="" data-i18n-alt="series.bipenggou.alt.2" width="900" height="1200" loading="lazy" decoding="async" data-cloud-fallback />
+      </a>
+      <a class="archive-item ar-45" href="../works/emeishan/" data-category="landscape">
+        <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_4:5,w_1200,f_auto,q_auto/dafan/series/emeishan/02.jpg" alt="" data-i18n-alt="series.emeishan.alt.2" width="1200" height="1500" loading="lazy" decoding="async" data-cloud-fallback />
+      </a>
+      <a class="archive-item ar-11" href="../works/qingdao/" data-category="travel">
+        <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_1:1,w_1200,f_auto,q_auto/dafan/series/qingdao/02.jpg" alt="" data-i18n-alt="series.qingdao.alt.2" width="1200" height="1200" loading="lazy" decoding="async" data-cloud-fallback />
+      </a>
+      <a class="archive-item ar-32" href="../works/bipenggou/" data-category="landscape">
+        <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_3:2,w_1200,f_auto,q_auto/dafan/series/bipenggou/03.jpg" alt="" data-i18n-alt="series.bipenggou.alt.3" width="1200" height="800" loading="lazy" decoding="async" data-cloud-fallback />
+      </a>
+      <a class="archive-item ar-34" href="../works/emeishan/" data-category="landscape">
+        <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_3:4,w_1200,f_auto,q_auto/dafan/series/emeishan/03.jpg" alt="" data-i18n-alt="series.emeishan.alt.3" width="900" height="1200" loading="lazy" decoding="async" data-cloud-fallback />
+      </a>
+      <a class="archive-item ar-45" href="../works/qingdao/" data-category="travel">
+        <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_4:5,w_1200,f_auto,q_auto/dafan/series/qingdao/03.jpg" alt="" data-i18n-alt="series.qingdao.alt.3" width="1200" height="1500" loading="lazy" decoding="async" data-cloud-fallback />
+      </a>
+      <a class="archive-item ar-11" href="../works/bipenggou/" data-category="landscape">
+        <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_1:1,w_1200,f_auto,q_auto/dafan/series/bipenggou/04.jpg" alt="" data-i18n-alt="series.bipenggou.alt.4" width="1200" height="1200" loading="lazy" decoding="async" data-cloud-fallback />
+      </a>
+      <a class="archive-item ar-32" href="../works/emeishan/" data-category="landscape">
+        <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_3:2,w_1200,f_auto,q_auto/dafan/series/emeishan/04.jpg" alt="" data-i18n-alt="series.emeishan.alt.4" width="1200" height="800" loading="lazy" decoding="async" data-cloud-fallback />
+      </a>
+      <a class="archive-item ar-34" href="../works/qingdao/" data-category="travel">
+        <img src="https://res.cloudinary.com/no7rdn4w/image/upload/c_fill,g_auto,ar_3:4,w_1200,f_auto,q_auto/dafan/series/qingdao/04.jpg" alt="" data-i18n-alt="series.qingdao.alt.4" width="900" height="1200" loading="lazy" decoding="async" data-cloud-fallback />
+      </a>
+      <!-- series:archive:end -->
+    </section>
   </main>
 
   <footer class="site-footer">
@@ -135,5 +138,9 @@
   <script src="../assets/js/i18n.js"></script>
   <script src="../assets/js/lang-switch.js"></script>
   <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/vendor/gsap.min.js"></script>
+  <script src="../assets/js/vendor/ScrollTrigger.min.js"></script>
+  <script src="../assets/js/vendor/lenis.min.js"></script>
+  <script src="../assets/js/photography.js"></script>
 </body>
 </html>
