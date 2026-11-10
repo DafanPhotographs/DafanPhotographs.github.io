@@ -160,11 +160,11 @@ test.describe("Language switch (inline preview)", () => {
     expect(layout.langLeft).toBeGreaterThan(900);
   });
 
-  test("works page switches language", async ({ page }) => {
-    await page.goto("/works/");
+  test("photography page switches language", async ({ page }) => {
+    await page.goto("/photography/");
     await clickLang(page, "en");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(page.locator('[data-i18n="work.title"]')).toHaveText("Work");
+    await expect(page.locator(".photo-filters .filter-btn").first()).toHaveText("All");
   });
 
   test("no-JS keeps both inline options", async ({ browser }) => {

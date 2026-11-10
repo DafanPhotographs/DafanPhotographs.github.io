@@ -1,8 +1,7 @@
 /* 大樊发布后台 · 最小离线壳 */
-var CACHE = "dafan-admin-v2";
+var CACHE = "dafan-admin-v3";
 var SHELL = [
   "/tools/admin.html",
-  "/tools/lib/dafan-core.js",
   "/tools/manifest.webmanifest",
   "/tools/icon-192.png",
   "/tools/icon-512.png"

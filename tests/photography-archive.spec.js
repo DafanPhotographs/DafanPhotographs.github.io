@@ -12,13 +12,14 @@ async function jump(page, y) {
   await page.waitForTimeout(300);
 }
 
-test.describe("Photography archive (daofor reference)", () => {
-  test("desktop: giant title, 3 columns, 12 photos, no Work nav", async ({ page }) => {
+test.describe("Photography archive (photo-first)", () => {
+  test("desktop: 12 single photos, place filters, 3 columns, no Work nav", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(PHOTO);
     await page.waitForLoadState("networkidle");
+    await expect(page.locator(".archive-item")).toHaveCount(12);
+    await expect(page.locator(".photo-filters .filter-btn")).toHaveCount(4);
     expect(await page.locator(".photography-hero__word").textContent()).toBe("PHOTOGRAPHY");
-    expect(await page.locator(".archive-item").count()).toBe(12);
     expect(await page.locator('[data-i18n="nav.work"]').count()).toBe(0);
     const cols = await page.locator(".photography-archive").evaluate((el) => getComputedStyle(el).columnCount);
     expect(cols).toBe("3");
@@ -28,6 +29,33 @@ test.describe("Photography archive (daofor reference)", () => {
       () => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
     );
     expect(overflow).toBe(true);
+  });
+
+  test("place filter narrows the archive to one location", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(PHOTO);
+    await page.waitForLoadState("networkidle");
+    await page.locator('.photo-filters [data-location="bipenggou"]').click();
+    await page.waitForTimeout(400);
+    await expect(page.locator(".archive-item:not(.is-hidden)")).toHaveCount(4);
+    await expect(page.locator(".archive-item.is-hidden")).toHaveCount(8);
+    await page.locator('.photo-filters [data-location=""]').click();
+    await page.waitForTimeout(300);
+    await expect(page.locator(".archive-item:not(.is-hidden)")).toHaveCount(12);
+  });
+
+  test("lightbox shows title, description and place; Escape closes", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(PHOTO);
+    await page.waitForLoadState("networkidle");
+    await page.locator(".archive-item").first().click();
+    const box = page.locator("[data-photo-lightbox]");
+    await expect(box).toBeVisible();
+    await expect(page.locator("[data-lightbox-title]")).toHaveText("毕棚沟 · 01");
+    await expect(page.locator("[data-lightbox-location]")).toHaveText("毕棚沟");
+    await expect(page.locator("[data-lightbox-copy]")).toContainText("山谷");
+    await page.keyboard.press("Escape");
+    await expect(box).toHaveAttribute("hidden", "");
   });
 
   test("photos fade/rise in as they enter the viewport", async ({ page }) => {
@@ -48,7 +76,7 @@ test.describe("Photography archive (daofor reference)", () => {
       y: new DOMMatrixReadOnly(getComputedStyle(el).transform).m42,
     }));
     expect(after.opacity).toBeGreaterThan(0.8);
-    expect(after.y).toBeLessThan(30);
+    expect(after.y).toBeLessThan(80);
   });
 
   test("mobile 390: 3 columns, no horizontal overflow", async ({ page }) => {

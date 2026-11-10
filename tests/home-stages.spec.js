@@ -429,16 +429,6 @@ test.describe("Home fullscreen stages", () => {
     await expect(page.locator(".home-closing__tagline")).toBeInViewport();
   });
 
-  test("works index: header stays sticky document flow (not home overlay)", async ({ page }) => {
-    await page.setViewportSize(MOTION_VIEWPORT);
-    await page.goto("/works/");
-    await page.waitForLoadState("networkidle");
-    const isHome = await page.evaluate(() => document.body.classList.contains("page-home"));
-    expect(isHome).toBe(false);
-    const pos = await page.locator(".site-header").evaluate((el) => getComputedStyle(el).position);
-    expect(pos).toBe("sticky");
-  });
-
   test("no horizontal overflow on home at 1440", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
@@ -525,10 +515,10 @@ test.describe("Home fullscreen stages", () => {
     expect(closingHdr.solid).toBe(false);
     expect(closingHdr.blend).toBe("difference");
 
-    await page.goto("/works/");
+    await page.goto("/about/");
     await page.waitForLoadState("networkidle");
-    const worksBlend = await page.locator(".site-header").evaluate((el) => getComputedStyle(el).mixBlendMode);
-    expect(worksBlend).toBe("normal");
+    const aboutBlend = await page.locator(".site-header").evaluate((el) => getComputedStyle(el).mixBlendMode);
+    expect(aboutBlend).toBe("normal");
 
     const ctx = await browser.newContext({ javaScriptEnabled: false, viewport: NARROW });
     const noJs = await ctx.newPage();
@@ -565,14 +555,12 @@ test.describe("Home fullscreen stages", () => {
     if (focusMix) expect(focusMix === "normal" || focusMix === "isolate").toBeTruthy();
   });
 
-  test("journey home → works → series → contact without dead ends", async ({ page }) => {
+  test("journey home → photography → contact without dead ends", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
-    await page.locator('.home-closing__link[href="./works/"]').click();
-    await expect(page).toHaveURL(/\/works\/$/);
-    await page.locator('a[href="./bipenggou/"]').click();
-    await expect(page).toHaveURL(/bipenggou/);
-    await page.locator('.site-nav a[href="../../contact/"]').click();
+    await page.locator('.home-closing__link[href="./photography/"]').click();
+    await expect(page).toHaveURL(/\/photography\/$/);
+    await page.locator('.site-nav a[href="../contact/"]').click();
     await expect(page).toHaveURL(/\/contact\/$/);
     await page.locator('.wordmark[href="../"]').click();
     await expect(page).toHaveURL(/\/$/);
@@ -689,11 +677,11 @@ test.describe("Home fullscreen stages", () => {
 
   test("hash deep link focuses featured scene in document", async ({ page }) => {
     await page.setViewportSize(NARROW);
-    await page.goto("/#home-scene-bipenggou");
+    await page.goto("/#home-scene-bipenggou-cover");
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(600);
     const inView = await page.evaluate(() => {
-      const el = document.getElementById("home-scene-bipenggou");
+      const el = document.getElementById("home-scene-bipenggou-cover");
       if (!el) return false;
       const r = el.getBoundingClientRect();
       return r.top < window.innerHeight * 0.85 && r.bottom > 100;
@@ -1101,7 +1089,7 @@ test.describe("Home fullscreen stages", () => {
     await page.waitForTimeout(500);
     await expect(page.locator(".home-closing__tagline")).toBeVisible();
     await expect(page.locator(".home-tagline-repeat")).toHaveCount(0);
-    await expect(page.locator('.home-closing__link[href="./works/bipenggou/"]')).toBeVisible();
+    await expect(page.locator('.home-closing__link[href="./photography/"]')).toBeVisible();
     await expect(page.locator(".home-closing__cta.lang-zh-only")).toHaveAttribute("href", /contact/);
     await expect(page.locator(".site-header--overlay")).toBeVisible();
     const wordmarkColor = await page.locator(".site-header--overlay .wordmark").evaluate((el) => getComputedStyle(el).color);
