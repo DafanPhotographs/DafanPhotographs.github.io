@@ -25,6 +25,7 @@
   var DEFAULT_SERIES_H = 1600;
 
   var CARD_INDENT = "      ";
+  var HOME_SCENES_INDENT = "        ";
   var ARCHIVE_INDENT = "      ";
   var FILTER_INDENT = "    ";
   var HOME_LINKS_INDENT = "              ";
@@ -116,6 +117,32 @@
       "/" +
       frameName +
       ".jpg"
+    );
+  }
+
+  function ensureFeatured(data) {
+    var slugs = data.series.map(function (series) { return series.slug; });
+    var list = Array.isArray(data.featured) ? data.featured.filter(function (slug) {
+      return slugs.indexOf(slug) >= 0;
+    }) : [];
+    slugs.forEach(function (slug) {
+      if (list.length < 3 && list.indexOf(slug) < 0) list.push(slug);
+    });
+    data.featured = list.slice(0, 3);
+    return data.featured;
+  }
+
+  function cloudinaryLimitUrl(data, series) {
+    return (
+      "https://res.cloudinary.com/" + data.cloudName +
+      "/image/upload/c_limit,w_2400,q_auto,f_auto/" + series.publicPrefix + "/cover.jpg"
+    );
+  }
+
+  function cloudinaryFillUrl(data, series) {
+    return (
+      "https://res.cloudinary.com/" + data.cloudName +
+      "/image/upload/c_fill,g_auto,w_2400,h_1600,f_auto,q_auto/" + series.publicPrefix + "/cover.jpg"
     );
   }
 
@@ -230,6 +257,7 @@
     var out = {
       cloudName: data.cloudName,
       categories: data.categories,
+      featured: data.featured || data.series.slice(0, 3).map(function (series) { return series.slug; }),
       series: data.series
     };
     if (data.workLede) out.workLede = data.workLede;
@@ -664,6 +692,53 @@
       .join("\n");
   }
 
+  function renderHomeScenes(data) {
+    var featured = ensureFeatured(data);
+    var bySlug = {};
+    data.series.forEach(function (series) { bySlug[series.slug] = series; });
+    var blocks = [];
+    featured.forEach(function (slug, index) {
+      var series = bySlug[slug];
+      if (!series) return;
+      var title = series.title.zh || series.title.en || series.slug;
+      var loading = index === 0 ? 'fetchpriority="high"' : 'loading="lazy"';
+      var limit = escapeAttr(cloudinaryLimitUrl(data, series));
+      var fill = escapeAttr(cloudinaryFillUrl(data, series));
+      blocks.push(
+        HOME_SCENES_INDENT + '<a class="featured-panel home-scene" id="home-scene-' + series.slug + '" data-home-scene="' + index + '" href="./works/' + series.slug + '/" data-i18n-aria="series.' + series.slug + '.title">\n' +
+        HOME_SCENES_INDENT + '  <div class="home-scene-stage">\n' +
+        HOME_SCENES_INDENT + '    <div class="home-scene-media">\n' +
+        HOME_SCENES_INDENT + '      <div class="home-scene-media-scale">\n' +
+        HOME_SCENES_INDENT + '        <picture\n' +
+        HOME_SCENES_INDENT + '          class="home-scene-picture"\n' +
+        HOME_SCENES_INDENT + '          data-desktop-limit-srcset="' + limit + '">\n' +
+        HOME_SCENES_INDENT + '          <source\n' +
+        HOME_SCENES_INDENT + '            media="(min-width: 1024px)"\n' +
+        HOME_SCENES_INDENT + '            srcset="' + limit + '" />\n' +
+        HOME_SCENES_INDENT + '          <img\n' +
+        HOME_SCENES_INDENT + '            src="' + fill + '"\n' +
+        HOME_SCENES_INDENT + '            data-cloud-fallback-fill="' + fill + '"\n' +
+        HOME_SCENES_INDENT + '            alt=""\n' +
+        HOME_SCENES_INDENT + '            data-i18n-alt="home.alt.' + series.slug + '"\n' +
+        HOME_SCENES_INDENT + '            width="2400"\n' +
+        HOME_SCENES_INDENT + '            height="1600"\n' +
+        HOME_SCENES_INDENT + '            ' + loading + '\n' +
+        HOME_SCENES_INDENT + '            decoding="async" />\n' +
+        HOME_SCENES_INDENT + '        </picture>\n' +
+        HOME_SCENES_INDENT + '      </div>\n' +
+        HOME_SCENES_INDENT + '    </div>\n' +
+        HOME_SCENES_INDENT + '  </div>\n' +
+        HOME_SCENES_INDENT + '  <div class="home-scene-chrome">\n' +
+        HOME_SCENES_INDENT + '    <div class="home-scene-title-blend">\n' +
+        HOME_SCENES_INDENT + '      <p class="home-scene-title" data-i18n="series.' + series.slug + '.title">' + escapeHtml(title) + '</p>\n' +
+        HOME_SCENES_INDENT + '    </div>\n' +
+        HOME_SCENES_INDENT + '  </div>\n' +
+        HOME_SCENES_INDENT + '</a>'
+      );
+    });
+    return blocks.join("\n");
+  }
+
   function renderArchiveBlock(data) {
     var items = [];
     var maxFrames = 0;
@@ -808,6 +883,16 @@
     return {
       start: first,
       end: lastClose + "\n      </a>".length
+    };
+  }
+
+  function findHomeScenesRegion(content) {
+    var first = content.search(/^ {8}<a class="featured-panel home-scene"/m);
+    var lastClose = content.lastIndexOf("\n        </a>");
+    if (first < 0 || lastClose < first) throw new Error("未找到首页精选场景区块");
+    return {
+      start: first,
+      end: lastClose + "\n        </a>".length
     };
   }
 
@@ -963,6 +1048,11 @@
     var data = migration.data;
     if (migration.changed) notes.push("已将旧版 i18n 中的系列文案迁移到 data/series.json（一次性）");
 
+    if (Array.isArray(options.featured)) {
+      data.featured = options.featured.slice();
+      notes.push("首页精选更新：" + data.featured.join(" → "));
+    }
+
     if (options.remove) {
       var removeSlug = options.remove;
       var beforeCount = data.series.length;
@@ -995,6 +1085,8 @@
         notes.push("新增系列：" + spec.slug + "（共 " + data.series.length + " 个系列）");
       }
     }
+
+    ensureFeatured(data);
 
     // 模板外壳：优先取第一个已有系列页
     var shellSlug = options.templateSlug || null;
@@ -1054,14 +1146,20 @@
     );
     addWrite(FILE_PATHS.photographyIndex, photographyHtml);
 
-    // 6) 首页：结尾系列链接 + 精选位旧 key 迁移
+    // 6) 首页：精选场景 + 结尾系列链接 + 精选位旧 key 迁移
     var homeHtml = files[FILE_PATHS.homeIndex];
     homeHtml = migrateLegacyKeys(homeHtml, data);
+    homeHtml = syncBlock(homeHtml, "series:homeScenes", renderHomeScenes(data), HOME_SCENES_INDENT, findHomeScenesRegion);
     homeHtml = syncBlock(homeHtml, "series:homeLinks", renderHomeSeriesLinks(data), HOME_LINKS_INDENT, findHomeLinksRegion);
     addWrite(FILE_PATHS.homeIndex, homeHtml);
 
     // 已删除系列的页面
     var deletions = [];
+    if (Array.isArray(options.featured)) {
+      data.featured = options.featured.slice();
+      notes.push("首页精选更新：" + data.featured.join(" → "));
+    }
+
     if (options.remove) {
       deletions.push(FILE_PATHS.seriesPage(options.remove));
     }
@@ -1131,6 +1229,8 @@
     migrateLegacyKeys: migrateLegacyKeys,
     renderSeriesPage: renderSeriesPage,
     renderCardsBlock: renderCardsBlock,
+    renderHomeScenes: renderHomeScenes,
+    ensureFeatured: ensureFeatured,
     renderArchiveBlock: renderArchiveBlock,
     renderFiltersBlock: renderFiltersBlock,
     renderHomeSeriesLinks: renderHomeSeriesLinks,

@@ -67,3 +67,18 @@ node tools/new-series.mjs --sync        # 只做迁移/同步，不加新系列
 - 后台页面的 GitHub PAT 需要 fine-grained token 的 **Contents: Read and write** 权限，只作用于这一个仓库。
 - 本工具不会自动 push；CI 的 `npm run test:qa` 与新工具互不影响。
 - `works/<slug>/index.html` 会基于现有系列页外壳重新生成，所以页头/页脚改动只需改在任意一个现有系列页上（工具会从第一个现有系列页取外壳）。
+
+
+## 管理已有系列（后台顶部「0 · 管理已有系列」）
+
+1. **载入编辑**：选一个系列 → 「载入编辑」。下方文字表单会预填，照片会以只读缩略图列出（不会重新上传）。改完标题/描述/年份/分类后，点「生成文件并预览」→「发布到 GitHub」。
+2. **首页精选**：三个下拉框就是主页第 1/2/3 屏，选择系列并调换顺序，点「保存首页精选」。主页三屏用的是该系列的封面图（第一张照片）。
+3. **删除系列**：选中系列 → 「删除所选系列」。会删掉系列页、作品/摄影列表、首页引用；**Cloudinary 里的图片不会删**，需要到 Cloudinary 控制台手动删（unsigned preset 没有删除权限）。
+4. **单张照片**：目前不支持在后台单独删除/替换某一帧。需要换图时，建议新建一个系列（或先在 Cloudinary 覆盖同名文件，再编辑该系列文字并发布）。
+
+## 上传/发布失败怎么排查
+
+- 照片上传需要 Cloudinary **unsigned** preset；没有配置时点发布会直接提示「缺少 Cloudinary unsigned preset」，不会产生半成品。
+- 提交需要 GitHub fine-grained PAT（Contents: Read and write）；没有时提示「缺少 GitHub PAT」，也可以改用「下载 ZIP」。
+- 读取线上文件优先 `raw.githubusercontent.com`，失败会自动改用 `api.github.com`，再失败则使用当前站点同源文件（后台本身就在站点上），所以国内网络也能发布。
+- 如果后台是安装到程序坞的 PWA，新版本会自动走 network-first 更新；仍是旧界面时，关闭再打开一次。

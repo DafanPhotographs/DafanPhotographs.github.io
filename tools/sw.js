@@ -1,5 +1,5 @@
 /* 大樊发布后台 · 最小离线壳 */
-var CACHE = "dafan-admin-v1";
+var CACHE = "dafan-admin-v2";
 var SHELL = [
   "/tools/admin.html",
   "/tools/lib/dafan-core.js",
@@ -34,6 +34,21 @@ self.addEventListener("fetch", function (event) {
   var url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== location.origin) return;
   if (url.pathname.indexOf("/tools/") !== 0) return;
+
+  // The admin page itself is network-first so a new deploy is picked up immediately.
+  if (url.pathname === "/tools/admin.html" || event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request, { cache: "no-store" }).then(function (res) {
+        var copy = res.clone();
+        caches.open(CACHE).then(function (cache) { cache.put("/tools/admin.html", copy); });
+        return res;
+      }).catch(function () {
+        return caches.match("/tools/admin.html");
+      })
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(function (cached) {
       if (cached) return cached;
@@ -41,9 +56,6 @@ self.addEventListener("fetch", function (event) {
         var copy = res.clone();
         caches.open(CACHE).then(function (cache) { cache.put(event.request, copy); });
         return res;
-      }).catch(function () {
-        if (event.request.mode === "navigate") return caches.match("/tools/admin.html");
-        throw new Error("offline");
       });
     })
   );

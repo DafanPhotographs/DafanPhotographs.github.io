@@ -10,6 +10,11 @@
       "en": "Landscape"
     }
   },
+  "featured": [
+    "bipenggou",
+    "emeishan",
+    "qingdao"
+  ],
   "series": [
     {
       "slug": "bipenggou",

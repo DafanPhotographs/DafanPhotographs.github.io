@@ -117,6 +117,7 @@
     .pill { font-size: 11px; background: #f1efe8; border-radius: 4px; padding: 1px 6px; color: var(--muted); margin-left: 6px; }
     .test-warning { background: #fff8e6; border: 1px solid #f0dfae; border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #7a5b0a; margin-bottom: 12px; }
     a { color: var(--ink); }
+    button.danger { color: var(--err); border-color: var(--err); }
   </style>
 </head>
 <body>
@@ -130,6 +131,28 @@
 
   <main>
     <div>
+      <div class="panel">
+        <h2>0 · 管理已有系列 <small>编辑文字 / 首页精选 / 删除</small></h2>
+        <div class="row">
+          <label class="field"><span>系列</span><select id="manageSeries"></select></label>
+          <div class="actions" style="align-self:flex-end">
+            <button id="loadSeriesBtn" type="button">载入编辑</button>
+            <button id="newSeriesBtn" type="button">新建系列</button>
+          </div>
+        </div>
+        <p class="hint" id="manageHint">载入已有系列后，下方文字表单会预填；照片保持不变，只更新文案。</p>
+        <div class="row three">
+          <label class="field"><span>首页第 1 屏</span><select id="feat0"></select></label>
+          <label class="field"><span>首页第 2 屏</span><select id="feat1"></select></label>
+          <label class="field"><span>首页第 3 屏</span><select id="feat2"></select></label>
+        </div>
+        <div class="actions">
+          <button id="saveFeaturedBtn" type="button">保存首页精选</button>
+          <button id="deleteSeriesBtn" type="button" class="danger">删除所选系列</button>
+        </div>
+        <div class="status" id="manageStatus"></div>
+      </div>
+
       <div class="panel">
         <h2>1 · 站点与密钥 <small>只保存在本机浏览器 localStorage，不会写进仓库</small></h2>
         <details class="config" id="configBox">
@@ -238,7 +261,9 @@
         writes: null,
         spec: null,
         previewLang: "zh",
-        busy: false
+        busy: false,
+        editingSlug: null,
+        manageSeries: []
       };
 
       function $(id) { return document.getElementById(id); }
@@ -247,6 +272,13 @@
       }
       function lsSet(key, value) { try { localStorage.setItem(LS_PREFIX + key, value); } catch (e) {} }
       function lsDel(key) { try { localStorage.removeItem(LS_PREFIX + key); } catch (e) {} }
+
+      function setManageStatus(text, kind) {
+        var el = $("manageStatus");
+        if (!el) return;
+        el.textContent = text || "";
+        el.className = "status" + (kind ? " " + kind : "");
+      }
 
       function setStatus(text, kind) {
         var el = $("status");
@@ -314,19 +346,60 @@
         return res.text();
       }
 
-      async function readRemoteBase() {
+      async function readGithubApiBase() {
         var cfg = ghCfg();
         if (!cfg.owner || !cfg.repo) throw new Error("未配置 GitHub owner/repo");
-        var root = "https://raw.githubusercontent.com/" + cfg.owner + "/" + cfg.repo + "/" + cfg.branch + "/";
-        var seriesJsonText = await fetchText(root + core.FILE_PATHS.seriesJson);
+        var root = "https://api.github.com/repos/" + cfg.owner + "/" + cfg.repo + "/contents/";
+        var ref = encodeURIComponent(cfg.branch || "main");
+        var headers = { Accept: "application/vnd.github.raw" };
+        if (cfg.token) headers.Authorization = "Bearer " + cfg.token;
+        async function get(path) {
+          var res = await fetch(root + path + "?ref=" + ref, { headers: headers });
+          if (!res.ok) throw new Error("GitHub API " + res.status + " " + path);
+          return res.text();
+        }
+        var seriesJsonText = await get(core.FILE_PATHS.seriesJson);
         var seriesJson = JSON.parse(seriesJsonText);
         var files = {};
         files[core.FILE_PATHS.seriesJson] = seriesJsonText;
         var paths = sitePathsFromSeries(seriesJson);
-        for (var i = 0; i < paths.length; i++) {
-          files[paths[i]] = await fetchText(root + paths[i]);
+        for (var i = 0; i < paths.length; i += 1) {
+          files[paths[i]] = await get(paths[i]);
         }
-        return { files: files, source: "线上 main（raw.githubusercontent.com）" };
+        return { files: files, source: "线上 main（api.github.com）" };
+      }
+
+      async function readRemoteBase() {
+        var cfg = ghCfg();
+        if (!cfg.owner || !cfg.repo) throw new Error("未配置 GitHub owner/repo");
+        var root = "https://raw.githubusercontent.com/" + cfg.owner + "/" + cfg.repo + "/" + cfg.branch + "/";
+        try {
+          var seriesJsonText = await fetchText(root + core.FILE_PATHS.seriesJson);
+          var seriesJson = JSON.parse(seriesJsonText);
+          var files = {};
+          files[core.FILE_PATHS.seriesJson] = seriesJsonText;
+          var paths = sitePathsFromSeries(seriesJson);
+          for (var i = 0; i < paths.length; i++) {
+            files[paths[i]] = await fetchText(root + paths[i]);
+          }
+          return { files: files, source: "线上 main（raw.githubusercontent.com）" };
+        } catch (rawError) {
+          try {
+            log("raw.githubusercontent.com 读取失败，改用 GitHub API：" + rawError.message);
+            return await readGithubApiBase();
+          } catch (apiError) {
+            throw new Error("线上读取失败（raw: " + rawError.message + "；api: " + apiError.message + "）");
+          }
+        }
+      }
+
+      async function readFreshBase() {
+        try {
+          return await readRemoteBase();
+        } catch (e) {
+          log("线上读取失败，改用当前站点文件：" + e.message);
+          return await readLocalBase();
+        }
       }
 
       async function readLocalBase() {
@@ -359,6 +432,7 @@
             badge.className = "badge ok";
             $("siteInfo").textContent = "已读取线上 main 的站点文件（发布时会基于这份内容提交）。";
             populateCategories();
+            populateManage();
             return;
           } catch (e) {
             remoteError = e;
@@ -371,6 +445,7 @@
           badge.className = "badge ok";
           $("siteInfo").textContent = "已读取本地仓库文件。" + (remoteError ? "（线上读取失败：" + remoteError.message + "，已回落本地）" : "");
           populateCategories();
+          populateManage();
         } catch (e) {
           badge.textContent = "读取失败";
           badge.className = "badge err";
@@ -401,6 +476,117 @@
       }
 
       // ---------------------------------------------------------------------
+      // 管理已有系列 / 首页精选
+      // ---------------------------------------------------------------------
+      function currentData() {
+        if (!state.base) return null;
+        return core.parseSeriesJson(state.base.files[core.FILE_PATHS.seriesJson]);
+      }
+
+      function frameUrl(data, series, name) {
+        return (
+          "https://res.cloudinary.com/" + data.cloudName + "/image/upload/f_auto,q_auto/" +
+          series.publicPrefix + "/" + name + ".jpg"
+        );
+      }
+
+      function populateManage() {
+        var data = currentData();
+        if (!data) return;
+        state.manageSeries = data.series;
+        var picker = $("manageSeries");
+        var prev = picker.value || state.editingSlug || (data.series[0] && data.series[0].slug) || "";
+        picker.innerHTML = "";
+        data.series.forEach(function (series) {
+          var option = document.createElement("option");
+          option.value = series.slug;
+          option.textContent = (series.title.zh || series.title.en || series.slug) + " · " + series.slug;
+          picker.appendChild(option);
+        });
+        if (prev) picker.value = prev;
+
+        var featured = (data.featured || []).slice(0, 3);
+        data.series.forEach(function (series) {
+          if (featured.length < 3 && featured.indexOf(series.slug) < 0) featured.push(series.slug);
+        });
+        ["feat0", "feat1", "feat2"].forEach(function (id, index) {
+          var select = $(id);
+          var old = select.value;
+          select.innerHTML = "";
+          var none = document.createElement("option");
+          none.value = "";
+          none.textContent = "（不显示）";
+          select.appendChild(none);
+          data.series.forEach(function (series) {
+            var option = document.createElement("option");
+            option.value = series.slug;
+            option.textContent = (series.title.zh || series.title.en || series.slug) + " · " + series.slug;
+            select.appendChild(option);
+          });
+          if (old && data.series.some(function (series) { return series.slug === old; })) {
+            select.value = old;
+          } else {
+            select.value = featured[index] || "";
+          }
+        });
+      }
+
+      function loadSeriesBySlug(slug) {
+        var data = currentData();
+        if (!data) return;
+        var series = data.series.filter(function (item) { return item.slug === slug; })[0];
+        if (!series) return;
+        state.editingSlug = series.slug;
+        $("slug").value = series.slug;
+        $("slug").readOnly = true;
+        $("year").value = series.year || "";
+        populateCategories();
+        $("category").value = series.category;
+        $("titleZh").value = series.title.zh || "";
+        $("titleEn").value = series.title.en || "";
+        $("copyZh").value = series.copy.zh || "";
+        $("copyEn").value = series.copy.en || "";
+        $("altZh").value = series.alt.zh || "";
+        $("altEn").value = series.alt.en || "";
+        state.photos = series.frames.map(function (frame) {
+          var url = frameUrl(data, series, frame.name);
+          return {
+            existing: true,
+            name: frame.name,
+            width: frame.width || null,
+            height: frame.height || null,
+            dataUrl: url,
+            uploadedUrl: url
+          };
+        });
+        renderPhotos();
+        state.writes = null;
+        state.spec = null;
+        state.batch = null;
+        setManageStatus("已载入 " + series.slug + "：改完文字后点「生成文件并预览」→「发布到 GitHub」。照片不会改动。", "ok");
+      }
+
+      function resetSeriesForm() {
+        state.editingSlug = null;
+        state.photos = [];
+        $("slug").readOnly = false;
+        $("slug").value = "";
+        $("year").value = String(new Date().getFullYear());
+        $("titleZh").value = "";
+        $("titleEn").value = "";
+        $("copyZh").value = "";
+        $("copyEn").value = "";
+        $("altZh").value = "";
+        $("altEn").value = "";
+        populateCategories();
+        renderPhotos();
+        state.writes = null;
+        state.spec = null;
+        state.batch = null;
+        setManageStatus("正在新建系列：填写照片和文字后发布。", "ok");
+      }
+
+      // ---------------------------------------------------------------------
       // 照片
       // ---------------------------------------------------------------------
       function fileToDataUrl(file) {
@@ -413,6 +599,10 @@
       }
 
       async function addFiles(fileList) {
+        if (state.editingSlug) {
+          setStatus("编辑已有系列时不能增删照片。需要换图请新建一个系列。", "err");
+          return;
+        }
         var files = Array.prototype.slice.call(fileList || []);
         for (var i = 0; i < files.length; i++) {
           var file = files[i];
@@ -449,9 +639,11 @@
             (photo.width ? " · " + photo.width + "×" + photo.height : " · 读不出尺寸") +
             (photo.uploadedUrl ? " · 已上传" : "") + "</div></div>" +
             '<div class="photo-actions">' +
-            '<button type="button" data-act="up" data-i="' + index + '" title="上移">↑</button>' +
-            '<button type="button" data-act="down" data-i="' + index + '" title="下移">↓</button>' +
-            '<button type="button" data-act="del" data-i="' + index + '" title="删除">删除</button>' +
+            (photo.existing
+              ? ''
+              : '<button type="button" data-act="up" data-i="' + index + '" title="上移">↑</button>' +
+                '<button type="button" data-act="down" data-i="' + index + '" title="下移">↓</button>' +
+                '<button type="button" data-act="del" data-i="' + index + '" title="删除">删除</button>') +
             "</div>";
           list.appendChild(li);
         });
@@ -459,6 +651,7 @@
       }
 
       function updateSlugSuggestion() {
+        if (state.editingSlug) return;
         var slugInput = $("slug");
         if (slugInput.value.trim()) return;
         var titleEn = $("titleEn").value.trim();
@@ -779,6 +972,13 @@
           setStatus("开始发布…");
           var spec = collectSpec();
           var manualUpload = $("skipUpload").checked;
+          var needsUpload = state.photos.some(function (photo) { return !photo.uploadedUrl; });
+          if (!manualUpload && needsUpload && !$("uploadPreset").value.trim()) {
+            throw new Error("缺少 Cloudinary unsigned preset：在「配置」里填写，或勾选「图片已手动上传」");
+          }
+          if (!$("ghToken").value.trim()) {
+            throw new Error("缺少 GitHub PAT：在「配置」里填写，或改用「下载 ZIP」");
+          }
           if (!manualUpload) {
             log("上传照片到 Cloudinary…");
             await uploadPhotos(spec);
@@ -786,9 +986,9 @@
           } else if (state.photos.some(function (p) { return !p.uploadedUrl; })) {
             log("已勾选「图片已手动上传」，跳过上传。");
           }
-          // 以线上 main 为基底重新生成，避免本地副本过旧
+          // 以线上 main 为基底重新生成，避免本地副本过旧（raw 失败时走 API / 当前站点）
           setStatus("以线上 main 为基底重新生成…");
-          var remote = await readRemoteBase();
+          var remote = await readFreshBase();
           state.base = remote;
           state.baseSource = remote.source;
           var plan = core.planSiteSync(remote.files, { add: spec });
@@ -796,7 +996,7 @@
           state.writes = plan.writes;
           state.spec = spec;
           renderWrites(plan);
-          var message = "feat(series): add " + spec.slug + " — " + (spec.title.zh || spec.slug) + " / " + (spec.title.en || spec.slug);
+          var message = (state.editingSlug ? "chore(series): update " : "feat(series): add ") + spec.slug + " — " + (spec.title.zh || spec.slug) + " / " + (spec.title.en || spec.slug);
           log("提交到 GitHub：" + message);
           var commit = await commitWrites(plan.writes, message);
           log("✓ 已提交 " + commit.sha.slice(0, 7));
@@ -807,8 +1007,67 @@
             "ok"
           );
           renderPreview();
+          await loadBase(true);
         } catch (e) {
           setStatus("发布失败：" + e.message + "\n失败不会留下半成品：图片可能已上传（可在 Cloudinary 重用），HTML 未提交。", "err");
+        } finally {
+          state.busy = false;
+        }
+      }
+
+      async function publishOptions(options, message, doneText) {
+        var remote = await readFreshBase();
+        state.base = remote;
+        state.baseSource = remote.source;
+        var plan = core.planSiteSync(remote.files, options);
+        if (!plan.writes.length) throw new Error("没有需要变更的文件");
+        renderWrites(plan);
+        log("提交：" + message);
+        var commit = await commitWrites(plan.writes, message);
+        setManageStatus("已发布：" + commit.sha.slice(0, 7) + " · " + doneText + "（1–2 分钟后生效）", "ok");
+        await loadBase(true);
+      }
+
+      async function onLoadSeries() {
+        var slug = $("manageSeries").value;
+        if (slug) loadSeriesBySlug(slug);
+      }
+
+      function onNewSeries() {
+        resetSeriesForm();
+      }
+
+      async function onSaveFeatured() {
+        try {
+          if (state.busy) return;
+          state.busy = true;
+          var picks = ["feat0", "feat1", "feat2"].map(function (id) { return $(id).value; }).filter(Boolean);
+          if (!picks.length) throw new Error("至少选择一个系列");
+          if (new Set(picks).size !== picks.length) throw new Error("首页三屏不能重复选择同一个系列");
+          setManageStatus("正在发布首页精选…");
+          await publishOptions({ featured: picks }, "chore(home): update featured series", "首页精选已更新");
+        } catch (e) {
+          setManageStatus("首页精选发布失败：" + e.message, "err");
+        } finally {
+          state.busy = false;
+        }
+      }
+
+      async function onDeleteSeries() {
+        var slug = $("manageSeries").value;
+        if (!slug) return;
+        var ok = window.confirm(
+          "从网站删除系列 " + slug + "？\n\n会删除它的系列页、作品/摄影列表、首页引用；\nCloudinary 里的图片不会删除，需要你到 Cloudinary 控制台手动删。"
+        );
+        if (!ok) return;
+        try {
+          if (state.busy) return;
+          state.busy = true;
+          setManageStatus("正在删除 " + slug + "…");
+          await publishOptions({ remove: slug }, "chore(series): remove " + slug, "已从网站删除 " + slug);
+          if (state.editingSlug === slug) resetSeriesForm();
+        } catch (e) {
+          setManageStatus("删除失败：" + e.message, "err");
         } finally {
           state.busy = false;
         }
@@ -824,6 +1083,10 @@
         $("generateBtn").addEventListener("click", onGenerate);
         $("zipBtn").addEventListener("click", onZip);
         $("publishBtn").addEventListener("click", onPublish);
+        $("loadSeriesBtn").addEventListener("click", onLoadSeries);
+        $("newSeriesBtn").addEventListener("click", onNewSeries);
+        $("saveFeaturedBtn").addEventListener("click", onSaveFeatured);
+        $("deleteSeriesBtn").addEventListener("click", onDeleteSeries);
         $("tabZh").addEventListener("click", function () { setPreviewLang("zh"); });
         $("tabEn").addEventListener("click", function () { setPreviewLang("en"); });
         $("category").addEventListener("change", function () {
