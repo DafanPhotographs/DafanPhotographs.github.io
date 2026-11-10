@@ -58,7 +58,7 @@ test.describe("Works horizontal motion (PR #10 port on #11)", () => {
     expect(await motionActive(page)).toBe(false);
   });
 
-  test("filter change dispatches works-filter-change and keeps nav 作品/Work", async ({ page }) => {
+  test("filter change dispatches works-filter-change and keeps nav 摄影/Photography", async ({ page }) => {
     await page.setViewportSize(DESKTOP);
     await page.goto(WORKS);
     await page.waitForLoadState("networkidle");
@@ -71,9 +71,9 @@ test.describe("Works horizontal motion (PR #10 port on #11)", () => {
     await page.locator('[data-filter="travel"]').click();
     fired = await page.evaluate(() => window.__worksFilterFired === true);
     expect(fired).toBe(true);
-    await expect(page.locator('.nav-link-label.lang-zh-only[data-i18n="nav.work"]')).toBeVisible();
+    await expect(page.locator('.nav-link-label.lang-zh-only[data-i18n="nav.photography"]')).toBeVisible();
     await page.locator('.lang-switch__btn[data-set-lang="en"]').click();
-    await expect(page.locator(".lang-en-only.nav-link-label").filter({ hasText: "Work" })).toBeVisible();
+    await expect(page.locator(".lang-en-only.nav-link-label").filter({ hasText: "Photography" })).toBeVisible();
     await expect.poll(async () => motionActive(page)).toBe(true);
   });
 

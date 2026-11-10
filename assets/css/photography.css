@@ -1,0 +1,189 @@
+/* Photography archive — reference: daofor.design/photography */
+
+.page-photography {
+  background: #fff;
+}
+
+/* Fixed, inverted header over the archive */
+.page-photography .site-header {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: transparent;
+  border-bottom-color: transparent;
+}
+
+@media (min-width: 768px) {
+  .page-photography .site-header--overlay {
+    mix-blend-mode: difference;
+    color: #fff;
+  }
+
+  .page-photography .site-header--overlay .wordmark,
+  .page-photography .site-header--overlay .nav-link-label,
+  .page-photography .site-header--overlay .lang-switch__btn,
+  .page-photography .site-header--overlay .lang-switch__sep {
+    color: #fff;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .page-photography .site-header--overlay {
+    mix-blend-mode: normal;
+    background: var(--header-bg);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
+  }
+}
+
+.page-photography .site-main--photography {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Giant title */
+.photography-hero {
+  padding: calc(var(--header-height) + clamp(32px, 5.5vw, 72px)) clamp(16px, 2.2vw, 32px) 0;
+}
+
+.photography-hero__word {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(52px, 13.2vw, 208px);
+  font-weight: 600;
+  line-height: 0.8;
+  letter-spacing: -0.055em;
+  color: #ececec;
+  white-space: nowrap;
+}
+
+.photography-hero__meta {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 2vw, 24px);
+  margin-top: clamp(8px, 1.2vw, 16px);
+  color: #bdbdbd;
+  font-size: clamp(12px, 1vw, 15px);
+  font-weight: 500;
+}
+
+.photography-hero__years {
+  flex: none;
+  font-size: clamp(22px, 3.6vw, 54px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: #dcdcdc;
+  white-space: nowrap;
+}
+
+.photography-hero__rule {
+  flex: 1 1 auto;
+  height: 1px;
+  background: #dcdcdc;
+}
+
+.photography-hero__lede {
+  flex: none;
+  max-width: 30ch;
+  text-align: right;
+}
+
+html[lang="en"] .photography-hero__lede {
+  letter-spacing: 0.01em;
+}
+
+/* Three-column archive, flows like the reference */
+.photography-archive {
+  margin-top: clamp(44px, 7vw, 104px);
+  padding: 0 clamp(16px, 2.2vw, 32px) clamp(64px, 10vw, 140px);
+  columns: 3;
+  column-gap: clamp(10px, 1.1vw, 16px);
+}
+
+.archive-item {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  margin: 0 0 clamp(10px, 1.1vw, 16px);
+  break-inside: avoid;
+  background: #f2f2f2;
+  color: inherit;
+  text-decoration: none;
+}
+
+.archive-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.archive-item:hover img,
+.archive-item:focus-visible img {
+  transform: scale(1.03);
+}
+
+.archive-item:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+}
+
+.ar-45 { aspect-ratio: 4 / 5; }
+.ar-11 { aspect-ratio: 1 / 1; }
+.ar-32 { aspect-ratio: 3 / 2; }
+.ar-34 { aspect-ratio: 3 / 4; }
+
+.photo-motion .archive-item {
+  will-change: transform, opacity;
+}
+
+@media (max-width: 599.98px) {
+  .photography-hero {
+    padding-top: calc(var(--header-height) + 22px);
+    padding-inline: 16px;
+  }
+
+  .photography-hero__word {
+    font-size: clamp(42px, 12.4vw, 76px);
+    letter-spacing: -0.06em;
+  }
+
+  .photography-hero__meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .photography-hero__years {
+    font-size: clamp(20px, 7vw, 30px);
+  }
+
+  .photography-hero__rule {
+    display: none;
+  }
+
+  .photography-hero__lede {
+    text-align: left;
+    font-size: 12px;
+  }
+
+  .photography-archive {
+    margin-top: 30px;
+    padding: 0 16px 72px;
+    column-gap: 8px;
+  }
+
+  .archive-item {
+    margin-bottom: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .archive-item img {
+    transition: none;
+  }
+}
