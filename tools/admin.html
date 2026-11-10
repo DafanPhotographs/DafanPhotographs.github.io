@@ -320,8 +320,16 @@
         return "https://res.cloudinary.com/" + $("cloudName").value.trim() + "/image/upload/" + transform + "/" + publicId + ".jpg";
       }
 
+      function withTimeout(url, options, ms) {
+        var opts = Object.assign({ cache: "no-store" }, options || {});
+        if (typeof AbortSignal !== "undefined" && AbortSignal.timeout) {
+          opts.signal = AbortSignal.timeout(ms || 12000);
+        }
+        return fetch(url, opts);
+      }
+
       function readSameOrigin() {
-        return fetch(new URL("../data/photos.json", location.href), { cache: "no-store" }).then(function (res) {
+        return withTimeout(new URL("../data/photos.json", location.href), {}, 8000).then(function (res) {
           if (!res.ok) throw new Error("HTTP " + res.status);
           return res.text();
         });
@@ -331,7 +339,7 @@
         var cfg = ghCfg();
         if (!cfg.owner || !cfg.repo) return Promise.reject(new Error("未配置 GitHub owner/repo"));
         var url = "https://raw.githubusercontent.com/" + cfg.owner + "/" + cfg.repo + "/" + cfg.branch + "/data/photos.json";
-        return fetch(url, { cache: "no-store" }).then(function (res) {
+        return withTimeout(url, {}, 10000).then(function (res) {
           if (!res.ok) throw new Error("HTTP " + res.status);
           return res.text();
         });
@@ -343,17 +351,20 @@
         var url = API + cfg.owner + "/" + cfg.repo + "/contents/data/photos.json?ref=" + encodeURIComponent(cfg.branch);
         var headers = { Accept: "application/vnd.github.raw" };
         if (cfg.token) headers.Authorization = "Bearer " + cfg.token;
-        return fetch(url, { headers: headers, cache: "no-store" }).then(function (res) {
+        return withTimeout(url, { headers: headers }, 10000).then(function (res) {
           if (!res.ok) throw new Error("GitHub API " + res.status);
           return res.text();
         });
       }
 
       function readRemote() {
-        return readRaw().catch(function (rawError) {
-          log("raw 读取失败，改用 GitHub API：" + rawError.message);
-          return readApi().catch(function (apiError) {
-            log("GitHub API 读取失败，改用当前站点：" + apiError.message);
+        var cfg = ghCfg();
+        var first = cfg.token ? readApi() : readRaw();
+        var second = cfg.token ? readRaw() : readApi();
+        return first.catch(function (firstError) {
+          log("线上读取失败，尝试备用通道：" + firstError.message);
+          return second.catch(function (secondError) {
+            log("备用通道也失败，改用当前站点：" + secondError.message);
             return readSameOrigin();
           });
         });
@@ -378,8 +389,12 @@
         state.busy = true;
         $("sourceBadge").textContent = "读取中…";
         $("sourceBadge").className = "badge";
-        readRemote().then(function (text) {
-          applyData(JSON.parse(text), "线上 main");
+        readSameOrigin().then(function (text) {
+          applyData(JSON.parse(text), "当前站点");
+        }).catch(function () {
+          return readRemote().then(function (text) {
+            applyData(JSON.parse(text), "线上 main");
+          });
         }).catch(function (error) {
           $("sourceBadge").textContent = "读取失败";
           $("sourceBadge").className = "badge err";
@@ -743,9 +758,11 @@
           var jsonText = JSON.stringify(data, null, 2) + "\n";
           log("提交 data/photos.json（" + data.photos.length + " 张）…");
           var sha = await commitPhotos(jsonText, "chore(photos): update photo library");
-          state.newPhotos = [];
+          state.featured = data.featured;
+          state.deleted = {};
+          state.edits = {};
+          applyData(data, "刚提交");
           setStatus("已发布：" + String(sha).slice(0, 7) + "，1–2 分钟后生效。", "ok");
-          loadData();
         } catch (error) {
           setStatus("发布失败：" + error.message, "err");
         } finally {
