@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>发布后台 — 大樊 / DaFan</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#0b0b0b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="大樊发布" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+  <style>
+    :root {
+      --bg: #faf9f6;
+      --panel: #ffffff;
+      --ink: #1a1a1a;
+      --muted: #6b6b6b;
+      --line: #e3e0d8;
+      --accent: #1a1a1a;
+      --ok: #1f7a4d;
+      --warn: #a4610a;
+      --err: #b3261e;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      flex-wrap: wrap;
+      background: var(--panel);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+    header .sub { color: var(--muted); font-size: 13px; }
+    header .spacer { flex: 1; }
+    .badge { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #eee; color: var(--muted); }
+    .badge.ok { background: #e5f3ec; color: var(--ok); }
+    .badge.err { background: #fbe9e7; color: var(--err); }
+    main { padding: 20px 24px 80px; display: grid; grid-template-columns: minmax(390px, 520px) minmax(0, 1fr); gap: 20px; align-items: start; }
+    @media (max-width: 1100px) { main { grid-template-columns: 1fr; } }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      margin-bottom: 16px;
+    }
+    .panel h2 { font-size: 14px; margin: 0 0 12px; font-weight: 600; letter-spacing: .02em; }
+    .panel h2 small { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 6px; }
+    label.field { display: block; margin-bottom: 12px; font-size: 13px; }
+    label.field > span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 12px; }
+    input[type="text"], input[type="password"], textarea, select {
+      width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
+      font: inherit; font-size: 13px; background: #fff; color: var(--ink);
+    }
+    textarea { min-height: 62px; resize: vertical; }
+    input:focus, textarea:focus, select:focus { outline: 2px solid #d9d4c7; border-color: #c9c3b4; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row.three { grid-template-columns: 1fr 1fr 120px; }
+    button {
+      font: inherit; font-size: 13px; padding: 8px 16px; border-radius: 8px;
+      border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer;
+    }
+    button:hover { border-color: #b9b3a4; }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    button.primary:hover { opacity: .9; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+    .hint { color: var(--muted); font-size: 12px; margin: 4px 0 0; }
+    .hint.warn { color: var(--warn); }
+    .dropzone {
+      border: 1.5px dashed #cfc9ba; border-radius: 10px; padding: 22px 16px; text-align: center;
+      color: var(--muted); font-size: 13px; cursor: pointer; background: #fcfbf8;
+    }
+    .dropzone.drag { border-color: var(--accent); background: #f3f0e9; }
+    .photos { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+    .photos li {
+      display: grid; grid-template-columns: 56px 1fr auto; gap: 10px; align-items: center;
+      border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; background: #fff;
+    }
+    .photos img { width: 56px; height: 42px; object-fit: cover; border-radius: 4px; background: #eee; }
+    .photos .name { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .photos .frame { font-size: 11px; color: var(--muted); }
+    .photos .frame.cover { color: var(--ok); font-weight: 600; }
+    .photo-actions { display: flex; gap: 4px; }
+    .photo-actions button { padding: 2px 6px; font-size: 12px; }
+    .status { font-size: 12px; color: var(--muted); margin-top: 8px; white-space: pre-wrap; }
+    .status.err { color: var(--err); }
+    .status.ok { color: var(--ok); }
+    .writes { list-style: none; margin: 8px 0 0; padding: 0; font-size: 13px; }
+    .writes li { padding: 3px 0; border-bottom: 1px dashed var(--line); display: flex; justify-content: space-between; gap: 10px; }
+    .writes .path { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+    .writes .stat { color: var(--muted); white-space: nowrap; font-size: 12px; }
+    iframe#preview { width: 100%; height: 72vh; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+    .tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .log { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; color: var(--muted); white-space: pre-wrap; max-height: 160px; overflow: auto; background: #f7f6f2; border-radius: 6px; padding: 8px 10px; }
+    .cat-new { display: none; }
+    .cat-new.on { display: block; }
+    details.config summary { cursor: pointer; font-size: 13px; font-weight: 600; }
+    details.config[open] summary { margin-bottom: 12px; }
+    .pill { font-size: 11px; background: #f1efe8; border-radius: 4px; padding: 1px 6px; color: var(--muted); margin-left: 6px; }
+    .test-warning { background: #fff8e6; border: 1px solid #f0dfae; border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #7a5b0a; margin-bottom: 12px; }
+    a { color: var(--ink); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>发布后台 <span class="pill">大樊 / DaFan</span></h1>
+    <span class="sub">拖入照片 → 填中英标题描述 → 一键生成并发布</span>
+    <span class="spacer"></span>
+    <span id="sourceBadge" class="badge">未读取站点</span>
+    <button id="reloadBtn" type="button">重新读取站点文件</button>
+  </header>
+
+  <main>
+    <div>
+      <div class="panel">
+        <h2>1 · 站点与密钥 <small>只保存在本机浏览器 localStorage，不会写进仓库</small></h2>
+        <details class="config" id="configBox">
+          <summary>配置（首次使用点开）</summary>
+          <div class="row">
+            <label class="field"><span>Cloudinary cloud name</span><input type="text" id="cloudName" value="no7rdn4w" /></label>
+            <label class="field"><span>Cloudinary unsigned preset</span><input type="password" id="uploadPreset" placeholder="例如 dafan_unsigned" /></label>
+          </div>
+          <label class="field" style="display:flex;gap:8px;align-items:center;">
+            <input type="checkbox" id="skipUpload" style="width:auto" />
+            <span style="margin:0">图片已在 Cloudinary 网页后台上传好，跳过自动上传</span>
+          </label>
+          <div class="row three">
+            <label class="field"><span>GitHub 仓库 owner</span><input type="text" id="ghOwner" placeholder="DafanPhotographs" /></label>
+            <label class="field"><span>仓库名</span><input type="text" id="ghRepo" placeholder="DafanPhotographs.github.io" /></label>
+            <label class="field"><span>分支</span><input type="text" id="ghBranch" value="main" /></label>
+          </div>
+          <label class="field"><span>GitHub PAT（fine-grained，仅需 Contents: Read and write）</span><input type="password" id="ghToken" placeholder="github_pat_..." /></label>
+          <label class="field" style="display:flex;gap:8px;align-items:center;">
+            <input type="checkbox" id="remember" checked style="width:auto" />
+            <span style="margin:0">记住配置（仅本机 localStorage）</span>
+          </label>
+          <div class="actions">
+            <button id="saveConfigBtn" type="button">保存配置</button>
+            <button id="clearConfigBtn" type="button">清除本机配置</button>
+          </div>
+          <p class="hint">不需要 PAT 也能用：点「下载 ZIP」把生成的文件解压进仓库，再自己 git commit/push。</p>
+        </details>
+        <p class="hint" id="siteInfo">正在读取站点文件…</p>
+      </div>
+
+      <div class="panel">
+        <h2>2 · 照片 <small>第一张自动作为封面（cover），其余为 02…NN</small></h2>
+        <div class="dropzone" id="dropzone">
+          把照片拖到这里，或点击选择（JPG / PNG / WebP，建议长边 2400px、sRGB）
+          <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple hidden />
+        </div>
+        <ul class="photos" id="photoList"></ul>
+        <p class="hint">顺序就是页面里的顺序；「↑ / ↓」调整，「删除」移除。</p>
+      </div>
+
+      <div class="panel">
+        <h2>3 · 文字（中英双语）</h2>
+        <div class="row">
+          <label class="field"><span>slug（网址路径，小写字母/数字/连字符）</span><input type="text" id="slug" placeholder="例如 test-series" /></label>
+          <label class="field"><span>年份</span><input type="text" id="year" value="2025" /></label>
+        </div>
+        <div class="row">
+          <label class="field"><span>分类</span><select id="category"></select></label>
+          <label class="field"><span>分类中文名 / 英文名（新建分类时填）</span>
+            <div class="row">
+              <input type="text" id="catZh" placeholder="例如 旅行" />
+              <input type="text" id="catEn" placeholder="例如 Travel" />
+            </div>
+          </label>
+        </div>
+        <div class="row">
+          <label class="field"><span>标题 · 中文</span><input type="text" id="titleZh" placeholder="例如 测试系列：山与海" /></label>
+          <label class="field"><span>标题 · English</span><input type="text" id="titleEn" placeholder="例如 Test Series: Mountains and Sea" /></label>
+        </div>
+        <div class="row">
+          <label class="field"><span>描述 · 中文</span><textarea id="copyZh" placeholder="一两句话"></textarea></label>
+          <label class="field"><span>描述 · English</span><textarea id="copyEn" placeholder="One or two sentences"></textarea></label>
+        </div>
+        <div class="row">
+          <label class="field"><span>封面 alt · 中文（可留空自动生成）</span><input type="text" id="altZh" /></label>
+          <label class="field"><span>封面 alt · English</span><input type="text" id="altEn" /></label>
+        </div>
+        <div class="actions">
+          <button class="primary" id="generateBtn" type="button">生成文件并预览</button>
+          <button id="zipBtn" type="button">下载 ZIP</button>
+          <button id="publishBtn" type="button">发布到 GitHub</button>
+        </div>
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h2>生成结果</h2>
+        <div id="writeSummary"><p class="hint">还没有生成。填好左侧内容后点「生成文件并预览」。</p></div>
+        <div class="log" id="log" hidden></div>
+      </div>
+      <div class="panel">
+        <h2>新系列页预览</h2>
+        <div class="tabs">
+          <button id="tabZh" class="active" type="button">中文</button>
+          <button id="tabEn" type="button">English</button>
+        </div>
+        <iframe id="preview" title="preview"></iframe>
+      </div>
+    </div>
+  </main>
+
+  <script src="lib/dafan-core.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      var core = window.DaFanCore;
+      var LS_PREFIX = "dafan-admin-v1:";
+      var state = {
+        photos: [],
+        base: null,
+        baseSource: "",
+        writes: null,
+        spec: null,
+        previewLang: "zh",
+        busy: false
+      };
+
+      function $(id) { return document.getElementById(id); }
+      function lsGet(key, fallback) {
+        try { var v = localStorage.getItem(LS_PREFIX + key); return v == null ? fallback : v; } catch (e) { return fallback; }
+      }
+      function lsSet(key, value) { try { localStorage.setItem(LS_PREFIX + key, value); } catch (e) {} }
+      function lsDel(key) { try { localStorage.removeItem(LS_PREFIX + key); } catch (e) {} }
+
+      function setStatus(text, kind) {
+        var el = $("status");
+        el.textContent = text || "";
+        el.className = "status" + (kind ? " " + kind : "");
+      }
+      function log(text) {
+        var el = $("log");
+        el.hidden = false;
+        el.textContent += (el.textContent ? "\n" : "") + text;
+        el.scrollTop = el.scrollHeight;
+      }
+
+      // ---------------------------------------------------------------------
+      // 配置
+      // ---------------------------------------------------------------------
+      function loadConfigToUi() {
+        $("cloudName").value = lsGet("cloudName", "no7rdn4w");
+        $("uploadPreset").value = lsGet("uploadPreset", "");
+        $("skipUpload").checked = lsGet("skipUpload", "") === "1";
+        $("ghOwner").value = lsGet("ghOwner", "DafanPhotographs");
+        $("ghRepo").value = lsGet("ghRepo", "DafanPhotographs.github.io");
+        $("ghBranch").value = lsGet("ghBranch", "main");
+        $("ghToken").value = lsGet("ghToken", "");
+      }
+      function saveConfig() {
+        lsSet("cloudName", $("cloudName").value.trim());
+        lsSet("uploadPreset", $("uploadPreset").value.trim());
+        lsSet("skipUpload", $("skipUpload").checked ? "1" : "");
+        lsSet("ghOwner", $("ghOwner").value.trim());
+        lsSet("ghRepo", $("ghRepo").value.trim());
+        lsSet("ghBranch", $("ghBranch").value.trim() || "main");
+        if ($("remember").checked) lsSet("ghToken", $("ghToken").value.trim());
+        else lsDel("ghToken");
+        setStatus("配置已保存在本机浏览器。", "ok");
+      }
+      function clearConfig() {
+        ["cloudName", "uploadPreset", "skipUpload", "ghOwner", "ghRepo", "ghBranch", "ghToken"].forEach(lsDel);
+        loadConfigToUi();
+        setStatus("已清除本机配置。", "ok");
+      }
+      function ghCfg() {
+        return {
+          owner: $("ghOwner").value.trim(),
+          repo: $("ghRepo").value.trim(),
+          branch: $("ghBranch").value.trim() || "main",
+          token: $("ghToken").value.trim()
+        };
+      }
+
+      // ---------------------------------------------------------------------
+      // 读取站点文件（优先线上 main，失败回落本地 http://127.0.0.1:8080）
+      // ---------------------------------------------------------------------
+      function sitePathsFromSeries(seriesJson) {
+        var paths = [core.FILE_PATHS.i18n, core.FILE_PATHS.worksIndex, core.FILE_PATHS.photographyIndex, core.FILE_PATHS.homeIndex];
+        seriesJson.series.forEach(function (series) {
+          paths.push(core.FILE_PATHS.seriesPage(series.slug));
+        });
+        return paths;
+      }
+
+      async function fetchText(url) {
+        var res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status + " " + url);
+        return res.text();
+      }
+
+      async function readRemoteBase() {
+        var cfg = ghCfg();
+        if (!cfg.owner || !cfg.repo) throw new Error("未配置 GitHub owner/repo");
+        var root = "https://raw.githubusercontent.com/" + cfg.owner + "/" + cfg.repo + "/" + cfg.branch + "/";
+        var seriesJsonText = await fetchText(root + core.FILE_PATHS.seriesJson);
+        var seriesJson = JSON.parse(seriesJsonText);
+        var files = {};
+        files[core.FILE_PATHS.seriesJson] = seriesJsonText;
+        var paths = sitePathsFromSeries(seriesJson);
+        for (var i = 0; i < paths.length; i++) {
+          files[paths[i]] = await fetchText(root + paths[i]);
+        }
+        return { files: files, source: "线上 main（raw.githubusercontent.com）" };
+      }
+
+      async function readLocalBase() {
+        var base = new URL("../", location.href);
+        var seriesJsonText = await fetchText(new URL(core.FILE_PATHS.seriesJson, base).href);
+        var seriesJson = JSON.parse(seriesJsonText);
+        var files = {};
+        files[core.FILE_PATHS.seriesJson] = seriesJsonText;
+        var paths = sitePathsFromSeries(seriesJson);
+        for (var i = 0; i < paths.length; i++) {
+          try {
+            files[paths[i]] = await fetchText(new URL(paths[i], base).href);
+          } catch (e) {
+            // 新系列页可能尚未存在，跳过
+          }
+        }
+        return { files: files, source: "本地文件夹（" + base.href + "）" };
+      }
+
+      async function loadBase(forceRemote) {
+        var badge = $("sourceBadge");
+        badge.textContent = "读取中…";
+        badge.className = "badge";
+        var remoteError = null;
+        if (forceRemote !== false) {
+          try {
+            state.base = await readRemoteBase();
+            state.baseSource = state.base.source;
+            badge.textContent = "站点来源：线上 main";
+            badge.className = "badge ok";
+            $("siteInfo").textContent = "已读取线上 main 的站点文件（发布时会基于这份内容提交）。";
+            populateCategories();
+            return;
+          } catch (e) {
+            remoteError = e;
+          }
+        }
+        try {
+          state.base = await readLocalBase();
+          state.baseSource = state.base.source;
+          badge.textContent = "站点来源：本地文件夹";
+          badge.className = "badge ok";
+          $("siteInfo").textContent = "已读取本地仓库文件。" + (remoteError ? "（线上读取失败：" + remoteError.message + "，已回落本地）" : "");
+          populateCategories();
+        } catch (e) {
+          badge.textContent = "读取失败";
+          badge.className = "badge err";
+          $("siteInfo").textContent =
+            "无法读取站点文件。请确认：① 用 python3 -m http.server 8080 从仓库根目录启动；② 或配置 GitHub owner/repo 后重试。错误：" + e.message;
+        }
+      }
+
+      function populateCategories() {
+        if (!state.base) return;
+        var data = core.parseSeriesJson(state.base.files[core.FILE_PATHS.seriesJson]);
+        var select = $("category");
+        var current = select.value;
+        select.innerHTML = "";
+        Object.keys(data.categories).forEach(function (key) {
+          var option = document.createElement("option");
+          option.value = key;
+          option.textContent = key + " · " + (data.categories[key].zh || "");
+          select.appendChild(option);
+        });
+        var custom = document.createElement("option");
+        custom.value = "__new__";
+        custom.textContent = "＋ 新建分类…";
+        select.appendChild(custom);
+        if (current && Array.prototype.some.call(select.options, function (o) { return o.value === current; })) {
+          select.value = current;
+        }
+      }
+
+      // ---------------------------------------------------------------------
+      // 照片
+      // ---------------------------------------------------------------------
+      function fileToDataUrl(file) {
+        return new Promise(function (resolve, reject) {
+          var reader = new FileReader();
+          reader.onload = function () { resolve(reader.result); };
+          reader.onerror = function () { reject(reader.error); };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      async function addFiles(fileList) {
+        var files = Array.prototype.slice.call(fileList || []);
+        for (var i = 0; i < files.length; i++) {
+          var file = files[i];
+          if (!/^image\/(jpeg|png|webp)$/.test(file.type) && !/\.(jpe?g|png|webp)$/i.test(file.name)) {
+            log("跳过非图片文件：" + file.name);
+            continue;
+          }
+          var buffer = await file.arrayBuffer();
+          var size = core.imageSize(buffer) || {};
+          var dataUrl = await fileToDataUrl(file);
+          state.photos.push({
+            file: file,
+            name: file.name,
+            width: size.width || null,
+            height: size.height || null,
+            dataUrl: dataUrl,
+            uploadedUrl: ""
+          });
+        }
+        renderPhotos();
+      }
+
+      function renderPhotos() {
+        var list = $("photoList");
+        list.innerHTML = "";
+        var names = core.frameNames(state.photos.length);
+        state.photos.forEach(function (photo, index) {
+          var li = document.createElement("li");
+          var frame = names[index];
+          li.innerHTML =
+            '<img alt="" src="' + photo.dataUrl + '" />' +
+            '<div><div class="name">' + core.escapeHtml(photo.name) + "</div>" +
+            '<div class="frame' + (index === 0 ? " cover" : "") + '">' + (index === 0 ? "封面 cover" : "第 " + (index + 1) + " 张 · " + frame) +
+            (photo.width ? " · " + photo.width + "×" + photo.height : " · 读不出尺寸") +
+            (photo.uploadedUrl ? " · 已上传" : "") + "</div></div>" +
+            '<div class="photo-actions">' +
+            '<button type="button" data-act="up" data-i="' + index + '" title="上移">↑</button>' +
+            '<button type="button" data-act="down" data-i="' + index + '" title="下移">↓</button>' +
+            '<button type="button" data-act="del" data-i="' + index + '" title="删除">删除</button>' +
+            "</div>";
+          list.appendChild(li);
+        });
+        updateSlugSuggestion();
+      }
+
+      function updateSlugSuggestion() {
+        var slugInput = $("slug");
+        if (slugInput.value.trim()) return;
+        var titleEn = $("titleEn").value.trim();
+        if (titleEn) slugInput.value = core.slugify(titleEn);
+      }
+
+      // ---------------------------------------------------------------------
+      // 表单 -> spec
+      // ---------------------------------------------------------------------
+      function collectSpec() {
+        var category = $("category").value;
+        var spec = {
+          slug: $("slug").value.trim(),
+          category: category === "__new__" ? core.slugify($("catEn").value || $("catZh").value) : category,
+          year: $("year").value.trim(),
+          title: { zh: $("titleZh").value.trim(), en: $("titleEn").value.trim() },
+          copy: { zh: $("copyZh").value.trim(), en: $("copyEn").value.trim() },
+          alt: { zh: $("altZh").value.trim(), en: $("altEn").value.trim() },
+          frames: state.photos.map(function (photo, index) {
+            return { name: core.frameNames(state.photos.length)[index], width: photo.width, height: photo.height };
+          })
+        };
+        if (category === "__new__") {
+          spec.categoryLabel = { zh: $("catZh").value.trim() || spec.category, en: $("catEn").value.trim() || spec.category };
+        }
+        return spec;
+      }
+
+      function generateWrites() {
+        if (!state.base) throw new Error("站点文件尚未读取");
+        if (!state.photos.length) throw new Error("请先添加照片");
+        var spec = collectSpec();
+        var plan = core.planSiteSync(state.base.files, { add: spec });
+        state.spec = spec;
+        state.writes = plan.writes;
+        state.notes = plan.notes;
+        return plan;
+      }
+
+      function renderWrites(plan) {
+        var box = $("writeSummary");
+        if (!plan.writes.length) {
+          box.innerHTML = '<p class="hint">没有文件需要变更（可能这个 slug 已存在且内容一致）。</p>';
+          return;
+        }
+        var html = '<p class="hint">' + (plan.notes.length ? plan.notes.map(core.escapeHtml).join("；") : "") + "</p><ul class=\"writes\">";
+        plan.writes.forEach(function (write) {
+          var counts = core.countLineDiff(write.before || "", write.content);
+          html +=
+            '<li><span class="path">' + core.escapeHtml(write.path) + "</span><span class=\"stat\">" +
+            (write.action === "create" ? "新建" : "+" + counts.added + " / −" + counts.removed) + "</span></li>";
+        });
+        html += "</ul>";
+        box.innerHTML = html;
+      }
+
+      function previewImageMap() {
+        var map = {};
+        var names = core.frameNames(state.photos.length);
+        state.photos.forEach(function (photo, index) {
+          map[names[index] + ".jpg"] = photo.uploadedUrl || photo.dataUrl;
+        });
+        return map;
+      }
+
+      function renderPreview() {
+        if (!state.writes || !state.spec) return;
+        var pagePath = core.FILE_PATHS.seriesPage(state.spec.slug);
+        var page = state.writes.filter(function (w) { return w.path === pagePath; })[0];
+        if (!page) return;
+        var map = previewImageMap();
+        var html = page.content.replace(/https:\/\/res\.cloudinary\.com\/[^"]+\/(cover|0\d|1\d)\.jpg/g, function (url, name) {
+          return map[name + ".jpg"] || url;
+        });
+        var baseHref = new URL("../../works/" + state.spec.slug + "/", location.href).href;
+        html = html.replace("<head>", '<head>\n  <base href="' + baseHref + '" />');
+        var iframe = $("preview");
+        iframe.srcdoc = html;
+      }
+
+      function setPreviewLang(lang) {
+        state.previewLang = lang;
+        $("tabZh").classList.toggle("active", lang === "zh");
+        $("tabEn").classList.toggle("active", lang === "en");
+        try {
+          var doc = $("preview").contentDocument;
+          if (doc && window.DaFanI18n) window.DaFanI18n.applyLang(lang);
+          if (doc) {
+            var pack = doc.defaultView && doc.defaultView.localStorage;
+            doc.defaultView.localStorage.setItem("dafan-lang", lang);
+            var btn = doc.querySelector('.lang-btn[data-set-lang="' + lang + '"]');
+            if (btn) btn.click();
+          }
+        } catch (e) {}
+      }
+
+      // ---------------------------------------------------------------------
+      // Cloudinary 上传
+      // ---------------------------------------------------------------------
+      async function uploadPhotos(spec) {
+        var cloudName = $("cloudName").value.trim();
+        var preset = $("uploadPreset").value.trim();
+        if (!cloudName) throw new Error("缺少 Cloudinary cloud name");
+        if (!preset) throw new Error("缺少 Cloudinary unsigned preset（或勾选「已手动上传」）");
+        var folder = "dafan/series/" + spec.slug;
+        var names = core.frameNames(state.photos.length);
+        for (var i = 0; i < state.photos.length; i++) {
+          var photo = state.photos[i];
+          if (photo.uploadedUrl) continue;
+          var form = new FormData();
+          form.append("file", photo.file);
+          form.append("upload_preset", preset);
+          form.append("folder", folder);
+          form.append("public_id", names[i]);
+          log("上传 " + photo.name + " …");
+          var res = await fetch("https://api.cloudinary.com/v1_1/" + cloudName + "/image/upload", { method: "POST", body: form });
+          var body = await res.json().catch(function () { return {}; });
+          if (!res.ok) {
+            var detail = body && body.error && body.error.message ? body.error.message : JSON.stringify(body);
+            throw new Error("Cloudinary 上传失败（" + res.status + "）：" + detail);
+          }
+          photo.uploadedUrl = body.secure_url || "";
+          log("✓ " + photo.name + " → " + photo.uploadedUrl);
+        }
+      }
+
+      // ---------------------------------------------------------------------
+      // GitHub 提交（Git Data API，一次提交多个文件）
+      // ---------------------------------------------------------------------
+      function toBase64(text) {
+        var bytes = new TextEncoder().encode(text);
+        var binary = "";
+        for (var i = 0; i < bytes.length; i += 0x8000) {
+          binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+        }
+        return btoa(binary);
+      }
+
+      async function ghApi(path, options) {
+        var cfg = ghCfg();
+        if (!cfg.token) throw new Error("缺少 GitHub PAT");
+        var res = await fetch("https://api.github.com/repos/" + cfg.owner + "/" + cfg.repo + path, Object.assign({
+          headers: {
+            "Authorization": "Bearer " + cfg.token,
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28"
+          }
+        }, options || {}));
+        var body = await res.json().catch(function () { return {}; });
+        if (!res.ok) throw new Error("GitHub API " + res.status + "：" + (body.message || JSON.stringify(body)));
+        return body;
+      }
+
+      async function commitWrites(writes, message) {
+        var cfg = ghCfg();
+        log("读取 GitHub 最新提交…");
+        var ref = await ghApi("/git/ref/heads/" + cfg.branch);
+        var baseCommitSha = ref.object.sha;
+        var baseCommit = await ghApi("/git/commits/" + baseCommitSha);
+        log("创建 blob（" + writes.length + " 个文件）…");
+        var tree = [];
+        for (var i = 0; i < writes.length; i++) {
+          var blob = await ghApi("/git/blobs", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: toBase64(writes[i].content), encoding: "base64" })
+          });
+          tree.push({ path: writes[i].path, mode: "100644", type: "blob", sha: blob.sha });
+        }
+        log("创建 tree / commit…");
+        var newTree = await ghApi("/git/trees", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ base_tree: baseCommit.tree.sha, tree: tree })
+        });
+        var newCommit = await ghApi("/git/commits", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: message, tree: newTree.sha, parents: [baseCommitSha] })
+        });
+        log("更新分支 " + cfg.branch + " …");
+        await ghApi("/git/refs/heads/" + cfg.branch, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sha: newCommit.sha, force: false })
+        });
+        return newCommit;
+      }
+
+      // ---------------------------------------------------------------------
+      // ZIP（store 方式，无压缩、无第三方库）
+      // ---------------------------------------------------------------------
+      var CRC_TABLE = (function () {
+        var table = new Uint32Array(256);
+        for (var n = 0; n < 256; n++) {
+          var c = n;
+          for (var k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+          table[n] = c >>> 0;
+        }
+        return table;
+      })();
+
+      function crc32(bytes) {
+        var crc = 0xffffffff;
+        for (var i = 0; i < bytes.length; i++) crc = CRC_TABLE[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+        return (crc ^ 0xffffffff) >>> 0;
+      }
+
+      function buildZip(files) {
+        var encoder = new TextEncoder();
+        var localParts = [];
+        var centralParts = [];
+        var offset = 0;
+        var now = new Date();
+        var dosTime = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xffff;
+        var dosDate = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xffff;
+
+        files.forEach(function (file) {
+          var nameBytes = encoder.encode(file.path);
+          var dataBytes = encoder.encode(file.content);
+          var crc = crc32(dataBytes);
+          var local = new Uint8Array(30 + nameBytes.length);
+          var view = new DataView(local.buffer);
+          view.setUint32(0, 0x04034b50, true);
+          view.setUint16(4, 20, true);
+          view.setUint16(6, 0x0800, true);
+          view.setUint16(8, 0, true);
+          view.setUint16(10, dosTime, true);
+          view.setUint16(12, dosDate, true);
+          view.setUint32(14, crc, true);
+          view.setUint32(18, dataBytes.length, true);
+          view.setUint32(22, dataBytes.length, true);
+          view.setUint16(26, nameBytes.length, true);
+          view.setUint16(28, 0, true);
+          local.set(nameBytes, 30);
+          localParts.push(local, dataBytes);
+
+          var central = new Uint8Array(46 + nameBytes.length);
+          var cview = new DataView(central.buffer);
+          cview.setUint32(0, 0x02014b50, true);
+          cview.setUint16(4, 20, true);
+          cview.setUint16(6, 20, true);
+          cview.setUint16(8, 0x0800, true);
+          cview.setUint16(10, 0, true);
+          cview.setUint16(12, dosTime, true);
+          cview.setUint16(14, dosDate, true);
+          cview.setUint32(16, crc, true);
+          cview.setUint32(20, dataBytes.length, true);
+          cview.setUint32(24, dataBytes.length, true);
+          cview.setUint16(28, nameBytes.length, true);
+          cview.setUint16(30, 0, true);
+          cview.setUint16(32, 0, true);
+          cview.setUint16(34, 0, true);
+          cview.setUint16(36, 0, true);
+          cview.setUint32(38, 0, true);
+          cview.setUint32(42, offset, true);
+          central.set(nameBytes, 46);
+          centralParts.push(central);
+
+          offset += local.length + dataBytes.length;
+        });
+
+        var centralSize = centralParts.reduce(function (sum, part) { return sum + part.length; }, 0);
+        var end = new Uint8Array(22);
+        var eview = new DataView(end.buffer);
+        eview.setUint32(0, 0x06054b50, true);
+        eview.setUint16(8, files.length, true);
+        eview.setUint16(10, files.length, true);
+        eview.setUint32(12, centralSize, true);
+        eview.setUint32(16, offset, true);
+        var parts = localParts.concat(centralParts, [end]);
+        return new Blob(parts, { type: "application/zip" });
+      }
+
+      // ---------------------------------------------------------------------
+      // 动作
+      // ---------------------------------------------------------------------
+      async function onGenerate() {
+        try {
+          if (state.busy) return;
+          state.busy = true;
+          setStatus("正在生成…");
+          var plan = generateWrites();
+          renderWrites(plan);
+          renderPreview();
+          setStatus("已生成 " + plan.writes.length + " 个文件的改动。请核对右侧预览；确认后点「下载 ZIP」或「发布到 GitHub」。", "ok");
+        } catch (e) {
+          setStatus("生成失败：" + e.message, "err");
+        } finally {
+          state.busy = false;
+        }
+      }
+
+      async function onZip() {
+        try {
+          if (!state.writes) await onGenerate();
+          if (!state.writes || !state.writes.length) throw new Error("没有可打包的改动");
+          var blob = buildZip(state.writes);
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.href = url;
+          a.download = "dafan-series-" + (state.spec ? state.spec.slug : "new") + ".zip";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+          setStatus("ZIP 已下载。解压到仓库根目录后 git add / commit / push 即可。", "ok");
+        } catch (e) {
+          setStatus("下载 ZIP 失败：" + e.message, "err");
+        }
+      }
+
+      async function onPublish() {
+        try {
+          if (state.busy) return;
+          state.busy = true;
+          $("log").textContent = "";
+          setStatus("开始发布…");
+          var spec = collectSpec();
+          var manualUpload = $("skipUpload").checked;
+          if (!manualUpload) {
+            log("上传照片到 Cloudinary…");
+            await uploadPhotos(spec);
+            renderPhotos();
+          } else if (state.photos.some(function (p) { return !p.uploadedUrl; })) {
+            log("已勾选「图片已手动上传」，跳过上传。");
+          }
+          // 以线上 main 为基底重新生成，避免本地副本过旧
+          setStatus("以线上 main 为基底重新生成…");
+          var remote = await readRemoteBase();
+          state.base = remote;
+          state.baseSource = remote.source;
+          var plan = core.planSiteSync(remote.files, { add: spec });
+          if (!plan.writes.length) throw new Error("没有需要提交的改动");
+          state.writes = plan.writes;
+          state.spec = spec;
+          renderWrites(plan);
+          var message = "feat(series): add " + spec.slug + " — " + (spec.title.zh || spec.slug) + " / " + (spec.title.en || spec.slug);
+          log("提交到 GitHub：" + message);
+          var commit = await commitWrites(plan.writes, message);
+          log("✓ 已提交 " + commit.sha.slice(0, 7));
+          setStatus(
+            "已发布！GitHub Pages 会在 1–2 分钟内自动部署。\n" +
+              "系列页：https://dafanphotographs.github.io/works/" + spec.slug + "/\n" +
+              "提交：" + commit.sha.slice(0, 7) + "（可在仓库 Actions 里看部署进度）",
+            "ok"
+          );
+          renderPreview();
+        } catch (e) {
+          setStatus("发布失败：" + e.message + "\n失败不会留下半成品：图片可能已上传（可在 Cloudinary 重用），HTML 未提交。", "err");
+        } finally {
+          state.busy = false;
+        }
+      }
+
+      // ---------------------------------------------------------------------
+      // 事件绑定
+      // ---------------------------------------------------------------------
+      function bind() {
+        $("saveConfigBtn").addEventListener("click", saveConfig);
+        $("clearConfigBtn").addEventListener("click", clearConfig);
+        $("reloadBtn").addEventListener("click", function () { loadBase(true); });
+        $("generateBtn").addEventListener("click", onGenerate);
+        $("zipBtn").addEventListener("click", onZip);
+        $("publishBtn").addEventListener("click", onPublish);
+        $("tabZh").addEventListener("click", function () { setPreviewLang("zh"); });
+        $("tabEn").addEventListener("click", function () { setPreviewLang("en"); });
+        $("category").addEventListener("change", function () {
+          var isNew = $("category").value === "__new__";
+          $("catZh").disabled = !isNew;
+          $("catEn").disabled = !isNew;
+          if (isNew) { $("catZh").focus(); }
+        });
+        $("catZh").disabled = true;
+        $("catEn").disabled = true;
+        ["titleEn", "titleZh"].forEach(function (id) {
+          $(id).addEventListener("input", updateSlugSuggestion);
+        });
+
+        var dropzone = $("dropzone");
+        var fileInput = $("fileInput");
+        dropzone.addEventListener("click", function () { fileInput.click(); });
+        dropzone.addEventListener("dragover", function (e) { e.preventDefault(); dropzone.classList.add("drag"); });
+        dropzone.addEventListener("dragleave", function () { dropzone.classList.remove("drag"); });
+        dropzone.addEventListener("drop", function (e) {
+          e.preventDefault();
+          dropzone.classList.remove("drag");
+          addFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener("change", function () { addFiles(fileInput.files); fileInput.value = ""; });
+
+        $("photoList").addEventListener("click", function (e) {
+          var btn = e.target.closest("button[data-act]");
+          if (!btn) return;
+          var index = parseInt(btn.getAttribute("data-i"), 10);
+          var act = btn.getAttribute("data-act");
+          if (act === "del") state.photos.splice(index, 1);
+          if (act === "up" && index > 0) {
+            var tmp = state.photos[index - 1];
+            state.photos[index - 1] = state.photos[index];
+            state.photos[index] = tmp;
+          }
+          if (act === "down" && index < state.photos.length - 1) {
+            var tmp2 = state.photos[index + 1];
+            state.photos[index + 1] = state.photos[index];
+            state.photos[index] = tmp2;
+          }
+          renderPhotos();
+        });
+      }
+
+      // ---------------------------------------------------------------------
+      // 测试钩子（供自动化验证）
+      // ---------------------------------------------------------------------
+      window.DaFanAdmin = {
+        state: state,
+        loadBase: loadBase,
+        addFiles: addFiles,
+        collectSpec: collectSpec,
+        generateWrites: generateWrites,
+        onGenerate: onGenerate,
+        readRemoteBase: readRemoteBase,
+        readLocalBase: readLocalBase,
+        uploadPhotos: uploadPhotos,
+        buildZip: buildZip
+      };
+
+      if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+        navigator.serviceWorker.register("./sw.js").catch(function () {});
+      }
+
+      loadConfigToUi();
+      bind();
+      loadBase(true);
+    })();
+  </script>
+</body>
+</html>

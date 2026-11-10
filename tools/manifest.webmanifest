@@ -1,0 +1,16 @@
+{
+  "name": "大樊 · 发布后台",
+  "short_name": "大樊",
+  "description": "上传照片系列、填写中英文标题与描述，并发布到 GitHub Pages。",
+  "lang": "zh-CN",
+  "start_url": "/tools/admin.html",
+  "scope": "/tools/",
+  "display": "standalone",
+  "background_color": "#faf9f6",
+  "theme_color": "#0b0b0b",
+  "icons": [
+    { "src": "/tools/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/tools/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/tools/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
