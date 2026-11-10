@@ -15,6 +15,19 @@
 }
 
 @media (min-width: 768px) {
+  /* Match the home header metrics exactly (padding / lang typography). */
+  .page-photography .site-header .header-inner {
+    max-width: none;
+    margin: 0;
+    width: 100%;
+    padding: 0 var(--header-pad-x);
+  }
+
+  .page-photography .site-header .lang-switch {
+    font-size: var(--type-nav);
+    font-weight: var(--type-nav-weight);
+  }
+
   .page-photography .site-header--overlay {
     mix-blend-mode: difference;
     color: #fff;
@@ -28,11 +41,22 @@
   }
 }
 
+@media (min-width: 1024px) and (max-width: 1199.98px) {
+  .page-photography .site-header .header-inner {
+    padding-inline: var(--header-pad-x-md, 2rem);
+  }
+}
+
 @media (max-width: 767.98px) {
   .page-photography .site-header--overlay {
     mix-blend-mode: normal;
     background: var(--header-bg);
     border-bottom: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
+  }
+
+  /* The base grid adds 4px block padding; the home header does not. */
+  .page-photography .site-header .header-inner {
+    padding-block: 0;
   }
 }
 
