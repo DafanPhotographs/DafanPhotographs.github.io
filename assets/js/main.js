@@ -33,6 +33,23 @@
     setFilter("all");
   }
 
+  function initNavRoll() {
+    document.querySelectorAll(".site-nav .nav-link-label").forEach(function (label) {
+      if (label.querySelector(".nav-roll")) return;
+      var text = (label.textContent || "").trim();
+      if (!text) return;
+      label.textContent = "";
+      var track = document.createElement("span");
+      track.className = "nav-roll";
+      track.setAttribute("data-roll", text);
+      var current = document.createElement("span");
+      current.className = "nav-roll__a";
+      current.textContent = text;
+      track.appendChild(current);
+      label.appendChild(track);
+    });
+  }
+
   function initMailtoForm() {
     const form = document.querySelector("[data-mailto-form]");
     if (!form) return;
@@ -60,6 +77,7 @@
   }
 
   function init() {
+    initNavRoll();
     initFilters();
     initMailtoForm();
     initImageFallback();
@@ -70,4 +88,8 @@
   } else {
     init();
   }
+
+  document.addEventListener("langchange", function () {
+    window.setTimeout(initNavRoll, 0);
+  });
 })();
