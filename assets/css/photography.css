@@ -120,7 +120,7 @@ html[lang="en"] .photography-hero__lede {
 
 /* Three-column archive, flows like the reference */
 .photography-archive {
-  margin-top: clamp(44px, 7vw, 104px);
+  margin-top: clamp(20px, 2.6vw, 36px);
   padding: 0 clamp(16px, 2.2vw, 32px) clamp(64px, 10vw, 140px);
   columns: 3;
   column-gap: clamp(10px, 1.1vw, 16px);
@@ -196,7 +196,7 @@ html[lang="en"] .photography-hero__lede {
   }
 
   .photography-archive {
-    margin-top: 30px;
+    margin-top: 20px;
     padding: 0 16px 72px;
     column-gap: 8px;
   }
@@ -222,9 +222,9 @@ html[lang="en"] .photography-hero__lede {
 }
 
 .photo-filters .filter-btn {
-  border: 1px solid var(--line);
+  border: 1px solid var(--color-border, #e2dfd7);
   background: transparent;
-  color: var(--ink);
+  color: var(--color-text, #08090a);
   border-radius: 999px;
   padding: 7px 14px;
   font: inherit;
@@ -235,9 +235,9 @@ html[lang="en"] .photography-hero__lede {
 
 .photo-filters .filter-btn:hover,
 .photo-filters .filter-btn.is-active {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #fff;
+  background: var(--color-text, #08090a);
+  border-color: var(--color-text, #08090a);
+  color: var(--color-bg, #fff);
 }
 
 button.archive-item {
@@ -254,7 +254,7 @@ button.archive-item {
 
 .photo-error {
   padding: 40px 0;
-  color: var(--muted);
+  color: var(--color-text-muted, #6b6b6b);
   font-size: 14px;
 }
 
