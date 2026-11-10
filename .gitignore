@@ -3,3 +3,6 @@ test-results/
 playwright-report/
 playwright/.cache/
 artifacts/
+
+# local secrets (Cloudinary unsigned preset etc.)
+.env
