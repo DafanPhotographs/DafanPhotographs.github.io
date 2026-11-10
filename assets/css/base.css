@@ -441,6 +441,52 @@ html.no-js .page-home .site-header .header-chrome-blend {
 .nav-link-label {
   position: relative;
   z-index: 1;
+  display: inline-flex;
+  align-items: flex-start;
+  overflow: hidden;
+  height: 1.5em;
+  line-height: 1.5;
+  vertical-align: middle;
+}
+
+/* Reference nav hover: the label rolls up, an identical copy enters from below. */
+.nav-roll {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.34s cubic-bezier(0.25, 0.9, 0.25, 1.08);
+  will-change: transform;
+}
+
+.nav-roll__a,
+.nav-roll::after {
+  display: block;
+  height: 1.5em;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.nav-roll::after {
+  content: attr(data-roll);
+}
+
+.site-nav a:hover .nav-roll,
+.site-nav a:focus-visible .nav-roll {
+  transform: translateY(-50%);
+}
+
+.site-nav .nav-decor {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-roll {
+    transition: none;
+  }
+
+  .site-nav a:hover .nav-roll,
+  .site-nav a:focus-visible .nav-roll {
+    transform: none;
+  }
 }
 
 .site-nav a:hover,
@@ -448,7 +494,8 @@ html.no-js .page-home .site-header .header-chrome-blend {
   color: var(--color-text);
 }
 
-.site-nav a[aria-current="page"] .nav-link-label {
+.site-nav a[aria-current="page"] .nav-roll__a,
+.site-nav a[aria-current="page"] .nav-roll::after {
   text-decoration: underline;
   text-underline-offset: 0.35em;
   text-decoration-thickness: var(--underline-thickness);
