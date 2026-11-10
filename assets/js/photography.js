@@ -25,7 +25,13 @@
   items.forEach(function (item) {
     gsap.fromTo(
       item,
-      { y: 150, opacity: 0.1 },
+      {
+        // Reference measured ~70% of the image height; scale it with the item.
+        y: function (index, target) {
+          return Math.min(320, Math.max(80, target.offsetHeight * 0.55));
+        },
+        opacity: 0.1
+      },
       {
         y: 0,
         opacity: 1,
@@ -34,7 +40,7 @@
         scrollTrigger: {
           trigger: item,
           start: "top 95%",
-          end: "top 30%",
+          end: "top 25%",
           scrub: 0.6,
           invalidateOnRefresh: true
         }
