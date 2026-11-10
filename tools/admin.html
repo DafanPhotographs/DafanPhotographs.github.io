@@ -3,267 +3,257 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>发布后台 — 大樊 / DaFan</title>
+  <title>照片后台 — 大樊 / DaFan</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <meta name="theme-color" content="#0b0b0b" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="大樊发布" />
+  <meta name="apple-mobile-web-app-title" content="大樊照片" />
   <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
   <style>
     :root {
       --bg: #faf9f6;
-      --panel: #ffffff;
-      --ink: #1a1a1a;
+      --panel: #fff;
+      --ink: #111;
       --muted: #6b6b6b;
       --line: #e3e0d8;
-      --accent: #1a1a1a;
       --ok: #1f7a4d;
-      --warn: #a4610a;
       --err: #b3261e;
+      --warn: #a4610a;
       --radius: 10px;
+      color-scheme: light;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
       background: var(--bg);
       color: var(--ink);
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif;
+      font-size: 14px;
       line-height: 1.5;
     }
     header {
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: baseline;
-      gap: 16px;
-      flex-wrap: wrap;
-      background: var(--panel);
       position: sticky;
       top: 0;
-      z-index: 5;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 24px;
+      background: rgba(250, 249, 246, 0.94);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
     }
-    header h1 { font-size: 18px; margin: 0; font-weight: 600; }
-    header .sub { color: var(--muted); font-size: 13px; }
+    header h1 { margin: 0; font-size: 17px; letter-spacing: -0.02em; }
+    header .sub { color: var(--muted); font-size: 12px; }
     header .spacer { flex: 1; }
-    .badge { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #eee; color: var(--muted); }
-    .badge.ok { background: #e5f3ec; color: var(--ok); }
-    .badge.err { background: #fbe9e7; color: var(--err); }
-    main { padding: 20px 24px 80px; display: grid; grid-template-columns: minmax(390px, 520px) minmax(0, 1fr); gap: 20px; align-items: start; }
-    @media (max-width: 1100px) { main { grid-template-columns: 1fr; } }
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 16px 18px;
-      margin-bottom: 16px;
-    }
-    .panel h2 { font-size: 14px; margin: 0 0 12px; font-weight: 600; letter-spacing: .02em; }
-    .panel h2 small { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 6px; }
-    label.field { display: block; margin-bottom: 12px; font-size: 13px; }
-    label.field > span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 12px; }
+    .badge { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: #f1efe8; color: var(--muted); }
+    .badge.ok { background: #e7f4ec; color: var(--ok); }
+    .badge.err { background: #fdecea; color: var(--err); }
+    main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 420px); gap: 18px; padding: 18px 24px 80px; max-width: 1440px; margin: 0 auto; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+    .panel h2 { margin: 0 0 12px; font-size: 14px; letter-spacing: 0.02em; }
+    .panel h2 small { color: var(--muted); font-weight: 400; font-size: 11px; margin-left: 6px; }
+    .hint { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .row > .field { flex: 1 1 160px; }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field > span { font-size: 11px; color: var(--muted); }
     input[type="text"], input[type="password"], textarea, select {
-      width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
-      font: inherit; font-size: 13px; background: #fff; color: var(--ink);
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 8px 10px;
+      font: inherit;
+      background: #fff;
+      color: var(--ink);
     }
     textarea { min-height: 62px; resize: vertical; }
-    input:focus, textarea:focus, select:focus { outline: 2px solid #d9d4c7; border-color: #c9c3b4; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .row.three { grid-template-columns: 1fr 1fr 120px; }
     button {
-      font: inherit; font-size: 13px; padding: 8px 16px; border-radius: 8px;
-      border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 7px;
+      padding: 8px 12px;
+      font: inherit;
+      cursor: pointer;
     }
-    button:hover { border-color: #b9b3a4; }
-    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-    button.primary:hover { opacity: .9; }
-    button:disabled { opacity: .45; cursor: not-allowed; }
-    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
-    .hint { color: var(--muted); font-size: 12px; margin: 4px 0 0; }
-    .hint.warn { color: var(--warn); }
-    .dropzone {
-      border: 1.5px dashed #cfc9ba; border-radius: 10px; padding: 22px 16px; text-align: center;
-      color: var(--muted); font-size: 13px; cursor: pointer; background: #fcfbf8;
-    }
-    .dropzone.drag { border-color: var(--accent); background: #f3f0e9; }
-    .photos { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
-    .photos li {
-      display: grid; grid-template-columns: 56px 1fr auto; gap: 10px; align-items: center;
-      border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; background: #fff;
-    }
-    .photos img { width: 56px; height: 42px; object-fit: cover; border-radius: 4px; background: #eee; }
-    .photos .name { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .photos .frame { font-size: 11px; color: var(--muted); }
-    .photos .frame.cover { color: var(--ok); font-weight: 600; }
-    .photo-actions { display: flex; gap: 4px; }
-    .photo-actions button { padding: 2px 6px; font-size: 12px; }
-    .status { font-size: 12px; color: var(--muted); margin-top: 8px; white-space: pre-wrap; }
-    .status.err { color: var(--err); }
-    .status.ok { color: var(--ok); }
-    .writes { list-style: none; margin: 8px 0 0; padding: 0; font-size: 13px; }
-    .writes li { padding: 3px 0; border-bottom: 1px dashed var(--line); display: flex; justify-content: space-between; gap: 10px; }
-    .writes .path { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
-    .writes .stat { color: var(--muted); white-space: nowrap; font-size: 12px; }
-    iframe#preview { width: 100%; height: 72vh; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 10px; }
-    .tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .log { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; color: var(--muted); white-space: pre-wrap; max-height: 160px; overflow: auto; background: #f7f6f2; border-radius: 6px; padding: 8px 10px; }
-    .cat-new { display: none; }
-    .cat-new.on { display: block; }
+    button.primary { background: var(--ink); border-color: var(--ink); color: #fff; }
+    button.danger { color: var(--err); border-color: var(--err); }
+    button:disabled { opacity: 0.5; cursor: default; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     details.config summary { cursor: pointer; font-size: 13px; font-weight: 600; }
     details.config[open] summary { margin-bottom: 12px; }
-    .pill { font-size: 11px; background: #f1efe8; border-radius: 4px; padding: 1px 6px; color: var(--muted); margin-left: 6px; }
-    .test-warning { background: #fff8e6; border: 1px solid #f0dfae; border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #7a5b0a; margin-bottom: 12px; }
+    .dropzone {
+      border: 1px dashed #cfc9bd;
+      border-radius: 8px;
+      padding: 22px 14px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+      background: #fbfaf7;
+    }
+    .dropzone.is-over { border-color: var(--ink); color: var(--ink); }
+    .photo-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+    .photo-row {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) auto;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .photo-row.is-new { border-style: dashed; }
+    .photo-row img.thumb { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; background: #eee; }
+    .photo-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .photo-fields .wide { grid-column: 1 / -1; }
+    .photo-fields input, .photo-fields textarea, .photo-fields select { padding: 6px 8px; font-size: 12px; }
+    .photo-fields textarea { min-height: 44px; }
+    .photo-side { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+    .photo-side .id { font-family: ui-monospace, Menlo, monospace; font-size: 10px; color: var(--muted); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .photo-side button { padding: 4px 8px; font-size: 12px; }
+    .featured-grid-admin { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .status { font-size: 12px; margin-top: 10px; white-space: pre-wrap; }
+    .status.ok { color: var(--ok); }
+    .status.err { color: var(--err); }
+    .status.warn { color: var(--warn); }
+    .log {
+      margin-top: 10px;
+      background: #f7f6f2;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 11px;
+      color: var(--muted);
+      white-space: pre-wrap;
+      max-height: 180px;
+      overflow: auto;
+    }
+    .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .preview-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 5px; background: #eee; }
+    .empty { color: var(--muted); font-size: 13px; padding: 12px 0; }
     a { color: var(--ink); }
-    button.danger { color: var(--err); border-color: var(--err); }
+    @media (max-width: 980px) {
+      main { grid-template-columns: 1fr; }
+      .photo-row { grid-template-columns: 56px minmax(0, 1fr); }
+      .photo-side { grid-column: 1 / -1; flex-direction: row; justify-content: flex-end; }
+      .photo-row img.thumb { width: 56px; height: 56px; }
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>发布后台 <span class="pill">大樊 / DaFan</span></h1>
-    <span class="sub">拖入照片 → 填中英标题描述 → 一键生成并发布</span>
+    <h1>照片后台</h1>
+    <span class="sub">单张照片 · 标题 / 描述 / 地点 · 首页精选</span>
     <span class="spacer"></span>
-    <span id="sourceBadge" class="badge">未读取站点</span>
-    <button id="reloadBtn" type="button">重新读取站点文件</button>
+    <span id="sourceBadge" class="badge">未读取</span>
+    <button id="reloadBtn" type="button">重新读取</button>
+    <a href="../photography/" target="_blank" rel="noopener">查看摄影页</a>
   </header>
 
   <main>
     <div>
       <div class="panel">
-        <h2>0 · 管理已有系列 <small>编辑文字 / 首页精选 / 删除</small></h2>
-        <div class="row">
-          <label class="field"><span>系列</span><select id="manageSeries"></select></label>
-          <div class="actions" style="align-self:flex-end">
-            <button id="loadSeriesBtn" type="button">载入编辑</button>
-            <button id="newSeriesBtn" type="button">新建系列</button>
-          </div>
-        </div>
-        <p class="hint" id="manageHint">载入已有系列后，下方文字表单会预填；照片保持不变，只更新文案。</p>
-        <div class="row three">
-          <label class="field"><span>首页第 1 屏</span><select id="feat0"></select></label>
-          <label class="field"><span>首页第 2 屏</span><select id="feat1"></select></label>
-          <label class="field"><span>首页第 3 屏</span><select id="feat2"></select></label>
-        </div>
-        <div class="actions">
-          <button id="saveFeaturedBtn" type="button">保存首页精选</button>
-          <button id="deleteSeriesBtn" type="button" class="danger">删除所选系列</button>
-        </div>
-        <div class="status" id="manageStatus"></div>
-      </div>
-
-      <div class="panel">
-        <h2>1 · 站点与密钥 <small>只保存在本机浏览器 localStorage，不会写进仓库</small></h2>
+        <h2>配置 <small>只保存在本机浏览器，不写进仓库</small></h2>
         <details class="config" id="configBox">
-          <summary>配置（首次使用点开）</summary>
+          <summary>Cloudinary 与 GitHub（首次使用点开）</summary>
           <div class="row">
             <label class="field"><span>Cloudinary cloud name</span><input type="text" id="cloudName" value="no7rdn4w" /></label>
             <label class="field"><span>Cloudinary unsigned preset</span><input type="password" id="uploadPreset" placeholder="例如 dafan_unsigned" /></label>
           </div>
-          <label class="field" style="display:flex;gap:8px;align-items:center;">
-            <input type="checkbox" id="skipUpload" style="width:auto" />
-            <span style="margin:0">图片已在 Cloudinary 网页后台上传好，跳过自动上传</span>
-          </label>
-          <div class="row three">
-            <label class="field"><span>GitHub 仓库 owner</span><input type="text" id="ghOwner" placeholder="DafanPhotographs" /></label>
-            <label class="field"><span>仓库名</span><input type="text" id="ghRepo" placeholder="DafanPhotographs.github.io" /></label>
+          <div class="row">
+            <label class="field"><span>GitHub owner</span><input type="text" id="ghOwner" value="DafanPhotographs" /></label>
+            <label class="field"><span>仓库</span><input type="text" id="ghRepo" value="DafanPhotographs.github.io" /></label>
             <label class="field"><span>分支</span><input type="text" id="ghBranch" value="main" /></label>
           </div>
-          <label class="field"><span>GitHub PAT（fine-grained，仅需 Contents: Read and write）</span><input type="password" id="ghToken" placeholder="github_pat_..." /></label>
-          <label class="field" style="display:flex;gap:8px;align-items:center;">
+          <label class="field"><span>GitHub PAT（fine-grained，Contents: Read and write）</span><input type="password" id="ghToken" placeholder="github_pat_..." /></label>
+          <label class="field" style="flex-direction:row; align-items:center; gap:8px; margin-top:8px;">
             <input type="checkbox" id="remember" checked style="width:auto" />
             <span style="margin:0">记住配置（仅本机 localStorage）</span>
           </label>
           <div class="actions">
             <button id="saveConfigBtn" type="button">保存配置</button>
-            <button id="clearConfigBtn" type="button">清除本机配置</button>
+            <button id="clearConfigBtn" type="button">清除配置</button>
           </div>
-          <p class="hint">不需要 PAT 也能用：点「下载 ZIP」把生成的文件解压进仓库，再自己 git commit/push。</p>
+          <p class="hint">照片上传需要 unsigned preset；提交需要 PAT。没有 PAT 时可以先把改动下载为 JSON 手动提交（见下方按钮）。</p>
         </details>
-        <p class="hint" id="siteInfo">正在读取站点文件…</p>
+        <p class="hint" id="siteInfo">正在读取 data/photos.json…</p>
       </div>
 
       <div class="panel">
-        <h2>2 · 照片 <small>第一张自动作为封面（cover），其余为 02…NN</small></h2>
+        <h2>新增照片 <small>可一次拖多张，第一张不会自动成为封面；每张都是独立照片</small></h2>
         <div class="dropzone" id="dropzone">
-          把照片拖到这里，或点击选择（JPG / PNG / WebP，建议长边 2400px、sRGB）
+          把照片拖到这里，或点击选择（JPG / PNG / WebP，建议长边 2400px）
           <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple hidden />
         </div>
-        <ul class="photos" id="photoList"></ul>
-        <p class="hint">顺序就是页面里的顺序；「↑ / ↓」调整，「删除」移除。</p>
+        <div class="photo-list" id="newList"></div>
       </div>
 
       <div class="panel">
-        <h2>3 · 文字（中英双语）</h2>
-        <div class="row">
-          <label class="field"><span>slug（网址路径，小写字母/数字/连字符）</span><input type="text" id="slug" placeholder="例如 test-series" /></label>
-          <label class="field"><span>年份</span><input type="text" id="year" value="2025" /></label>
+        <h2>现有照片 <small>改文字/地点、删除；照片文件不会动</small></h2>
+        <p class="hint" id="existingHint"></p>
+        <div class="photo-list" id="existingList"></div>
+      </div>
+
+      <div class="panel">
+        <h2>首页精选 <small>主页 3 屏，按顺序</small></h2>
+        <div class="featured-grid-admin">
+          <label class="field"><span>第 1 屏</span><select id="feat0"></select></label>
+          <label class="field"><span>第 2 屏</span><select id="feat1"></select></label>
+          <label class="field"><span>第 3 屏</span><select id="feat2"></select></label>
         </div>
-        <div class="row">
-          <label class="field"><span>分类</span><select id="category"></select></label>
-          <label class="field"><span>分类中文名 / 英文名（新建分类时填）</span>
-            <div class="row">
-              <input type="text" id="catZh" placeholder="例如 旅行" />
-              <input type="text" id="catEn" placeholder="例如 Travel" />
-            </div>
-          </label>
-        </div>
-        <div class="row">
-          <label class="field"><span>标题 · 中文</span><input type="text" id="titleZh" placeholder="例如 测试系列：山与海" /></label>
-          <label class="field"><span>标题 · English</span><input type="text" id="titleEn" placeholder="例如 Test Series: Mountains and Sea" /></label>
-        </div>
-        <div class="row">
-          <label class="field"><span>描述 · 中文</span><textarea id="copyZh" placeholder="一两句话"></textarea></label>
-          <label class="field"><span>描述 · English</span><textarea id="copyEn" placeholder="One or two sentences"></textarea></label>
-        </div>
-        <div class="row">
-          <label class="field"><span>封面 alt · 中文（可留空自动生成）</span><input type="text" id="altZh" /></label>
-          <label class="field"><span>封面 alt · English</span><input type="text" id="altEn" /></label>
-        </div>
+      </div>
+
+      <div class="panel">
+        <h2>发布</h2>
         <div class="actions">
-          <button class="primary" id="generateBtn" type="button">生成文件并预览</button>
-          <button id="zipBtn" type="button">下载 ZIP</button>
-          <button id="publishBtn" type="button">发布到 GitHub</button>
+          <button class="primary" id="publishBtn" type="button">上传并发布</button>
+          <button id="downloadBtn" type="button">下载 photos.json</button>
         </div>
         <div class="status" id="status"></div>
+        <div class="log" id="log" hidden></div>
+        <p class="hint">删除只从网站移除，Cloudinary 里的原图不会删；需要时到 Cloudinary 控制台手动删。</p>
       </div>
     </div>
 
     <div>
       <div class="panel">
-        <h2>生成结果</h2>
-        <div id="writeSummary"><p class="hint">还没有生成。填好左侧内容后点「生成文件并预览」。</p></div>
-        <div class="log" id="log" hidden></div>
+        <h2>摄影页预览 <small>尽量接近线上</small></h2>
+        <p class="hint">发布后 1–2 分钟生效。这里只是缩略图预览，正式效果请点右上角「查看摄影页」。</p>
+        <div class="preview-grid" id="previewGrid"></div>
       </div>
       <div class="panel">
-        <h2>新系列页预览</h2>
-        <div class="tabs">
-          <button id="tabZh" class="active" type="button">中文</button>
-          <button id="tabEn" type="button">English</button>
+        <h2>地点</h2>
+        <div class="row">
+          <label class="field"><span>新增地点（中文）</span><input type="text" id="newLocZh" placeholder="例如 川西" /></label>
+          <label class="field"><span>新增地点（English）</span><input type="text" id="newLocEn" placeholder="e.g. Western Sichuan" /></label>
         </div>
-        <iframe id="preview" title="preview"></iframe>
+        <div class="actions"><button id="addLocBtn" type="button">添加地点</button></div>
+        <p class="hint" id="locHint"></p>
       </div>
     </div>
   </main>
 
-  <script src="lib/dafan-core.js"></script>
   <script>
     (function () {
       "use strict";
 
-      var core = window.DaFanCore;
       var LS_PREFIX = "dafan-admin-v1:";
+      var API = "https://api.github.com/repos/";
       var state = {
+        data: null,
         photos: [],
-        base: null,
-        baseSource: "",
-        writes: null,
-        spec: null,
-        previewLang: "zh",
-        busy: false,
-        editingSlug: null,
-        manageSeries: []
+        locations: {},
+        featured: [],
+        edits: {},
+        deleted: {},
+        newPhotos: [],
+        source: "",
+        busy: false
       };
 
       function $(id) { return document.getElementById(id); }
@@ -273,17 +263,17 @@
       function lsSet(key, value) { try { localStorage.setItem(LS_PREFIX + key, value); } catch (e) {} }
       function lsDel(key) { try { localStorage.removeItem(LS_PREFIX + key); } catch (e) {} }
 
-      function setManageStatus(text, kind) {
-        var el = $("manageStatus");
-        if (!el) return;
-        el.textContent = text || "";
-        el.className = "status" + (kind ? " " + kind : "");
+      function escapeHtml(value) {
+        return String(value == null ? "" : value).replace(/[&<>"]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
       }
 
       function setStatus(text, kind) {
         var el = $("status");
         el.textContent = text || "";
         el.className = "status" + (kind ? " " + kind : "");
+        if (kind === "err") el.scrollIntoView({ block: "nearest", behavior: "smooth" });
       }
       function log(text) {
         var el = $("log");
@@ -292,32 +282,29 @@
         el.scrollTop = el.scrollHeight;
       }
 
-      // ---------------------------------------------------------------------
-      // 配置
-      // ---------------------------------------------------------------------
-      function loadConfigToUi() {
+      function loadConfig() {
         $("cloudName").value = lsGet("cloudName", "no7rdn4w");
         $("uploadPreset").value = lsGet("uploadPreset", "");
-        $("skipUpload").checked = lsGet("skipUpload", "") === "1";
         $("ghOwner").value = lsGet("ghOwner", "DafanPhotographs");
         $("ghRepo").value = lsGet("ghRepo", "DafanPhotographs.github.io");
         $("ghBranch").value = lsGet("ghBranch", "main");
         $("ghToken").value = lsGet("ghToken", "");
+        $("remember").checked = lsGet("remember", "1") === "1";
       }
       function saveConfig() {
         lsSet("cloudName", $("cloudName").value.trim());
         lsSet("uploadPreset", $("uploadPreset").value.trim());
-        lsSet("skipUpload", $("skipUpload").checked ? "1" : "");
         lsSet("ghOwner", $("ghOwner").value.trim());
         lsSet("ghRepo", $("ghRepo").value.trim());
         lsSet("ghBranch", $("ghBranch").value.trim() || "main");
+        lsSet("remember", $("remember").checked ? "1" : "0");
         if ($("remember").checked) lsSet("ghToken", $("ghToken").value.trim());
         else lsDel("ghToken");
         setStatus("配置已保存在本机浏览器。", "ok");
       }
       function clearConfig() {
-        ["cloudName", "uploadPreset", "skipUpload", "ghOwner", "ghRepo", "ghBranch", "ghToken"].forEach(lsDel);
-        loadConfigToUi();
+        ["cloudName", "uploadPreset", "ghOwner", "ghRepo", "ghBranch", "ghToken", "remember"].forEach(lsDel);
+        loadConfig();
         setStatus("已清除本机配置。", "ok");
       }
       function ghCfg() {
@@ -329,458 +316,315 @@
         };
       }
 
-      // ---------------------------------------------------------------------
-      // 读取站点文件（优先线上 main，失败回落本地 http://127.0.0.1:8080）
-      // ---------------------------------------------------------------------
-      function sitePathsFromSeries(seriesJson) {
-        var paths = [core.FILE_PATHS.i18n, core.FILE_PATHS.worksIndex, core.FILE_PATHS.photographyIndex, core.FILE_PATHS.homeIndex];
-        seriesJson.series.forEach(function (series) {
-          paths.push(core.FILE_PATHS.seriesPage(series.slug));
+      function textUrl(publicId, transform) {
+        return "https://res.cloudinary.com/" + $("cloudName").value.trim() + "/image/upload/" + transform + "/" + publicId + ".jpg";
+      }
+
+      function readSameOrigin() {
+        return fetch(new URL("../data/photos.json", location.href), { cache: "no-store" }).then(function (res) {
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          return res.text();
         });
-        return paths;
       }
 
-      async function fetchText(url) {
-        var res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) throw new Error("HTTP " + res.status + " " + url);
-        return res.text();
-      }
-
-      async function readGithubApiBase() {
+      function readRaw() {
         var cfg = ghCfg();
-        if (!cfg.owner || !cfg.repo) throw new Error("未配置 GitHub owner/repo");
-        var root = "https://api.github.com/repos/" + cfg.owner + "/" + cfg.repo + "/contents/";
-        var ref = encodeURIComponent(cfg.branch || "main");
+        if (!cfg.owner || !cfg.repo) return Promise.reject(new Error("未配置 GitHub owner/repo"));
+        var url = "https://raw.githubusercontent.com/" + cfg.owner + "/" + cfg.repo + "/" + cfg.branch + "/data/photos.json";
+        return fetch(url, { cache: "no-store" }).then(function (res) {
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          return res.text();
+        });
+      }
+
+      function readApi() {
+        var cfg = ghCfg();
+        if (!cfg.owner || !cfg.repo) return Promise.reject(new Error("未配置 GitHub owner/repo"));
+        var url = API + cfg.owner + "/" + cfg.repo + "/contents/data/photos.json?ref=" + encodeURIComponent(cfg.branch);
         var headers = { Accept: "application/vnd.github.raw" };
         if (cfg.token) headers.Authorization = "Bearer " + cfg.token;
-        async function get(path) {
-          var res = await fetch(root + path + "?ref=" + ref, { headers: headers });
-          if (!res.ok) throw new Error("GitHub API " + res.status + " " + path);
+        return fetch(url, { headers: headers, cache: "no-store" }).then(function (res) {
+          if (!res.ok) throw new Error("GitHub API " + res.status);
           return res.text();
-        }
-        var seriesJsonText = await get(core.FILE_PATHS.seriesJson);
-        var seriesJson = JSON.parse(seriesJsonText);
-        var files = {};
-        files[core.FILE_PATHS.seriesJson] = seriesJsonText;
-        var paths = sitePathsFromSeries(seriesJson);
-        for (var i = 0; i < paths.length; i += 1) {
-          files[paths[i]] = await get(paths[i]);
-        }
-        return { files: files, source: "线上 main（api.github.com）" };
-      }
-
-      async function readRemoteBase() {
-        var cfg = ghCfg();
-        if (!cfg.owner || !cfg.repo) throw new Error("未配置 GitHub owner/repo");
-        var root = "https://raw.githubusercontent.com/" + cfg.owner + "/" + cfg.repo + "/" + cfg.branch + "/";
-        try {
-          var seriesJsonText = await fetchText(root + core.FILE_PATHS.seriesJson);
-          var seriesJson = JSON.parse(seriesJsonText);
-          var files = {};
-          files[core.FILE_PATHS.seriesJson] = seriesJsonText;
-          var paths = sitePathsFromSeries(seriesJson);
-          for (var i = 0; i < paths.length; i++) {
-            files[paths[i]] = await fetchText(root + paths[i]);
-          }
-          return { files: files, source: "线上 main（raw.githubusercontent.com）" };
-        } catch (rawError) {
-          try {
-            log("raw.githubusercontent.com 读取失败，改用 GitHub API：" + rawError.message);
-            return await readGithubApiBase();
-          } catch (apiError) {
-            throw new Error("线上读取失败（raw: " + rawError.message + "；api: " + apiError.message + "）");
-          }
-        }
-      }
-
-      async function readFreshBase() {
-        try {
-          return await readRemoteBase();
-        } catch (e) {
-          log("线上读取失败，改用当前站点文件：" + e.message);
-          return await readLocalBase();
-        }
-      }
-
-      async function readLocalBase() {
-        var base = new URL("../", location.href);
-        var seriesJsonText = await fetchText(new URL(core.FILE_PATHS.seriesJson, base).href);
-        var seriesJson = JSON.parse(seriesJsonText);
-        var files = {};
-        files[core.FILE_PATHS.seriesJson] = seriesJsonText;
-        var paths = sitePathsFromSeries(seriesJson);
-        for (var i = 0; i < paths.length; i++) {
-          try {
-            files[paths[i]] = await fetchText(new URL(paths[i], base).href);
-          } catch (e) {
-            // 新系列页可能尚未存在，跳过
-          }
-        }
-        return { files: files, source: "本地文件夹（" + base.href + "）" };
-      }
-
-      async function loadBase(forceRemote) {
-        var badge = $("sourceBadge");
-        badge.textContent = "读取中…";
-        badge.className = "badge";
-        var remoteError = null;
-        if (forceRemote !== false) {
-          try {
-            state.base = await readRemoteBase();
-            state.baseSource = state.base.source;
-            badge.textContent = "站点来源：线上 main";
-            badge.className = "badge ok";
-            $("siteInfo").textContent = "已读取线上 main 的站点文件（发布时会基于这份内容提交）。";
-            populateCategories();
-            populateManage();
-            return;
-          } catch (e) {
-            remoteError = e;
-          }
-        }
-        try {
-          state.base = await readLocalBase();
-          state.baseSource = state.base.source;
-          badge.textContent = "站点来源：本地文件夹";
-          badge.className = "badge ok";
-          $("siteInfo").textContent = "已读取本地仓库文件。" + (remoteError ? "（线上读取失败：" + remoteError.message + "，已回落本地）" : "");
-          populateCategories();
-          populateManage();
-        } catch (e) {
-          badge.textContent = "读取失败";
-          badge.className = "badge err";
-          $("siteInfo").textContent =
-            "无法读取站点文件。请确认：① 用 python3 -m http.server 8080 从仓库根目录启动；② 或配置 GitHub owner/repo 后重试。错误：" + e.message;
-        }
-      }
-
-      function populateCategories() {
-        if (!state.base) return;
-        var data = core.parseSeriesJson(state.base.files[core.FILE_PATHS.seriesJson]);
-        var select = $("category");
-        var current = select.value;
-        select.innerHTML = "";
-        Object.keys(data.categories).forEach(function (key) {
-          var option = document.createElement("option");
-          option.value = key;
-          option.textContent = key + " · " + (data.categories[key].zh || "");
-          select.appendChild(option);
         });
-        var custom = document.createElement("option");
-        custom.value = "__new__";
-        custom.textContent = "＋ 新建分类…";
-        select.appendChild(custom);
-        if (current && Array.prototype.some.call(select.options, function (o) { return o.value === current; })) {
-          select.value = current;
-        }
       }
 
-      // ---------------------------------------------------------------------
-      // 管理已有系列 / 首页精选
-      // ---------------------------------------------------------------------
-      function currentData() {
-        if (!state.base) return null;
-        return core.parseSeriesJson(state.base.files[core.FILE_PATHS.seriesJson]);
-      }
-
-      function frameUrl(data, series, name) {
-        return (
-          "https://res.cloudinary.com/" + data.cloudName + "/image/upload/f_auto,q_auto/" +
-          series.publicPrefix + "/" + name + ".jpg"
-        );
-      }
-
-      function populateManage() {
-        var data = currentData();
-        if (!data) return;
-        state.manageSeries = data.series;
-        var picker = $("manageSeries");
-        var prev = picker.value || state.editingSlug || (data.series[0] && data.series[0].slug) || "";
-        picker.innerHTML = "";
-        data.series.forEach(function (series) {
-          var option = document.createElement("option");
-          option.value = series.slug;
-          option.textContent = (series.title.zh || series.title.en || series.slug) + " · " + series.slug;
-          picker.appendChild(option);
+      function readRemote() {
+        return readRaw().catch(function (rawError) {
+          log("raw 读取失败，改用 GitHub API：" + rawError.message);
+          return readApi().catch(function (apiError) {
+            log("GitHub API 读取失败，改用当前站点：" + apiError.message);
+            return readSameOrigin();
+          });
         });
-        if (prev) picker.value = prev;
+      }
 
-        var featured = (data.featured || []).slice(0, 3);
-        data.series.forEach(function (series) {
-          if (featured.length < 3 && featured.indexOf(series.slug) < 0) featured.push(series.slug);
+      function applyData(payload, source) {
+        state.data = payload;
+        state.locations = payload.locations || {};
+        state.photos = (payload.photos || []).slice();
+        state.featured = (payload.featured || []).slice();
+        state.edits = {};
+        state.deleted = {};
+        state.newPhotos = [];
+        state.source = source;
+        $("sourceBadge").textContent = "来源：" + source;
+        $("sourceBadge").className = "badge ok";
+        $("siteInfo").textContent = "已读取 " + state.photos.length + " 张照片（" + source + "）。发布时会以最新线上数据为基底合并。";
+        renderAll();
+      }
+
+      function loadData() {
+        state.busy = true;
+        $("sourceBadge").textContent = "读取中…";
+        $("sourceBadge").className = "badge";
+        readRemote().then(function (text) {
+          applyData(JSON.parse(text), "线上 main");
+        }).catch(function (error) {
+          $("sourceBadge").textContent = "读取失败";
+          $("sourceBadge").className = "badge err";
+          $("siteInfo").textContent = "读取失败：" + error.message;
+        }).finally(function () { state.busy = false; });
+      }
+
+      function locationOptions(selected) {
+        var html = "";
+        Object.keys(state.locations).forEach(function (key) {
+          html += '<option value="' + escapeHtml(key) + '"' + (key === selected ? " selected" : "") + ">" + escapeHtml(state.locations[key].zh || key) + "</option>";
         });
+        if (!html) html = '<option value="">（先添加地点）</option>';
+        return html;
+      }
+
+      function photoTitle(photo) {
+        return (photo.title && (photo.title.zh || photo.title.en)) || photo.id;
+      }
+
+      function allPhotos() {
+        return state.photos.filter(function (photo) { return !state.deleted[photo.id]; });
+      }
+
+      function renderExisting() {
+        var list = $("existingList");
+        list.innerHTML = "";
+        var photos = allPhotos();
+        $("existingHint").textContent = photos.length ? photos.length + " 张照片；改完直接点底部「上传并发布」。" : "还没有照片，先在上面添加。";
+        photos.forEach(function (photo) {
+          var edit = state.edits[photo.id] || {
+            title: photo.title || { zh: "", en: "" },
+            copy: photo.copy || { zh: "", en: "" },
+            location: photo.location || Object.keys(state.locations)[0] || ""
+          };
+          var row = document.createElement("div");
+          row.className = "photo-row";
+          row.setAttribute("data-id", photo.id);
+          row.innerHTML =
+            '<img class="thumb" alt="" src="' + escapeHtml(textUrl(photo.publicId, "c_fill,g_auto,w_160,q_auto,f_auto")) + '" />' +
+            '<div class="photo-fields">' +
+              '<input data-field="title.zh" placeholder="标题 · 中文" value="' + escapeHtml(edit.title.zh || "") + '" />' +
+              '<input data-field="title.en" placeholder="Title · English" value="' + escapeHtml(edit.title.en || "") + '" />' +
+              '<textarea class="wide" data-field="copy.zh" placeholder="描述 · 中文">' + escapeHtml(edit.copy.zh || "") + "</textarea>" +
+              '<textarea class="wide" data-field="copy.en" placeholder="Description · English">' + escapeHtml(edit.copy.en || "") + "</textarea>" +
+              '<select class="wide" data-field="location">' + locationOptions(edit.location) + "</select>" +
+            "</div>" +
+            '<div class="photo-side">' +
+              '<span class="id" title="' + escapeHtml(photo.publicId) + '">' + escapeHtml(photo.id) + "</span>" +
+              '<button type="button" data-act="feature">设为首页</button>' +
+              '<button type="button" data-act="delete" class="danger">删除</button>' +
+            "</div>";
+          list.appendChild(row);
+
+          function target() {
+            if (!state.edits[photo.id]) {
+              state.edits[photo.id] = {
+                title: { zh: edit.title.zh || "", en: edit.title.en || "" },
+                copy: { zh: edit.copy.zh || "", en: edit.copy.en || "" },
+                location: edit.location || ""
+              };
+            }
+            return state.edits[photo.id];
+          }
+          row.querySelectorAll("[data-field]").forEach(function (input) {
+            input.addEventListener("input", function () {
+              var field = input.getAttribute("data-field");
+              var t = target();
+              if (field === "title.zh") t.title.zh = input.value;
+              if (field === "title.en") t.title.en = input.value;
+              if (field === "copy.zh") t.copy.zh = input.value;
+              if (field === "copy.en") t.copy.en = input.value;
+              if (field === "location") t.location = input.value;
+              renderPreview();
+            });
+          });
+          row.querySelector('[data-act="delete"]').addEventListener("click", function () {
+            if (!window.confirm("从网站移除这张照片？\nCloudinary 原图不会删除。")) return;
+            state.deleted[photo.id] = true;
+            state.featured = state.featured.filter(function (id) { return id !== photo.id; });
+            renderAll();
+          });
+          row.querySelector('[data-act="feature"]').addEventListener("click", function () {
+            if (state.featured.indexOf(photo.id) >= 0) return;
+            state.featured = state.featured.concat(photo.id).slice(-3);
+            renderFeatured();
+            setStatus("已加入首页精选（记得发布）。", "ok");
+          });
+        });
+      }
+
+      function renderNew() {
+        var list = $("newList");
+        list.innerHTML = "";
+        state.newPhotos.forEach(function (photo, index) {
+          var row = document.createElement("div");
+          row.className = "photo-row is-new";
+          row.setAttribute("data-index", index);
+          row.innerHTML =
+            '<img class="thumb" alt="" src="' + escapeHtml(photo.dataUrl) + '" />' +
+            '<div class="photo-fields">' +
+              '<input data-field="title.zh" placeholder="标题 · 中文" value="' + escapeHtml(photo.title.zh) + '" />' +
+              '<input data-field="title.en" placeholder="Title · English" value="' + escapeHtml(photo.title.en) + '" />' +
+              '<textarea class="wide" data-field="copy.zh" placeholder="描述 · 中文">' + escapeHtml(photo.copy.zh) + "</textarea>" +
+              '<textarea class="wide" data-field="copy.en" placeholder="Description · English">' + escapeHtml(photo.copy.en) + "</textarea>" +
+              '<select class="wide" data-field="location">' + locationOptions(photo.location) + "</select>" +
+            "</div>" +
+            '<div class="photo-side">' +
+              '<span class="id">新照片 · ' + escapeHtml(photo.width ? photo.width + "×" + photo.height : "读取中") + "</span>" +
+              '<button type="button" data-act="remove">移除</button>' +
+            "</div>";
+          list.appendChild(row);
+          row.querySelectorAll("[data-field]").forEach(function (input) {
+            input.addEventListener("input", function () {
+              var field = input.getAttribute("data-field");
+              var p = state.newPhotos[index];
+              if (field === "title.zh") p.title.zh = input.value;
+              if (field === "title.en") p.title.en = input.value;
+              if (field === "copy.zh") p.copy.zh = input.value;
+              if (field === "copy.en") p.copy.en = input.value;
+              if (field === "location") p.location = input.value;
+              renderPreview();
+            });
+          });
+          row.querySelector('[data-act="remove"]').addEventListener("click", function () {
+            state.newPhotos.splice(index, 1);
+            renderNew();
+            renderPreview();
+          });
+        });
+      }
+
+      function renderFeatured() {
+        var options = allPhotos();
         ["feat0", "feat1", "feat2"].forEach(function (id, index) {
           var select = $(id);
-          var old = select.value;
-          select.innerHTML = "";
-          var none = document.createElement("option");
-          none.value = "";
-          none.textContent = "（不显示）";
-          select.appendChild(none);
-          data.series.forEach(function (series) {
+          select.innerHTML = '<option value="">（不显示）</option>';
+          options.forEach(function (photo) {
             var option = document.createElement("option");
-            option.value = series.slug;
-            option.textContent = (series.title.zh || series.title.en || series.slug) + " · " + series.slug;
+            option.value = photo.id;
+            option.textContent = photoTitle(photo);
             select.appendChild(option);
           });
-          if (old && data.series.some(function (series) { return series.slug === old; })) {
-            select.value = old;
-          } else {
-            select.value = featured[index] || "";
-          }
-        });
-      }
-
-      function loadSeriesBySlug(slug) {
-        var data = currentData();
-        if (!data) return;
-        var series = data.series.filter(function (item) { return item.slug === slug; })[0];
-        if (!series) return;
-        state.editingSlug = series.slug;
-        $("slug").value = series.slug;
-        $("slug").readOnly = true;
-        $("year").value = series.year || "";
-        populateCategories();
-        $("category").value = series.category;
-        $("titleZh").value = series.title.zh || "";
-        $("titleEn").value = series.title.en || "";
-        $("copyZh").value = series.copy.zh || "";
-        $("copyEn").value = series.copy.en || "";
-        $("altZh").value = series.alt.zh || "";
-        $("altEn").value = series.alt.en || "";
-        state.photos = series.frames.map(function (frame) {
-          var url = frameUrl(data, series, frame.name);
-          return {
-            existing: true,
-            name: frame.name,
-            width: frame.width || null,
-            height: frame.height || null,
-            dataUrl: url,
-            uploadedUrl: url
+          select.value = state.featured[index] || "";
+          select.onchange = function () {
+            var picks = ["feat0", "feat1", "feat2"].map(function (x) { return $(x).value; }).filter(Boolean);
+            var unique = picks.filter(function (v, i) { return picks.indexOf(v) === i; });
+            if (unique.length !== picks.length) {
+              setStatus("首页三屏不能重复选择同一张照片。", "err");
+              return;
+            }
+            state.featured = unique;
+            renderPreview();
           };
         });
-        renderPhotos();
-        state.writes = null;
-        state.spec = null;
-        state.batch = null;
-        setManageStatus("已载入 " + series.slug + "：改完文字后点「生成文件并预览」→「发布到 GitHub」。照片不会改动。", "ok");
       }
 
-      function resetSeriesForm() {
-        state.editingSlug = null;
-        state.photos = [];
-        $("slug").readOnly = false;
-        $("slug").value = "";
-        $("year").value = String(new Date().getFullYear());
-        $("titleZh").value = "";
-        $("titleEn").value = "";
-        $("copyZh").value = "";
-        $("copyEn").value = "";
-        $("altZh").value = "";
-        $("altEn").value = "";
-        populateCategories();
-        renderPhotos();
-        state.writes = null;
-        state.spec = null;
-        state.batch = null;
-        setManageStatus("正在新建系列：填写照片和文字后发布。", "ok");
+      function renderPreview() {
+        var grid = $("previewGrid");
+        grid.innerHTML = "";
+        var photos = allPhotos().slice(0, 12);
+        photos.forEach(function (photo) {
+          var edit = state.edits[photo.id];
+          var img = document.createElement("img");
+          img.src = textUrl(photo.publicId, "c_fill,g_auto,w_300,q_auto,f_auto");
+          img.alt = edit && edit.title ? edit.title.zh : photo.id;
+          grid.appendChild(img);
+        });
+        state.newPhotos.slice(0, 6).forEach(function (photo) {
+          var img = document.createElement("img");
+          img.src = photo.dataUrl;
+          img.alt = photo.title.zh || "new";
+          grid.appendChild(img);
+        });
+        $("locHint").textContent = Object.keys(state.locations).map(function (key) {
+          return state.locations[key].zh + " / " + state.locations[key].en;
+        }).join(" · ");
       }
 
-      // ---------------------------------------------------------------------
-      // 照片
-      // ---------------------------------------------------------------------
-      function fileToDataUrl(file) {
+      function renderAll() {
+        renderExisting();
+        renderNew();
+        renderFeatured();
+        renderPreview();
+      }
+
+      function addLocation() {
+        var zh = $("newLocZh").value.trim();
+        var en = $("newLocEn").value.trim() || zh;
+        if (!zh) return;
+        var key = en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "loc-" + (Object.keys(state.locations).length + 1);
+        state.locations[key] = { zh: zh, en: en };
+        $("newLocZh").value = "";
+        $("newLocEn").value = "";
+        renderAll();
+        setStatus("已添加地点，记得发布。", "ok");
+      }
+
+      function readImage(file) {
         return new Promise(function (resolve, reject) {
           var reader = new FileReader();
           reader.onload = function () { resolve(reader.result); };
-          reader.onerror = function () { reject(reader.error); };
+          reader.onerror = reject;
           reader.readAsDataURL(file);
         });
       }
 
-      async function addFiles(fileList) {
-        if (state.editingSlug) {
-          setStatus("编辑已有系列时不能增删照片。需要换图请新建一个系列。", "err");
-          return;
-        }
-        var files = Array.prototype.slice.call(fileList || []);
-        for (var i = 0; i < files.length; i++) {
-          var file = files[i];
-          if (!/^image\/(jpeg|png|webp)$/.test(file.type) && !/\.(jpe?g|png|webp)$/i.test(file.name)) {
-            log("跳过非图片文件：" + file.name);
-            continue;
-          }
-          var buffer = await file.arrayBuffer();
-          var size = core.imageSize(buffer) || {};
-          var dataUrl = await fileToDataUrl(file);
-          state.photos.push({
-            file: file,
-            name: file.name,
-            width: size.width || null,
-            height: size.height || null,
-            dataUrl: dataUrl,
-            uploadedUrl: ""
+      function imageSize(dataUrl) {
+        return new Promise(function (resolve) {
+          var img = new Image();
+          img.onload = function () { resolve({ width: img.naturalWidth, height: img.naturalHeight }); };
+          img.onerror = function () { resolve({}); };
+          img.src = dataUrl;
+        });
+      }
+
+      function addFiles(files) {
+        var list = Array.prototype.slice.call(files || []).filter(function (file) {
+          return /^image\//.test(file.type) || /\.(jpe?g|png|webp)$/i.test(file.name);
+        });
+        if (!list.length) return;
+        var defaultLocation = Object.keys(state.locations)[0] || "";
+        Promise.all(list.map(function (file) {
+          return readImage(file).then(function (dataUrl) {
+            return imageSize(dataUrl).then(function (size) {
+              var base = file.name.replace(/\.[^.]+$/, "");
+              return {
+                id: "p-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6),
+                file: file,
+                dataUrl: dataUrl,
+                width: size.width || null,
+                height: size.height || null,
+                title: { zh: base, en: base },
+                copy: { zh: "", en: "" },
+                location: defaultLocation
+              };
+            });
           });
-        }
-        renderPhotos();
-      }
-
-      function renderPhotos() {
-        var list = $("photoList");
-        list.innerHTML = "";
-        var names = core.frameNames(state.photos.length);
-        state.photos.forEach(function (photo, index) {
-          var li = document.createElement("li");
-          var frame = names[index];
-          li.innerHTML =
-            '<img alt="" src="' + photo.dataUrl + '" />' +
-            '<div><div class="name">' + core.escapeHtml(photo.name) + "</div>" +
-            '<div class="frame' + (index === 0 ? " cover" : "") + '">' + (index === 0 ? "封面 cover" : "第 " + (index + 1) + " 张 · " + frame) +
-            (photo.width ? " · " + photo.width + "×" + photo.height : " · 读不出尺寸") +
-            (photo.uploadedUrl ? " · 已上传" : "") + "</div></div>" +
-            '<div class="photo-actions">' +
-            (photo.existing
-              ? ''
-              : '<button type="button" data-act="up" data-i="' + index + '" title="上移">↑</button>' +
-                '<button type="button" data-act="down" data-i="' + index + '" title="下移">↓</button>' +
-                '<button type="button" data-act="del" data-i="' + index + '" title="删除">删除</button>') +
-            "</div>";
-          list.appendChild(li);
+        })).then(function (photos) {
+          state.newPhotos = state.newPhotos.concat(photos);
+          renderNew();
+          renderPreview();
         });
-        updateSlugSuggestion();
       }
 
-      function updateSlugSuggestion() {
-        if (state.editingSlug) return;
-        var slugInput = $("slug");
-        if (slugInput.value.trim()) return;
-        var titleEn = $("titleEn").value.trim();
-        if (titleEn) slugInput.value = core.slugify(titleEn);
-      }
-
-      // ---------------------------------------------------------------------
-      // 表单 -> spec
-      // ---------------------------------------------------------------------
-      function collectSpec() {
-        var category = $("category").value;
-        var spec = {
-          slug: $("slug").value.trim(),
-          category: category === "__new__" ? core.slugify($("catEn").value || $("catZh").value) : category,
-          year: $("year").value.trim(),
-          title: { zh: $("titleZh").value.trim(), en: $("titleEn").value.trim() },
-          copy: { zh: $("copyZh").value.trim(), en: $("copyEn").value.trim() },
-          alt: { zh: $("altZh").value.trim(), en: $("altEn").value.trim() },
-          frames: state.photos.map(function (photo, index) {
-            return { name: core.frameNames(state.photos.length)[index], width: photo.width, height: photo.height };
-          })
-        };
-        if (category === "__new__") {
-          spec.categoryLabel = { zh: $("catZh").value.trim() || spec.category, en: $("catEn").value.trim() || spec.category };
-        }
-        return spec;
-      }
-
-      function generateWrites() {
-        if (!state.base) throw new Error("站点文件尚未读取");
-        if (!state.photos.length) throw new Error("请先添加照片");
-        var spec = collectSpec();
-        var plan = core.planSiteSync(state.base.files, { add: spec });
-        state.spec = spec;
-        state.writes = plan.writes;
-        state.notes = plan.notes;
-        return plan;
-      }
-
-      function renderWrites(plan) {
-        var box = $("writeSummary");
-        if (!plan.writes.length) {
-          box.innerHTML = '<p class="hint">没有文件需要变更（可能这个 slug 已存在且内容一致）。</p>';
-          return;
-        }
-        var html = '<p class="hint">' + (plan.notes.length ? plan.notes.map(core.escapeHtml).join("；") : "") + "</p><ul class=\"writes\">";
-        plan.writes.forEach(function (write) {
-          var counts = core.countLineDiff(write.before || "", write.content);
-          html +=
-            '<li><span class="path">' + core.escapeHtml(write.path) + "</span><span class=\"stat\">" +
-            (write.action === "create" ? "新建" : "+" + counts.added + " / −" + counts.removed) + "</span></li>";
-        });
-        html += "</ul>";
-        box.innerHTML = html;
-      }
-
-      function previewImageMap() {
-        var map = {};
-        var names = core.frameNames(state.photos.length);
-        state.photos.forEach(function (photo, index) {
-          map[names[index] + ".jpg"] = photo.uploadedUrl || photo.dataUrl;
-        });
-        return map;
-      }
-
-      function renderPreview() {
-        if (!state.writes || !state.spec) return;
-        var pagePath = core.FILE_PATHS.seriesPage(state.spec.slug);
-        var page = state.writes.filter(function (w) { return w.path === pagePath; })[0];
-        if (!page) return;
-        var map = previewImageMap();
-        var html = page.content.replace(/https:\/\/res\.cloudinary\.com\/[^"]+\/(cover|0\d|1\d)\.jpg/g, function (url, name) {
-          return map[name + ".jpg"] || url;
-        });
-        var baseHref = new URL("../../works/" + state.spec.slug + "/", location.href).href;
-        html = html.replace("<head>", '<head>\n  <base href="' + baseHref + '" />');
-        var iframe = $("preview");
-        iframe.srcdoc = html;
-      }
-
-      function setPreviewLang(lang) {
-        state.previewLang = lang;
-        $("tabZh").classList.toggle("active", lang === "zh");
-        $("tabEn").classList.toggle("active", lang === "en");
-        try {
-          var doc = $("preview").contentDocument;
-          if (doc && window.DaFanI18n) window.DaFanI18n.applyLang(lang);
-          if (doc) {
-            var pack = doc.defaultView && doc.defaultView.localStorage;
-            doc.defaultView.localStorage.setItem("dafan-lang", lang);
-            var btn = doc.querySelector('.lang-btn[data-set-lang="' + lang + '"]');
-            if (btn) btn.click();
-          }
-        } catch (e) {}
-      }
-
-      // ---------------------------------------------------------------------
-      // Cloudinary 上传
-      // ---------------------------------------------------------------------
-      async function uploadPhotos(spec) {
-        var cloudName = $("cloudName").value.trim();
-        var preset = $("uploadPreset").value.trim();
-        if (!cloudName) throw new Error("缺少 Cloudinary cloud name");
-        if (!preset) throw new Error("缺少 Cloudinary unsigned preset（或勾选「已手动上传」）");
-        var folder = "dafan/series/" + spec.slug;
-        var names = core.frameNames(state.photos.length);
-        for (var i = 0; i < state.photos.length; i++) {
-          var photo = state.photos[i];
-          if (photo.uploadedUrl) continue;
-          var form = new FormData();
-          form.append("file", photo.file);
-          form.append("upload_preset", preset);
-          form.append("folder", folder);
-          form.append("public_id", names[i]);
-          log("上传 " + photo.name + " …");
-          var res = await fetch("https://api.cloudinary.com/v1_1/" + cloudName + "/image/upload", { method: "POST", body: form });
-          var body = await res.json().catch(function () { return {}; });
-          if (!res.ok) {
-            var detail = body && body.error && body.error.message ? body.error.message : JSON.stringify(body);
-            throw new Error("Cloudinary 上传失败（" + res.status + "）：" + detail);
-          }
-          photo.uploadedUrl = body.secure_url || "";
-          log("✓ " + photo.name + " → " + photo.uploadedUrl);
-        }
-      }
-
-      // ---------------------------------------------------------------------
-      // GitHub 提交（Git Data API，一次提交多个文件）
-      // ---------------------------------------------------------------------
       function toBase64(text) {
         var bytes = new TextEncoder().encode(text);
         var binary = "";
@@ -790,372 +634,180 @@
         return btoa(binary);
       }
 
-      async function ghApi(path, options) {
-        var cfg = ghCfg();
-        if (!cfg.token) throw new Error("缺少 GitHub PAT");
-        var res = await fetch("https://api.github.com/repos/" + cfg.owner + "/" + cfg.repo + path, Object.assign({
-          headers: {
-            "Authorization": "Bearer " + cfg.token,
-            "Accept": "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2022-11-28"
+      async function uploadNew() {
+        var preset = $("uploadPreset").value.trim();
+        var cloud = $("cloudName").value.trim();
+        if (!state.newPhotos.length) return [];
+        if (!cloud) throw new Error("缺少 Cloudinary cloud name");
+        if (!preset) throw new Error("缺少 Cloudinary unsigned preset（配置里填写）");
+        var out = [];
+        for (var i = 0; i < state.newPhotos.length; i += 1) {
+          var photo = state.newPhotos[i];
+          if (!photo.location) throw new Error("新照片请先选择地点");
+          var form = new FormData();
+          form.append("file", photo.file);
+          form.append("upload_preset", preset);
+          form.append("folder", "dafan/photos/" + photo.location);
+          form.append("public_id", photo.id);
+          log("上传 " + photo.title.zh + " …");
+          var res = await fetch("https://api.cloudinary.com/v1_1/" + cloud + "/image/upload", { method: "POST", body: form });
+          var body = await res.json().catch(function () { return {}; });
+          if (!res.ok) {
+            throw new Error("Cloudinary 上传失败（" + res.status + "）：" + (body.error && body.error.message ? body.error.message : "未知错误"));
           }
-        }, options || {}));
-        var body = await res.json().catch(function () { return {}; });
-        if (!res.ok) throw new Error("GitHub API " + res.status + "：" + (body.message || JSON.stringify(body)));
-        return body;
-      }
-
-      async function commitWrites(writes, message) {
-        var cfg = ghCfg();
-        log("读取 GitHub 最新提交…");
-        var ref = await ghApi("/git/ref/heads/" + cfg.branch);
-        var baseCommitSha = ref.object.sha;
-        var baseCommit = await ghApi("/git/commits/" + baseCommitSha);
-        log("创建 blob（" + writes.length + " 个文件）…");
-        var tree = [];
-        for (var i = 0; i < writes.length; i++) {
-          var blob = await ghApi("/git/blobs", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content: toBase64(writes[i].content), encoding: "base64" })
+          out.push({
+            id: photo.id,
+            publicId: body.public_id,
+            width: body.width || photo.width || 2400,
+            height: body.height || photo.height || 1600,
+            location: photo.location,
+            title: { zh: photo.title.zh || "", en: photo.title.en || photo.title.zh || "" },
+            copy: { zh: photo.copy.zh || "", en: photo.copy.en || photo.copy.zh || "" },
+            alt: { zh: (photo.title.zh || "") + " 摄影作品", en: (photo.title.en || photo.title.zh || "") + " photograph" }
           });
-          tree.push({ path: writes[i].path, mode: "100644", type: "blob", sha: blob.sha });
         }
-        log("创建 tree / commit…");
-        var newTree = await ghApi("/git/trees", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ base_tree: baseCommit.tree.sha, tree: tree })
-        });
-        var newCommit = await ghApi("/git/commits", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: message, tree: newTree.sha, parents: [baseCommitSha] })
-        });
-        log("更新分支 " + cfg.branch + " …");
-        await ghApi("/git/refs/heads/" + cfg.branch, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sha: newCommit.sha, force: false })
-        });
-        return newCommit;
+        return out;
       }
 
-      // ---------------------------------------------------------------------
-      // ZIP（store 方式，无压缩、无第三方库）
-      // ---------------------------------------------------------------------
-      var CRC_TABLE = (function () {
-        var table = new Uint32Array(256);
-        for (var n = 0; n < 256; n++) {
-          var c = n;
-          for (var k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-          table[n] = c >>> 0;
-        }
-        return table;
-      })();
-
-      function crc32(bytes) {
-        var crc = 0xffffffff;
-        for (var i = 0; i < bytes.length; i++) crc = CRC_TABLE[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
-        return (crc ^ 0xffffffff) >>> 0;
-      }
-
-      function buildZip(files) {
-        var encoder = new TextEncoder();
-        var localParts = [];
-        var centralParts = [];
-        var offset = 0;
-        var now = new Date();
-        var dosTime = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xffff;
-        var dosDate = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xffff;
-
-        files.forEach(function (file) {
-          var nameBytes = encoder.encode(file.path);
-          var dataBytes = encoder.encode(file.content);
-          var crc = crc32(dataBytes);
-          var local = new Uint8Array(30 + nameBytes.length);
-          var view = new DataView(local.buffer);
-          view.setUint32(0, 0x04034b50, true);
-          view.setUint16(4, 20, true);
-          view.setUint16(6, 0x0800, true);
-          view.setUint16(8, 0, true);
-          view.setUint16(10, dosTime, true);
-          view.setUint16(12, dosDate, true);
-          view.setUint32(14, crc, true);
-          view.setUint32(18, dataBytes.length, true);
-          view.setUint32(22, dataBytes.length, true);
-          view.setUint16(26, nameBytes.length, true);
-          view.setUint16(28, 0, true);
-          local.set(nameBytes, 30);
-          localParts.push(local, dataBytes);
-
-          var central = new Uint8Array(46 + nameBytes.length);
-          var cview = new DataView(central.buffer);
-          cview.setUint32(0, 0x02014b50, true);
-          cview.setUint16(4, 20, true);
-          cview.setUint16(6, 20, true);
-          cview.setUint16(8, 0x0800, true);
-          cview.setUint16(10, 0, true);
-          cview.setUint16(12, dosTime, true);
-          cview.setUint16(14, dosDate, true);
-          cview.setUint32(16, crc, true);
-          cview.setUint32(20, dataBytes.length, true);
-          cview.setUint32(24, dataBytes.length, true);
-          cview.setUint16(28, nameBytes.length, true);
-          cview.setUint16(30, 0, true);
-          cview.setUint16(32, 0, true);
-          cview.setUint16(34, 0, true);
-          cview.setUint16(36, 0, true);
-          cview.setUint32(38, 0, true);
-          cview.setUint32(42, offset, true);
-          central.set(nameBytes, 46);
-          centralParts.push(central);
-
-          offset += local.length + dataBytes.length;
+      async function commitPhotos(jsonText, message) {
+        var cfg = ghCfg();
+        if (!cfg.token) throw new Error("缺少 GitHub PAT（或下载 JSON 手动提交）");
+        var path = "data/photos.json";
+        var headers = {
+          Authorization: "Bearer " + cfg.token,
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28"
+        };
+        var getUrl = API + cfg.owner + "/" + cfg.repo + "/contents/" + path + "?ref=" + encodeURIComponent(cfg.branch);
+        var existing = await fetch(getUrl, { headers: headers });
+        var sha = null;
+        if (existing.ok) sha = (await existing.json()).sha;
+        var body = {
+          message: message,
+          content: toBase64(jsonText),
+          branch: cfg.branch
+        };
+        if (sha) body.sha = sha;
+        var put = await fetch(API + cfg.owner + "/" + cfg.repo + "/contents/" + path, {
+          method: "PUT",
+          headers: headers,
+          body: JSON.stringify(body)
         });
-
-        var centralSize = centralParts.reduce(function (sum, part) { return sum + part.length; }, 0);
-        var end = new Uint8Array(22);
-        var eview = new DataView(end.buffer);
-        eview.setUint32(0, 0x06054b50, true);
-        eview.setUint16(8, files.length, true);
-        eview.setUint16(10, files.length, true);
-        eview.setUint32(12, centralSize, true);
-        eview.setUint32(16, offset, true);
-        var parts = localParts.concat(centralParts, [end]);
-        return new Blob(parts, { type: "application/zip" });
+        var result = await put.json().catch(function () { return {}; });
+        if (!put.ok) throw new Error("GitHub 提交失败（" + put.status + "）：" + (result.message || "未知错误"));
+        return result.commit && result.commit.sha ? result.commit.sha : "ok";
       }
 
-      // ---------------------------------------------------------------------
-      // 动作
-      // ---------------------------------------------------------------------
-      async function onGenerate() {
+      function buildFinal(remote, uploaded) {
+        var byId = {};
+        state.photos.forEach(function (photo) { byId[photo.id] = photo; });
+        var photos = [];
+        (remote.photos || []).forEach(function (photo) {
+          if (state.deleted[photo.id]) return;
+          var edit = state.edits[photo.id];
+          if (edit) {
+            photos.push(Object.assign({}, photo, {
+              title: { zh: edit.title.zh, en: edit.title.en },
+              copy: { zh: edit.copy.zh, en: edit.copy.en },
+              location: edit.location || photo.location
+            }));
+          } else {
+            photos.push(photo);
+          }
+        });
+        uploaded.forEach(function (photo) { photos.push(photo); });
+        var featured = state.featured.filter(function (id) {
+          return photos.some(function (photo) { return photo.id === id; });
+        }).slice(0, 3);
+        photos.forEach(function (photo) {
+          if (featured.length < 3 && featured.indexOf(photo.id) < 0) featured.push(photo.id);
+        });
+        return {
+          cloudName: remote.cloudName || $("cloudName").value.trim() || "no7rdn4w",
+          locations: state.locations,
+          featured: featured,
+          photos: photos
+        };
+      }
+
+      async function publish() {
+        if (state.busy) return;
+        state.busy = true;
+        $("publishBtn").disabled = true;
+        setStatus("正在发布…");
         try {
-          if (state.busy) return;
-          state.busy = true;
-          setStatus("正在生成…");
-          var plan = generateWrites();
-          renderWrites(plan);
-          renderPreview();
-          setStatus("已生成 " + plan.writes.length + " 个文件的改动。请核对右侧预览；确认后点「下载 ZIP」或「发布到 GitHub」。", "ok");
-        } catch (e) {
-          setStatus("生成失败：" + e.message, "err");
+          var uploaded = await uploadNew();
+          var remoteText = await readRemote();
+          var remote = JSON.parse(remoteText);
+          var data = buildFinal(remote, uploaded);
+          var jsonText = JSON.stringify(data, null, 2) + "\n";
+          log("提交 data/photos.json（" + data.photos.length + " 张）…");
+          var sha = await commitPhotos(jsonText, "chore(photos): update photo library");
+          state.newPhotos = [];
+          setStatus("已发布：" + String(sha).slice(0, 7) + "，1–2 分钟后生效。", "ok");
+          loadData();
+        } catch (error) {
+          setStatus("发布失败：" + error.message, "err");
         } finally {
           state.busy = false;
+          $("publishBtn").disabled = false;
         }
       }
 
-      async function onZip() {
+      function downloadJson() {
         try {
-          if (!state.writes) await onGenerate();
-          if (!state.writes || !state.writes.length) throw new Error("没有可打包的改动");
-          var blob = buildZip(state.writes);
-          var url = URL.createObjectURL(blob);
+          var uploaded = [];
+          var data = buildFinal(state.data || { photos: [] }, uploaded);
+          var blob = new Blob([JSON.stringify(data, null, 2) + "\n"], { type: "application/json" });
           var a = document.createElement("a");
-          a.href = url;
-          a.download = "dafan-series-" + (state.spec ? state.spec.slug : "new") + ".zip";
-          document.body.appendChild(a);
+          a.href = URL.createObjectURL(blob);
+          a.download = "photos.json";
           a.click();
-          a.remove();
-          setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
-          setStatus("ZIP 已下载。解压到仓库根目录后 git add / commit / push 即可。", "ok");
-        } catch (e) {
-          setStatus("下载 ZIP 失败：" + e.message, "err");
+          URL.revokeObjectURL(a.href);
+          setStatus("已下载 photos.json：替换仓库里的 data/photos.json 后 git commit/push。", "ok");
+        } catch (error) {
+          setStatus("下载失败：" + error.message, "err");
         }
       }
 
-      async function onPublish() {
-        try {
-          if (state.busy) return;
-          state.busy = true;
-          $("log").textContent = "";
-          setStatus("开始发布…");
-          var spec = collectSpec();
-          var manualUpload = $("skipUpload").checked;
-          var needsUpload = state.photos.some(function (photo) { return !photo.uploadedUrl; });
-          if (!manualUpload && needsUpload && !$("uploadPreset").value.trim()) {
-            throw new Error("缺少 Cloudinary unsigned preset：在「配置」里填写，或勾选「图片已手动上传」");
-          }
-          if (!$("ghToken").value.trim()) {
-            throw new Error("缺少 GitHub PAT：在「配置」里填写，或改用「下载 ZIP」");
-          }
-          if (!manualUpload) {
-            log("上传照片到 Cloudinary…");
-            await uploadPhotos(spec);
-            renderPhotos();
-          } else if (state.photos.some(function (p) { return !p.uploadedUrl; })) {
-            log("已勾选「图片已手动上传」，跳过上传。");
-          }
-          // 以线上 main 为基底重新生成，避免本地副本过旧（raw 失败时走 API / 当前站点）
-          setStatus("以线上 main 为基底重新生成…");
-          var remote = await readFreshBase();
-          state.base = remote;
-          state.baseSource = remote.source;
-          var plan = core.planSiteSync(remote.files, { add: spec });
-          if (!plan.writes.length) throw new Error("没有需要提交的改动");
-          state.writes = plan.writes;
-          state.spec = spec;
-          renderWrites(plan);
-          var message = (state.editingSlug ? "chore(series): update " : "feat(series): add ") + spec.slug + " — " + (spec.title.zh || spec.slug) + " / " + (spec.title.en || spec.slug);
-          log("提交到 GitHub：" + message);
-          var commit = await commitWrites(plan.writes, message);
-          log("✓ 已提交 " + commit.sha.slice(0, 7));
-          setStatus(
-            "已发布！GitHub Pages 会在 1–2 分钟内自动部署。\n" +
-              "系列页：https://dafanphotographs.github.io/works/" + spec.slug + "/\n" +
-              "提交：" + commit.sha.slice(0, 7) + "（可在仓库 Actions 里看部署进度）",
-            "ok"
-          );
-          renderPreview();
-          await loadBase(true);
-        } catch (e) {
-          setStatus("发布失败：" + e.message + "\n失败不会留下半成品：图片可能已上传（可在 Cloudinary 重用），HTML 未提交。", "err");
-        } finally {
-          state.busy = false;
-        }
-      }
-
-      async function publishOptions(options, message, doneText) {
-        var remote = await readFreshBase();
-        state.base = remote;
-        state.baseSource = remote.source;
-        var plan = core.planSiteSync(remote.files, options);
-        if (!plan.writes.length) throw new Error("没有需要变更的文件");
-        renderWrites(plan);
-        log("提交：" + message);
-        var commit = await commitWrites(plan.writes, message);
-        setManageStatus("已发布：" + commit.sha.slice(0, 7) + " · " + doneText + "（1–2 分钟后生效）", "ok");
-        await loadBase(true);
-      }
-
-      async function onLoadSeries() {
-        var slug = $("manageSeries").value;
-        if (slug) loadSeriesBySlug(slug);
-      }
-
-      function onNewSeries() {
-        resetSeriesForm();
-      }
-
-      async function onSaveFeatured() {
-        try {
-          if (state.busy) return;
-          state.busy = true;
-          var picks = ["feat0", "feat1", "feat2"].map(function (id) { return $(id).value; }).filter(Boolean);
-          if (!picks.length) throw new Error("至少选择一个系列");
-          if (new Set(picks).size !== picks.length) throw new Error("首页三屏不能重复选择同一个系列");
-          setManageStatus("正在发布首页精选…");
-          await publishOptions({ featured: picks }, "chore(home): update featured series", "首页精选已更新");
-        } catch (e) {
-          setManageStatus("首页精选发布失败：" + e.message, "err");
-        } finally {
-          state.busy = false;
-        }
-      }
-
-      async function onDeleteSeries() {
-        var slug = $("manageSeries").value;
-        if (!slug) return;
-        var ok = window.confirm(
-          "从网站删除系列 " + slug + "？\n\n会删除它的系列页、作品/摄影列表、首页引用；\nCloudinary 里的图片不会删除，需要你到 Cloudinary 控制台手动删。"
-        );
-        if (!ok) return;
-        try {
-          if (state.busy) return;
-          state.busy = true;
-          setManageStatus("正在删除 " + slug + "…");
-          await publishOptions({ remove: slug }, "chore(series): remove " + slug, "已从网站删除 " + slug);
-          if (state.editingSlug === slug) resetSeriesForm();
-        } catch (e) {
-          setManageStatus("删除失败：" + e.message, "err");
-        } finally {
-          state.busy = false;
-        }
-      }
-
-      // ---------------------------------------------------------------------
-      // 事件绑定
-      // ---------------------------------------------------------------------
       function bind() {
         $("saveConfigBtn").addEventListener("click", saveConfig);
         $("clearConfigBtn").addEventListener("click", clearConfig);
-        $("reloadBtn").addEventListener("click", function () { loadBase(true); });
-        $("generateBtn").addEventListener("click", onGenerate);
-        $("zipBtn").addEventListener("click", onZip);
-        $("publishBtn").addEventListener("click", onPublish);
-        $("loadSeriesBtn").addEventListener("click", onLoadSeries);
-        $("newSeriesBtn").addEventListener("click", onNewSeries);
-        $("saveFeaturedBtn").addEventListener("click", onSaveFeatured);
-        $("deleteSeriesBtn").addEventListener("click", onDeleteSeries);
-        $("tabZh").addEventListener("click", function () { setPreviewLang("zh"); });
-        $("tabEn").addEventListener("click", function () { setPreviewLang("en"); });
-        $("category").addEventListener("change", function () {
-          var isNew = $("category").value === "__new__";
-          $("catZh").disabled = !isNew;
-          $("catEn").disabled = !isNew;
-          if (isNew) { $("catZh").focus(); }
-        });
-        $("catZh").disabled = true;
-        $("catEn").disabled = true;
-        ["titleEn", "titleZh"].forEach(function (id) {
-          $(id).addEventListener("input", updateSlugSuggestion);
-        });
-
+        $("reloadBtn").addEventListener("click", loadData);
+        $("publishBtn").addEventListener("click", publish);
+        $("downloadBtn").addEventListener("click", downloadJson);
+        $("addLocBtn").addEventListener("click", addLocation);
         var dropzone = $("dropzone");
         var fileInput = $("fileInput");
         dropzone.addEventListener("click", function () { fileInput.click(); });
-        dropzone.addEventListener("dragover", function (e) { e.preventDefault(); dropzone.classList.add("drag"); });
-        dropzone.addEventListener("dragleave", function () { dropzone.classList.remove("drag"); });
-        dropzone.addEventListener("drop", function (e) {
-          e.preventDefault();
-          dropzone.classList.remove("drag");
-          addFiles(e.dataTransfer.files);
+        fileInput.addEventListener("change", function () {
+          addFiles(fileInput.files);
+          fileInput.value = "";
         });
-        fileInput.addEventListener("change", function () { addFiles(fileInput.files); fileInput.value = ""; });
-
-        $("photoList").addEventListener("click", function (e) {
-          var btn = e.target.closest("button[data-act]");
-          if (!btn) return;
-          var index = parseInt(btn.getAttribute("data-i"), 10);
-          var act = btn.getAttribute("data-act");
-          if (act === "del") state.photos.splice(index, 1);
-          if (act === "up" && index > 0) {
-            var tmp = state.photos[index - 1];
-            state.photos[index - 1] = state.photos[index];
-            state.photos[index] = tmp;
-          }
-          if (act === "down" && index < state.photos.length - 1) {
-            var tmp2 = state.photos[index + 1];
-            state.photos[index + 1] = state.photos[index];
-            state.photos[index] = tmp2;
-          }
-          renderPhotos();
+        ["dragenter", "dragover"].forEach(function (name) {
+          dropzone.addEventListener(name, function (event) {
+            event.preventDefault();
+            dropzone.classList.add("is-over");
+          });
+        });
+        ["dragleave", "drop"].forEach(function (name) {
+          dropzone.addEventListener(name, function (event) {
+            event.preventDefault();
+            dropzone.classList.remove("is-over");
+          });
+        });
+        dropzone.addEventListener("drop", function (event) {
+          if (event.dataTransfer) addFiles(event.dataTransfer.files);
         });
       }
-
-      // ---------------------------------------------------------------------
-      // 测试钩子（供自动化验证）
-      // ---------------------------------------------------------------------
-      window.DaFanAdmin = {
-        state: state,
-        loadBase: loadBase,
-        addFiles: addFiles,
-        collectSpec: collectSpec,
-        generateWrites: generateWrites,
-        onGenerate: onGenerate,
-        readRemoteBase: readRemoteBase,
-        readLocalBase: readLocalBase,
-        uploadPhotos: uploadPhotos,
-        buildZip: buildZip
-      };
 
       if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
         navigator.serviceWorker.register("./sw.js").catch(function () {});
       }
 
-      loadConfigToUi();
+      loadConfig();
       bind();
-      loadBase(true);
+      loadData();
     })();
   </script>
 </body>

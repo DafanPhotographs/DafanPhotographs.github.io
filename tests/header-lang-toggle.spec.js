@@ -4,11 +4,9 @@ const { test, expect } = require("@playwright/test");
 /** Routes that use the shared site header (lang toggle present). */
 const HEADER_ROUTES = [
   "/",
-  "/works/",
   "/photography/",
   "/about/",
   "/contact/",
-  "/works/qingdao/",
 ];
 
 const NARROW_WIDTHS = [320, 375, 390];
@@ -158,9 +156,9 @@ test.describe("QA F3 — header language toggle on narrow viewports", () => {
 
   for (const w of ALL_CHECK_WIDTHS) {
     for (const lang of ["zh", "en"]) {
-      test(`layout ${w}px ${lang.toUpperCase()} on /works/`, async ({ page }) => {
+      test(`layout ${w}px ${lang.toUpperCase()} on /photography/`, async ({ page }) => {
         await page.setViewportSize({ width: w, height: 900 });
-        await page.goto("/works/");
+        await page.goto("/photography/");
         if (lang === "en") {
           await pickLang(page, "en");
         }

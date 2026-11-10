@@ -5,8 +5,7 @@
   var shared = window.DaFanMotionShared;
   if (!rail || !shared) return;
 
-  var scenes = gsap.utils.toArray(rail.querySelectorAll("[data-home-scene]"));
-  if (!scenes.length) return;
+  var scenes = [];
 
   function motionUnavailable() {
     return typeof gsap === "undefined" || typeof ScrollTrigger === "undefined";
@@ -354,32 +353,40 @@
     if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh();
   }
 
-  if (motionUnavailable()) {
-    setMotionClass(false);
-    return;
-  }
+  function start() {
+    scenes = gsap.utils.toArray(rail.querySelectorAll("[data-home-scene]"));
+    if (!scenes.length) return;
 
-  try {
-    gsap.registerPlugin(ScrollTrigger);
-  } catch (err) {
-    setMotionClass(false);
-    return;
-  }
+    if (motionUnavailable()) {
+      setMotionClass(false);
+      return;
+    }
 
-  mm = gsap.matchMedia();
+    try {
+      gsap.registerPlugin(ScrollTrigger);
+    } catch (err) {
+      setMotionClass(false);
+      return;
+    }
 
-  mm.add(shared.HOME_MOTION_MQ, function () {
-    buildMotion();
-    return teardownMotion;
-  });
+    mm = gsap.matchMedia();
 
-  var reduceMql = window.matchMedia("(prefers-reduced-motion: reduce)");
-  reduceMql.addEventListener("change", function () {
-    if (mm) mm.revert();
-    requestAnimationFrame(function () {
-      if (mm && !reduceMql.matches && window.matchMedia(shared.HOME_MOTION_MQ).matches) {
-        mm.refresh();
-      }
+    mm.add(shared.HOME_MOTION_MQ, function () {
+      buildMotion();
+      return teardownMotion;
     });
-  });
+
+    var reduceMql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    reduceMql.addEventListener("change", function () {
+      if (mm) mm.revert();
+      requestAnimationFrame(function () {
+        if (mm && !reduceMql.matches && window.matchMedia(shared.HOME_MOTION_MQ).matches) {
+          mm.refresh();
+        }
+      });
+    });
+  }
+
+  if (window.__homePhotosReady) start();
+  else document.addEventListener("photos-ready", start, { once: true });
 })();
