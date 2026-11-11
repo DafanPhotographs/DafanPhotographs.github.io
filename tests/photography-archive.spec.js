@@ -21,8 +21,8 @@ test.describe("Photography archive (photo-first)", () => {
     await expect(page.locator(".photo-filters .filter-btn")).toHaveCount(4);
     expect(await page.locator(".photography-hero__word").textContent()).toBe("PHOTOGRAPHY");
     expect(await page.locator('[data-i18n="nav.work"]').count()).toBe(0);
-    const cols = await page.locator(".photography-archive").evaluate((el) => getComputedStyle(el).columnCount);
-    expect(cols).toBe("3");
+    const cols = await page.locator(".photography-archive .photo-col").count();
+    expect(cols).toBe(3);
     const blend = await page.locator(".site-header").evaluate((el) => getComputedStyle(el).mixBlendMode);
     expect(blend).toBe("difference");
     const overflow = await page.evaluate(
@@ -58,25 +58,27 @@ test.describe("Photography archive (photo-first)", () => {
     await expect(box).toHaveAttribute("hidden", "");
   });
 
-  test("photos fade/rise in as they enter the viewport", async ({ page }) => {
+  test("photos rise 400px and fade in as they enter the viewport", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(PHOTO);
     await page.waitForLoadState("networkidle");
-    const second = page.locator(".archive-item").nth(1);
+    const first = page.locator(".archive-item").first();
     await jump(page, 0);
-    const before = await second.evaluate((el) => ({
+    const before = await first.evaluate((el) => ({
+      opacity: Number(getComputedStyle(el).opacity),
+      y: new DOMMatrixReadOnly(getComputedStyle(el).transform).m42,
+      perspective: el.style.transform.includes("perspective"),
+    }));
+    expect(before.opacity).toBeLessThan(0.7);
+    expect(before.y).toBeGreaterThan(100);
+    expect(before.perspective).toBe(true);
+    await jump(page, 500);
+    const after = await first.evaluate((el) => ({
       opacity: Number(getComputedStyle(el).opacity),
       y: new DOMMatrixReadOnly(getComputedStyle(el).transform).m42,
     }));
-    expect(before.opacity).toBeLessThan(0.4);
-    expect(before.y).toBeGreaterThan(60);
-    await jump(page, 600);
-    const after = await second.evaluate((el) => ({
-      opacity: Number(getComputedStyle(el).opacity),
-      y: new DOMMatrixReadOnly(getComputedStyle(el).transform).m42,
-    }));
-    expect(after.opacity).toBeGreaterThan(0.8);
-    expect(after.y).toBeLessThan(80);
+    expect(after.opacity).toBeGreaterThan(0.9);
+    expect(after.y).toBeLessThan(40);
   });
 
   test("mobile 390: 3 columns, no horizontal overflow", async ({ page }) => {
@@ -84,12 +86,12 @@ test.describe("Photography archive (photo-first)", () => {
     await page.goto(PHOTO);
     await page.waitForLoadState("networkidle");
     const info = await page.evaluate(() => ({
-      cols: getComputedStyle(document.querySelector(".photography-archive")).columnCount,
+      cols: document.querySelectorAll(".photography-archive .photo-col").length,
       scrollW: document.documentElement.scrollWidth,
       clientW: document.documentElement.clientWidth,
       items: document.querySelectorAll(".archive-item").length,
     }));
-    expect(info.cols).toBe("3");
+    expect(info.cols).toBe(3);
     expect(info.items).toBe(12);
     expect(info.scrollW).toBeLessThanOrEqual(info.clientW + 1);
   });
