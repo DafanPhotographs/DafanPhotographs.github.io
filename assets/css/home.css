@@ -26,24 +26,19 @@
 
 /* —— Left scene title (photo rail only; difference) —— */
 .page-home .home-scene-chrome {
-  position: fixed;
+  position: absolute;
   inset: 0;
-  z-index: 28;
+  z-index: 2;
   display: flex;
   align-items: center;
   padding-inline: clamp(1.25rem, 3vw, 2.5rem);
   pointer-events: none;
-  visibility: hidden;
   /*
-   * Invert against the photo itself. The blend has to live on this fixed layer:
-   * on `.home-scene-title-blend` it would blend against an empty stacking context
-   * and the title would stay plain white (no "difference" effect at all).
+   * The title lives inside the scene's scaled stage, so it grows/moves with the
+   * incoming photo exactly like the reference. Difference blends it against the
+   * image in the same stacking context.
    */
   mix-blend-mode: difference;
-}
-
-.page-home .home-scene.is-stage-active .home-scene-chrome {
-  visibility: visible;
 }
 
 .page-home.home-past-photo-zone .home-scene-chrome {
