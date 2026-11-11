@@ -10,7 +10,8 @@
   var data = null;
   var lang = document.documentElement.lang || "zh";
   var current = [];
-  var triggers = [];
+  var itemStates = [];
+  var paintQueued = false;
   var lenis = null;
   var activeId = null;
   var lastTrigger = null;
@@ -45,58 +46,94 @@
     });
   }
 
+  function clamp01(value) {
+    return value < 0 ? 0 : value > 1 ? 1 : value;
+  }
+
   function initMotion() {
-    if (reduce || typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
-    gsap.registerPlugin(ScrollTrigger);
+    if (reduce) return;
     if (window.Lenis) {
       lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
       window.__lenis = lenis;
-      lenis.on("scroll", ScrollTrigger.update);
-      gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
-      gsap.ticker.lagSmoothing(0);
+      if (typeof gsap !== "undefined") {
+        gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
+        gsap.ticker.lagSmoothing(0);
+      } else {
+        (function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        })(0);
+      }
+      lenis.on("scroll", queuePaint);
     }
-  }
-
-  function killTriggers() {
-    triggers.forEach(function (trigger) {
-      if (trigger && trigger.kill) trigger.kill();
-    });
-    triggers = [];
-    archive.querySelectorAll(".archive-item").forEach(function (item) {
-      gsap.set(item, { clearProps: "transform,opacity" });
+    window.addEventListener("scroll", queuePaint, { passive: true });
+    window.addEventListener("resize", function () {
+      measureItems();
+      paint();
     });
   }
 
-  function applyAppearance() {
-    if (reduce || typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
-    killTriggers();
-    archive.querySelectorAll(".archive-item").forEach(function (item) {
-      if (item.classList.contains("is-hidden")) return;
-      var tween = gsap.fromTo(
-        item,
-        {
-          y: function (index, target) {
-            return Math.min(320, Math.max(80, target.offsetHeight * 0.55));
-          },
-          opacity: 0.1
-        },
-        {
-          y: 0,
-          opacity: 1,
-          ease: "power2.out",
-          immediateRender: true,
-          scrollTrigger: {
-            trigger: item,
-            start: "top 95%",
-            end: "top 25%",
-            scrub: 0.6,
-            invalidateOnRefresh: true
-          }
-        }
-      );
-      if (tween.scrollTrigger) triggers.push(tween.scrollTrigger);
+  // Measure once with transforms off, then map every photo's viewport
+  // position to progress by hand. This keeps the effect aligned even when the
+  // masonry columns reflow (ScrollTrigger could cache stale positions).
+  function measureItems() {
+    itemStates = [];
+    archive.querySelectorAll(".archive-item").forEach(function (el) {
+      if (el.classList.contains("is-hidden")) return;
+      var previous = el.style.transform;
+      el.style.transform = "none";
+      var rect = el.getBoundingClientRect();
+      el.style.transform = previous;
+      itemStates.push({
+        el: el,
+        media: el.querySelector(".archive-media"),
+        docTop: rect.top + (window.scrollY || 0),
+        height: rect.height
+      });
     });
-    ScrollTrigger.refresh();
+  }
+
+  function paint() {
+    if (reduce) return;
+    var scroll = window.scrollY || 0;
+    itemStates.forEach(function (state) {
+      var top = state.docTop - scroll;
+      // Reference: 0 at 450px below the viewport, fully arrived near the top.
+      var progress = clamp01((1350 - top) / 1250);
+      state.el.style.opacity = progress.toFixed(4);
+      state.el.style.transform =
+        "perspective(1200px) translate3d(0," + (400 * (1 - progress)).toFixed(2) + "px,0)";
+      if (state.media) {
+        // Inner image drifts the opposite way while the card crosses the
+        // viewport, like the reference's 2:3 image inside a 4:5 mask.
+        var parallax = clamp01((900 - top) / (900 + state.height));
+        state.media.style.transform =
+          "translate3d(0," + (-12 + 24 * parallax).toFixed(2) + "%,0)";
+      }
+    });
+  }
+
+  function queuePaint() {
+    if (paintQueued) return;
+    paintQueued = true;
+    requestAnimationFrame(function () {
+      paintQueued = false;
+      paint();
+    });
+  }
+
+  function refreshMotion() {
+    if (reduce) {
+      archive.querySelectorAll(".archive-item").forEach(function (el) {
+        el.style.opacity = "1";
+        el.style.transform = "none";
+        var media = el.querySelector(".archive-media");
+        if (media) media.style.transform = "none";
+      });
+      return;
+    }
+    measureItems();
+    paint();
   }
 
   function renderFilters() {
@@ -141,11 +178,17 @@
       item.tabIndex = hide ? -1 : 0;
     });
     current = visiblePhotos();
-    applyAppearance();
+    refreshMotion();
   }
 
   function renderArchive() {
     archive.innerHTML = "";
+    var columns = [0, 1, 2].map(function () {
+      var column = document.createElement("div");
+      column.className = "photo-col";
+      archive.appendChild(column);
+      return column;
+    });
     data.photos.forEach(function (photo, index) {
       var spec = AR[index % AR.length];
       var button = document.createElement("button");
@@ -161,15 +204,18 @@
       img.height = spec.h;
       img.loading = index < 3 ? "eager" : "lazy";
       img.decoding = "async";
-      button.appendChild(img);
+      var media = document.createElement("span");
+      media.className = "archive-media";
+      media.appendChild(img);
+      button.appendChild(media);
       button.addEventListener("click", function () {
         lastTrigger = button;
         openPhoto(photo.id);
       });
-      archive.appendChild(button);
+      columns[index % 3].appendChild(button);
     });
     current = visiblePhotos();
-    applyAppearance();
+    refreshMotion();
   }
 
   function renderCaption(photo) {
@@ -258,6 +304,9 @@
         data = payload;
         renderFilters();
         renderArchive();
+        requestAnimationFrame(refreshMotion);
+        window.addEventListener("load", refreshMotion);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshMotion);
         var hash = location.hash.replace("#", "");
         if (hash && photoById(hash)) openPhoto(hash, false);
       })
