@@ -116,6 +116,8 @@
     .photo-side { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
     .photo-side .id { font-family: ui-monospace, Menlo, monospace; font-size: 10px; color: var(--muted); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .photo-side button { padding: 4px 8px; font-size: 12px; }
+    .photo-side button.feature-btn.is-featured { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .home-badge { font-size: 10px; padding: 2px 6px; border-radius: 999px; background: #e7f4ec; color: var(--ok); white-space: nowrap; }
     .featured-grid-admin { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
     .status { font-size: 12px; margin-top: 10px; white-space: pre-wrap; }
     .status.ok { color: var(--ok); }
@@ -423,13 +425,16 @@
         var list = $("existingList");
         list.innerHTML = "";
         var photos = allPhotos();
-        $("existingHint").textContent = photos.length ? photos.length + " 张照片；改完直接点底部「上传并发布」。" : "还没有照片，先在上面添加。";
+        $("existingHint").textContent = photos.length
+          ? photos.length + " 张照片；首页已选 " + state.featured.length + "/3（至少 1 张、最多 3 张）。"
+          : "还没有照片，先在上面添加。";
         photos.forEach(function (photo) {
           var edit = state.edits[photo.id] || {
             title: photo.title || { zh: "", en: "" },
             copy: photo.copy || { zh: "", en: "" },
             location: photo.location || Object.keys(state.locations)[0] || ""
           };
+          var featuredIndex = state.featured.indexOf(photo.id);
           var row = document.createElement("div");
           row.className = "photo-row";
           row.setAttribute("data-id", photo.id);
@@ -444,7 +449,10 @@
             "</div>" +
             '<div class="photo-side">' +
               '<span class="id" title="' + escapeHtml(photo.publicId) + '">' + escapeHtml(photo.id) + "</span>" +
-              '<button type="button" data-act="feature">设为首页</button>' +
+              (featuredIndex >= 0 ? '<span class="home-badge">主页 · 第' + (featuredIndex + 1) + '屏</span>' : "") +
+              '<button type="button" data-act="feature" class="feature-btn' + (featuredIndex >= 0 ? " is-featured" : "") + '">' +
+                (featuredIndex >= 0 ? "★ 首页第" + (featuredIndex + 1) + "屏" : "☆ 设为首页") +
+              "</button>" +
               '<button type="button" data-act="delete" class="danger">删除</button>' +
             "</div>";
           list.appendChild(row);
@@ -478,10 +486,25 @@
             renderAll();
           });
           row.querySelector('[data-act="feature"]').addEventListener("click", function () {
-            if (state.featured.indexOf(photo.id) >= 0) return;
-            state.featured = state.featured.concat(photo.id).slice(-3);
+            var index = state.featured.indexOf(photo.id);
+            if (index >= 0) {
+              if (state.featured.length <= 1) {
+                setStatus("首页至少保留 1 张照片。", "err");
+                return;
+              }
+              state.featured.splice(index, 1);
+              setStatus("已从首页移除：" + photoTitle(photo) + "（记得发布）。", "ok");
+            } else {
+              if (state.featured.length >= 3) {
+                setStatus("首页最多 3 张，当前已满。请先点掉一张标有「首页第 X 屏」的照片。", "err");
+                return;
+              }
+              state.featured.push(photo.id);
+              setStatus("已设为首页第 " + state.featured.length + " 屏：" + photoTitle(photo) + "（记得发布）。", "ok");
+            }
+            renderExisting();
             renderFeatured();
-            setStatus("已加入首页精选（记得发布）。", "ok");
+            renderPreview();
           });
         });
       }
@@ -544,9 +567,16 @@
             var unique = picks.filter(function (v, i) { return picks.indexOf(v) === i; });
             if (unique.length !== picks.length) {
               setStatus("首页三屏不能重复选择同一张照片。", "err");
+              renderFeatured();
+              return;
+            }
+            if (unique.length < 1) {
+              setStatus("首页至少保留 1 张照片。", "err");
+              renderFeatured();
               return;
             }
             state.featured = unique;
+            renderExisting();
             renderPreview();
           };
         });
@@ -827,9 +857,6 @@
         var featured = state.featured.filter(function (id) {
           return photos.some(function (photo) { return photo.id === id; });
         }).slice(0, 3);
-        photos.forEach(function (photo) {
-          if (featured.length < 3 && featured.indexOf(photo.id) < 0) featured.push(photo.id);
-        });
         return {
           cloudName: remote.cloudName || $("cloudName").value.trim() || "no7rdn4w",
           locations: state.locations,
