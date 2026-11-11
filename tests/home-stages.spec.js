@@ -633,7 +633,7 @@ test.describe("Home fullscreen stages", () => {
     expect(idx).toBeLessThanOrEqual(1);
   });
 
-  test("scrollTrigger: three sticky-scale scenes, no pin", async ({ page }) => {
+  test("scrollTrigger: five sticky-scale scenes, no pin", async ({ page }) => {
     await page.setViewportSize(MOTION_VIEWPORT);
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
@@ -642,7 +642,7 @@ test.describe("Home fullscreen stages", () => {
     );
     const count = await page.evaluate(() => ScrollTrigger.getAll().length);
     expect(pins).toBe(0);
-    expect(count).toBe(3);
+    expect(count).toBe(5);
   });
 
   test("featured scenes use CSS sticky stack z-order (not yPercent slide)", async ({ page }) => {
@@ -650,7 +650,7 @@ test.describe("Home fullscreen stages", () => {
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
     const stack = await page.evaluate(() => {
-      const panels = [0, 1, 2].map((i) => document.querySelector('[data-home-scene="' + i + '"]'));
+      const panels = [0, 1, 2, 3, 4].map((i) => document.querySelector('[data-home-scene="' + i + '"]'));
       if (panels.some((p) => !p)) return null;
       const styles = panels.map((p) => {
         const s = getComputedStyle(p);
@@ -671,8 +671,9 @@ test.describe("Home fullscreen stages", () => {
       expect(row.yPercent).toBe(0);
       expect(row.height).toBeGreaterThanOrEqual(stack.vh * 0.92);
     }
-    expect(Number(stack.styles[1].z)).toBeGreaterThan(Number(stack.styles[0].z));
-    expect(Number(stack.styles[2].z)).toBeGreaterThan(Number(stack.styles[1].z));
+    for (let i = 1; i < stack.styles.length; i += 1) {
+      expect(Number(stack.styles[i].z)).toBeGreaterThan(Number(stack.styles[i - 1].z));
+    }
   });
 
   test("hash deep link focuses featured scene in document", async ({ page }) => {
@@ -898,8 +899,8 @@ test.describe("Home fullscreen stages", () => {
     await page.goto(HOME);
     await page.waitForLoadState("networkidle");
     const featured = page.locator(".featured-panel.home-scene");
-    await expect(featured).toHaveCount(3);
-    for (let i = 0; i < 3; i += 1) {
+    await expect(featured).toHaveCount(5);
+    for (let i = 0; i < 5; i += 1) {
       await expect(featured.nth(i).locator(".home-scene-overlay")).toHaveCount(0);
       const label = await featured.nth(i).getAttribute("aria-label");
       expect(label).toBeTruthy();

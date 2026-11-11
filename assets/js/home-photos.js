@@ -76,7 +76,8 @@
     var featured = (photosData.featured || []).map(function (id) { return byId[id]; }).filter(Boolean);
     // Legacy data without a featured list still gets a hero; an explicit
     // admin selection of 1–3 photos is respected as-is.
-    if (!featured.length) featured = photosData.photos.slice(0, 3);
+    if (!featured.length) featured = photosData.photos.slice(0, 5);
+    featured = featured.slice(0, 5);
     grid.innerHTML = featured.map(sceneMarkup).join("");
     refreshTitles();
   }

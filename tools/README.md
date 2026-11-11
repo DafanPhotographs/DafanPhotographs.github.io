@@ -41,7 +41,7 @@
 2. 「配置」里填 Cloudinary **unsigned preset** 和 GitHub **fine-grained PAT**（Contents: Read and write），保存。
 3. 「新增照片」拖入照片（可多张），逐张填标题/描述/地点。
 4. 「现有照片」可直接改文字/地点，或删除。
-5. 「首页精选」选 3 张。
+5. 「首页精选」选 1–5 张（至少 1 张）。
 6. 点「上传并发布」：上传 Cloudinary + 提交 `data/photos.json`，1–2 分钟后线上生效。
 
 ## 注意

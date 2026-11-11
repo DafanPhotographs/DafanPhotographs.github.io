@@ -3,6 +3,12 @@ const { test, expect } = require("@playwright/test");
 
 const PHOTO = "/photography/";
 
+async function readData(request) {
+  const response = await request.get("/data/photos.json");
+  expect(response.ok()).toBe(true);
+  return response.json();
+}
+
 async function jump(page, y) {
   await page.evaluate((yy) => {
     if (window.__lenis) window.__lenis.scrollTo(yy, { immediate: true, force: true });
@@ -13,12 +19,13 @@ async function jump(page, y) {
 }
 
 test.describe("Photography archive (photo-first)", () => {
-  test("desktop: 12 single photos, place filters, 3 columns, no Work nav", async ({ page }) => {
+  test("desktop: every photo, place filters, 3 columns, no Work nav", async ({ page, request }) => {
+    const data = await readData(request);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(PHOTO);
     await page.waitForLoadState("networkidle");
-    await expect(page.locator(".archive-item")).toHaveCount(12);
-    await expect(page.locator(".photo-filters .filter-btn")).toHaveCount(4);
+    await expect(page.locator(".archive-item")).toHaveCount(data.photos.length);
+    await expect(page.locator(".photo-filters .filter-btn")).toHaveCount(1 + Object.keys(data.locations).length);
     expect(await page.locator(".photography-hero__word").textContent()).toBe("PHOTOGRAPHY");
     expect(await page.locator('[data-i18n="nav.work"]').count()).toBe(0);
     const cols = await page.locator(".photography-archive .photo-col").count();
@@ -31,29 +38,39 @@ test.describe("Photography archive (photo-first)", () => {
     expect(overflow).toBe(true);
   });
 
-  test("place filter narrows the archive to one location", async ({ page }) => {
+  test("place filter narrows the archive to one location", async ({ page, request }) => {
+    const data = await readData(request);
+    const location = Object.keys(data.locations).find((key) =>
+      data.photos.some((photo) => photo.location === key)
+    );
+    expect(location).toBeTruthy();
+    const expected = data.photos.filter((photo) => photo.location === location).length;
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(PHOTO);
     await page.waitForLoadState("networkidle");
-    await page.locator('.photo-filters [data-location="bipenggou"]').click();
+    await page.locator(`.photo-filters [data-location="${location}"]`).click();
     await page.waitForTimeout(400);
-    await expect(page.locator(".archive-item:not(.is-hidden)")).toHaveCount(4);
-    await expect(page.locator(".archive-item.is-hidden")).toHaveCount(8);
+    await expect(page.locator(".archive-item:not(.is-hidden)")).toHaveCount(expected);
+    await expect(page.locator(".archive-item.is-hidden")).toHaveCount(data.photos.length - expected);
     await page.locator('.photo-filters [data-location=""]').click();
     await page.waitForTimeout(300);
-    await expect(page.locator(".archive-item:not(.is-hidden)")).toHaveCount(12);
+    await expect(page.locator(".archive-item:not(.is-hidden)")).toHaveCount(data.photos.length);
   });
 
-  test("lightbox shows title, description and place; Escape closes", async ({ page }) => {
+  test("lightbox shows title, description and place; Escape closes", async ({ page, request }) => {
+    const data = await readData(request);
+    const first = data.photos[0];
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(PHOTO);
     await page.waitForLoadState("networkidle");
     await page.locator(".archive-item").first().click();
     const box = page.locator("[data-photo-lightbox]");
     await expect(box).toBeVisible();
-    await expect(page.locator("[data-lightbox-title]")).toHaveText("毕棚沟 · 01");
-    await expect(page.locator("[data-lightbox-location]")).toHaveText("毕棚沟");
-    await expect(page.locator("[data-lightbox-copy]")).toContainText("山谷");
+    await expect(page.locator("[data-lightbox-title]")).toHaveText(first.title.zh);
+    await expect(page.locator("[data-lightbox-location]")).toHaveText(data.locations[first.location].zh);
+    if (first.copy && first.copy.zh) {
+      await expect(page.locator("[data-lightbox-copy]")).toHaveText(first.copy.zh);
+    }
     await page.keyboard.press("Escape");
     await expect(box).toHaveAttribute("hidden", "");
   });
@@ -81,7 +98,8 @@ test.describe("Photography archive (photo-first)", () => {
     expect(after.y).toBeLessThan(40);
   });
 
-  test("mobile 390: 3 columns, no horizontal overflow", async ({ page }) => {
+  test("mobile 390: 3 columns, no horizontal overflow", async ({ page, request }) => {
+    const data = await readData(request);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(PHOTO);
     await page.waitForLoadState("networkidle");
@@ -92,7 +110,7 @@ test.describe("Photography archive (photo-first)", () => {
       items: document.querySelectorAll(".archive-item").length,
     }));
     expect(info.cols).toBe(3);
-    expect(info.items).toBe(12);
+    expect(info.items).toBe(data.photos.length);
     expect(info.scrollW).toBeLessThanOrEqual(info.clientW + 1);
   });
 });

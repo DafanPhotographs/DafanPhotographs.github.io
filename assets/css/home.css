@@ -111,6 +111,14 @@ html[lang="en"] .home-scene-title {
   z-index: 22;
 }
 
+.home-stage-rail--motion [data-home-scene="3"] {
+  z-index: 23;
+}
+
+.home-stage-rail--motion [data-home-scene="4"] {
+  z-index: 24;
+}
+
 .home-stage-rail--motion .featured-panel .home-scene-stage {
   height: 100%;
   min-height: 100%;

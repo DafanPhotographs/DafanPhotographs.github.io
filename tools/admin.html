@@ -118,7 +118,7 @@
     .photo-side button { padding: 4px 8px; font-size: 12px; }
     .photo-side button.feature-btn.is-featured { background: var(--ink); border-color: var(--ink); color: #fff; }
     .home-badge { font-size: 10px; padding: 2px 6px; border-radius: 999px; background: #e7f4ec; color: var(--ok); white-space: nowrap; }
-    .featured-grid-admin { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .featured-grid-admin { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
     .status { font-size: 12px; margin-top: 10px; white-space: pre-wrap; }
     .status.ok { color: var(--ok); }
     .status.err { color: var(--err); }
@@ -202,11 +202,13 @@
       </div>
 
       <div class="panel">
-        <h2>首页精选 <small>主页 3 屏，按顺序</small></h2>
+        <h2>首页精选 <small>主页 1–5 屏，按顺序</small></h2>
         <div class="featured-grid-admin">
           <label class="field"><span>第 1 屏</span><select id="feat0"></select></label>
           <label class="field"><span>第 2 屏</span><select id="feat1"></select></label>
           <label class="field"><span>第 3 屏</span><select id="feat2"></select></label>
+          <label class="field"><span>第 4 屏</span><select id="feat3"></select></label>
+          <label class="field"><span>第 5 屏</span><select id="feat4"></select></label>
         </div>
       </div>
 
@@ -426,7 +428,7 @@
         list.innerHTML = "";
         var photos = allPhotos();
         $("existingHint").textContent = photos.length
-          ? photos.length + " 张照片；首页已选 " + state.featured.length + "/3（至少 1 张、最多 3 张）。"
+          ? photos.length + " 张照片；首页已选 " + state.featured.length + "/5（至少 1 张、最多 5 张）。"
           : "还没有照片，先在上面添加。";
         photos.forEach(function (photo) {
           var edit = state.edits[photo.id] || {
@@ -495,8 +497,8 @@
               state.featured.splice(index, 1);
               setStatus("已从首页移除：" + photoTitle(photo) + "（记得发布）。", "ok");
             } else {
-              if (state.featured.length >= 3) {
-                setStatus("首页最多 3 张，当前已满。请先点掉一张标有「首页第 X 屏」的照片。", "err");
+              if (state.featured.length >= 5) {
+                setStatus("首页最多 5 张，当前已满。请先点掉一张标有「首页第 X 屏」的照片。", "err");
                 return;
               }
               state.featured.push(photo.id);
@@ -552,7 +554,7 @@
 
       function renderFeatured() {
         var options = allPhotos();
-        ["feat0", "feat1", "feat2"].forEach(function (id, index) {
+        ["feat0", "feat1", "feat2", "feat3", "feat4"].forEach(function (id, index) {
           var select = $(id);
           select.innerHTML = '<option value="">（不显示）</option>';
           options.forEach(function (photo) {
@@ -563,10 +565,10 @@
           });
           select.value = state.featured[index] || "";
           select.onchange = function () {
-            var picks = ["feat0", "feat1", "feat2"].map(function (x) { return $(x).value; }).filter(Boolean);
+            var picks = ["feat0", "feat1", "feat2", "feat3", "feat4"].map(function (x) { return $(x).value; }).filter(Boolean);
             var unique = picks.filter(function (v, i) { return picks.indexOf(v) === i; });
             if (unique.length !== picks.length) {
-              setStatus("首页三屏不能重复选择同一张照片。", "err");
+              setStatus("首页各屏不能重复选择同一张照片。", "err");
               renderFeatured();
               return;
             }
@@ -856,7 +858,7 @@
         uploaded.forEach(function (photo) { photos.push(photo); });
         var featured = state.featured.filter(function (id) {
           return photos.some(function (photo) { return photo.id === id; });
-        }).slice(0, 3);
+        }).slice(0, 5);
         return {
           cloudName: remote.cloudName || $("cloudName").value.trim() || "no7rdn4w",
           locations: state.locations,
