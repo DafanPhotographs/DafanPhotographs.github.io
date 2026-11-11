@@ -69,16 +69,19 @@
 
 /* Giant title */
 .photography-hero {
-  padding: calc(var(--header-height) + clamp(32px, 5.5vw, 72px)) clamp(16px, 2.2vw, 32px) clamp(52px, 12vh, 160px);
+  padding: calc(var(--header-height) + clamp(24px, 4.2vw, 56px)) clamp(16px, 2.2vw, 32px) clamp(20px, 3vh, 40px);
 }
 
 .photography-hero__word {
   margin: 0;
   font-family: var(--font-sans);
-  font-size: clamp(52px, 13.2vw, 208px);
+  font-size: clamp(56px, 16.6vw, 250px);
   font-weight: 600;
-  line-height: 0.8;
-  letter-spacing: -0.055em;
+  line-height: 0.78;
+  letter-spacing: -0.08em;
+  transform: scaleX(0.82) scaleY(1.3);
+  transform-origin: left center;
+  margin-bottom: 0.18em;
   color: #ececec;
   white-space: nowrap;
 }
@@ -120,7 +123,7 @@ html[lang="en"] .photography-hero__lede {
 
 /* Three-column archive, flows like the reference */
 .photography-archive {
-  margin-top: clamp(20px, 2.6vw, 36px);
+  margin-top: clamp(12px, 1.4vw, 20px);
   padding: 0 clamp(16px, 2.2vw, 32px) clamp(64px, 10vw, 140px);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -179,8 +182,10 @@ html[lang="en"] .photography-hero__lede {
   }
 
   .photography-hero__word {
-    font-size: clamp(42px, 12.4vw, 76px);
-    letter-spacing: -0.06em;
+    font-size: clamp(50px, 16.8vw, 80px);
+    letter-spacing: -0.08em;
+    transform: scaleX(0.82) scaleY(1.22);
+    margin-bottom: 0.12em;
   }
 
   .photography-hero__meta {
@@ -228,28 +233,44 @@ html[lang="en"] .photography-hero__lede {
 .photo-filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: clamp(14px, 1.8vw, 24px);
   padding: 0 clamp(16px, 2.2vw, 32px);
-  margin-top: clamp(28px, 4.5vw, 56px);
+  margin-top: clamp(14px, 2vw, 26px);
 }
 
 .photo-filters .filter-btn {
-  border: 1px solid var(--color-border, #e2dfd7);
-  background: transparent;
-  color: var(--color-text, #08090a);
-  border-radius: 999px;
-  padding: 7px 14px;
+  border: 0;
+  background: none;
+  padding: 0;
   font: inherit;
-  font-size: 13px;
+  font-size: clamp(12px, 1.05vw, 15px);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--color-text-muted, #75736d);
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition: color 0.2s ease;
 }
 
-.photo-filters .filter-btn:hover,
+.photo-filters .filter-btn:hover {
+  color: var(--color-text, #08090a);
+}
+
 .photo-filters .filter-btn.is-active {
-  background: var(--color-text, #08090a);
-  border-color: var(--color-text, #08090a);
-  color: var(--color-bg, #fff);
+  color: var(--color-text, #08090a);
+  font-weight: 600;
+}
+
+.photo-filters .filter-btn.is-active::after {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: middle;
+  transform: translateY(-2px);
 }
 
 button.archive-item {
