@@ -16,6 +16,10 @@
     "western-sichuan": {
       "en": "Western SiChuan",
       "zh": "川西"
+    },
+    "sichuan-people-s-park": {
+      "zh": "人民公园",
+      "en": "SiChuan People's Park"
     }
   },
   "featured": [
@@ -309,6 +313,272 @@
       "alt": {
         "zh": "云隙照进谷底 摄影作品",
         "en": "Light Through Cloud into the Valley photograph"
+      }
+    },
+    {
+      "id": "p-mwcbvibv-g99l",
+      "publicId": "dafan/photos/western-sichuan/p-mwcbvibv-g99l",
+      "width": 1463,
+      "height": 2600,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "谷中金顶",
+        "en": "Gold in the Valley"
+      },
+      "copy": {
+        "zh": "高处俯看，深红寺群金顶层层，一处转经亭落在底部中央。山上小红屋密到几乎没有空隙，窄路与一抹蓝车穿行其间。阴天把颜色压得沉稳，不刺眼。",
+        "en": "From above, crimson temples stack golden roofs; a prayer-wheel pavilion sits at bottom center. Small red houses pack the slope with almost no gaps; a narrow road and a blue truck thread through. Overcast light keeps the colors deep and calm."
+      },
+      "alt": {
+        "zh": "谷中金顶 摄影作品",
+        "en": "Gold in the Valley photograph"
+      }
+    },
+    {
+      "id": "p-mwcbvibj-mdq5",
+      "publicId": "dafan/photos/western-sichuan/p-mwcbvibj-mdq5",
+      "width": 1463,
+      "height": 2600,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "红袍远去",
+        "en": "Maroon Robes Ahead"
+      },
+      "copy": {
+        "zh": "一行红袍沿木廊走远，身影略有虚化。右侧金顶与龙形檐饰占住中景，彩绘与木栏细密。背后雪山压在阴云下，暖金与冷山并置，节奏慢。",
+        "en": "A line of maroon robes walks away along the wooden path, slightly soft with motion. Golden roofs and dragon eaves hold the middle right, painted details and carved rails close by. Snow peaks wait under cloud—warm gold against cold mountain, a slow rhythm."
+      },
+      "alt": {
+        "zh": "红袍远去 摄影作品",
+        "en": "Maroon Robes Ahead photograph"
+      }
+    },
+    {
+      "id": "p-mwcbvibv-dz1a",
+      "publicId": "dafan/photos/western-sichuan/p-mwcbvibv-dz1a",
+      "width": 1463,
+      "height": 2600,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "黄栏石阶",
+        "en": "Yellow Rail, Stone Steps"
+      },
+      "copy": {
+        "zh": "暗红木屋密布山坡，黄栏混凝土阶折线爬升。两名红衣身影走在中段，白灯与电线杆点缀其间。阴天光平，红与黄的对比干净，不喧闹。",
+        "en": "Dark red wooden houses pack the slope; a concrete stair with yellow rails zigzags upward. Two figures in maroon climb mid-frame; white lamps and poles sit among the roofs. Flat overcast light—red against yellow, clean and quiet."
+      },
+      "alt": {
+        "zh": "黄栏石阶 摄影作品",
+        "en": "Yellow Rail, Stone Steps photograph"
+      }
+    },
+    {
+      "id": "p-mwcbwik0-ud2j",
+      "publicId": "dafan/photos/western-sichuan/p-mwcbwik0-ud2j",
+      "width": 1463,
+      "height": 2600,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "晨昏之间",
+        "en": "Between Dawn and Dusk"
+      },
+      "copy": {
+        "zh": "天空是淡紫与淡蓝，横云带着浅粉。近处雪峰仍冷，远处那座圆顶山却被金光轻轻盖住。树影与裸岩点缀雪坡，像旅途里短暂的停顿。",
+        "en": "The sky is pale violet and blue; a band of cloud holds soft pink. Near snow stays cold, while a rounded far peak wears a light of gold. Trees and bare rock punctuate the slopes—a brief pause on the journey."
+      },
+      "alt": {
+        "zh": "晨昏之间 摄影作品",
+        "en": "Between Dawn and Dusk photograph"
+      }
+    },
+    {
+      "id": "p-mwcbxoff-ef60",
+      "publicId": "dafan/photos/western-sichuan/p-mwcbxoff-ef60",
+      "width": 1463,
+      "height": 2600,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "枯枝望湖",
+        "en": "Weathered Pine Over the Lake"
+      },
+      "copy": {
+        "zh": "前景一棵苍松，下部犹有针叶，上部枝干已银白裸露。身后是蓝绿相间的山湖，远峰隐在薄云里。树与水对望，时间感比景色更重。",
+        "en": "A weathered pine stands in front—needles still cling below, while the upper limbs turn bare and silver. Behind it, a turquoise lake and forested ridges fade into soft cloud. Tree and water face each other; time feels heavier than scenery."
+      },
+      "alt": {
+        "zh": "枯枝望湖 摄影作品",
+        "en": "Weathered Pine Over the Lake photograph"
+      }
+    },
+    {
+      "id": "p-mwcbxoff-0o4s",
+      "publicId": "dafan/photos/western-sichuan/p-mwcbxoff-0o4s",
+      "width": 1462,
+      "height": 2600,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "苔枝与碎光",
+        "en": "Lichen Branch, Glittering Water"
+      },
+      "copy": {
+        "zh": "布满苔藓的枯枝横入画面，阳光在湖蓝水面撒开细碎反光。远岸密林深暗，与近处的亮形成对照。一根旧枝，足够撑起整片闪烁。",
+        "en": "A lichen-covered bare limb cuts across the frame; sunlight breaks into countless glints on turquoise water. The far bank’s forest stays dark, sharpening the brilliance nearby. One weathered branch is enough to hold the sparkle."
+      },
+      "alt": {
+        "zh": "苔枝与碎光 摄影作品",
+        "en": "Lichen Branch, Glittering Water photograph"
+      }
+    },
+    {
+      "id": "p-mwcbzeu2-s05l",
+      "publicId": "dafan/photos/western-sichuan/p-mwcbzeu2-s05l",
+      "width": 1463,
+      "height": 2600,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "阶梯落水",
+        "en": "Tiered Fall"
+      },
+      "copy": {
+        "zh": "浅溪沿暗石台层层跌落，白线细密，苔草贴在岩沿。两岸深绿收得很紧，水声像把整条谷压成一条窄而干净的节奏。",
+        "en": "A shallow creek spills over dark stone ledges in thin white sheets, moss clinging to each lip. Dense green banks close in, turning the valley into one quiet, measured rhythm."
+      },
+      "alt": {
+        "zh": "阶梯落水 摄影作品",
+        "en": "Tiered Fall photograph"
+      }
+    },
+    {
+      "id": "p-mwcbzeu2-nmch",
+      "publicId": "dafan/photos/western-sichuan/p-mwcbzeu2-nmch",
+      "width": 1463,
+      "height": 2600,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "雨后石径",
+        "en": "Stone Path After Rain"
+      },
+      "copy": {
+        "zh": "湿透的红褐石径直伸进林深处，两侧针叶垂得很低。没有行人，只有路面上的天光，静得像一场刚停的雨。",
+        "en": "A rain-darkened reddish path runs deep into evergreens, needles hanging low. Empty of people, the stones hold only sky-glow—quiet as rain just ended."
+      },
+      "alt": {
+        "zh": "雨后石径 摄影作品",
+        "en": "Stone Path After Rain photograph"
+      }
+    },
+    {
+      "id": "p-mwcc8o0y-bta9",
+      "publicId": "dafan/photos/sichuan-people-s-park/p-mwcc8o0y-bta9",
+      "width": 1463,
+      "height": 2600,
+      "location": "sichuan-people-s-park",
+      "title": {
+        "zh": "秋径上的一辆蓝车",
+        "en": "A Blue Bike on the Autumn Bend"
+      },
+      "copy": {
+        "zh": "沥青小径在秋色里转弯，白衣骑手推着一辆青绿单车缓缓前行。金黄枝叶占满画面上方，像把午后轻轻框住。",
+        "en": "An asphalt path bends through autumn; a rider in white guides a turquoise bike along the curve. Golden foliage fills the upper frame and softens the afternoon."
+      },
+      "alt": {
+        "zh": "秋径上的一辆蓝车 摄影作品",
+        "en": "A Blue Bike on the Autumn Bend photograph"
+      }
+    },
+    {
+      "id": "p-mwcc8o0y-08gb",
+      "publicId": "dafan/photos/sichuan-people-s-park/p-mwcc8o0y-08gb",
+      "width": 1463,
+      "height": 2600,
+      "location": "sichuan-people-s-park",
+      "title": {
+        "zh": "运河旁的秋列",
+        "en": "Autumn Line by the Canal"
+      },
+      "copy": {
+        "zh": "前景叶片虚成绿框，运河贴着锈红水杉向前延伸。远处拱桥与行人很小，整条岸线像被季节整齐排过一遍。",
+        "en": "Blurred leaves frame a canal that runs beside a line of rust-red dawn redwoods. A distant arch bridge and small figures keep the bank orderly and seasonal."
+      },
+      "alt": {
+        "zh": "运河旁的秋列 摄影作品",
+        "en": "Autumn Line by the Canal photograph"
+      }
+    },
+    {
+      "id": "p-mwcc8nxn-xr2k",
+      "publicId": "dafan/photos/sichuan-people-s-park/p-mwcc8nxn-xr2k",
+      "width": 1463,
+      "height": 2600,
+      "location": "sichuan-people-s-park",
+      "title": {
+        "zh": "湖岸秋日闲步",
+        "en": "Lakeside Afternoon Walk"
+      },
+      "copy": {
+        "zh": "红褐步道上人影疏落，童帽一抹红。树影横铺路面，黄绿枝叶交叠成廊，午后被慢慢走散。",
+        "en": "Sparse figures move along a reddish lakeside path, a child’s red hat bright in the light. Tree shadows stripe the ground beneath a yellow-green canopy."
+      },
+      "alt": {
+        "zh": "湖岸秋日闲步 摄影作品",
+        "en": "Lakeside Afternoon Walk photograph"
+      }
+    },
+    {
+      "id": "p-mwcca7ql-bk8u",
+      "publicId": "dafan/photos/western-sichuan/p-mwcca7ql-bk8u",
+      "width": 2600,
+      "height": 1462,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "圆日与粉蓝交界",
+        "en": "Round Sun at the Pink-Blue Edge"
+      },
+      "copy": {
+        "zh": "正圆太阳贴在薄云上，上方金橙，下方山海沉入粉紫与靛蓝。高处视野把黎明压成一条干净的色带。",
+        "en": "A round sun sits on thin cloud—gold above, mountains sinking into pink-violet and indigo below. Height reduces dawn to one clean band of color."
+      },
+      "alt": {
+        "zh": "圆日与粉蓝交界 摄影作品",
+        "en": "Round Sun at the Pink-Blue Edge photograph"
+      }
+    },
+    {
+      "id": "p-mwcca7qm-0oep",
+      "publicId": "dafan/photos/western-sichuan/p-mwcca7qm-0oep",
+      "width": 2600,
+      "height": 1463,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "日照金山",
+        "en": "Alpenglow on the Range"
+      },
+      "copy": {
+        "zh": "暗云压顶，雪峰一线被橘金点亮，腰间缠着薄雾。冷调山谷衬出那几分钟的暖，像一天里最短的庆典。",
+        "en": "Dark cloud above, a line of snow peaks lit gold-orange, mist at their waists. Cool valleys frame those few warm minutes like a brief rite of day."
+      },
+      "alt": {
+        "zh": "日照金山 摄影作品",
+        "en": "Alpenglow on the Range photograph"
+      }
+    },
+    {
+      "id": "p-mwcca7s9-t2ap",
+      "publicId": "dafan/photos/western-sichuan/p-mwcca7s9-t2ap",
+      "width": 2600,
+      "height": 1463,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "浅水与雪脊",
+        "en": "Shallow Water, Snow Ridges"
+      },
+      "copy": {
+        "zh": "灰褐高原上，浅水洼旁站着极小的人影。雪峰贴着低云横贯，天空苍白，尺度被风重新量过。",
+        "en": "Tiny figures stand by a shallow pool on grey-brown highland. Snow ridges run under low cloud; a pale sky recalibrates the scale."
+      },
+      "alt": {
+        "zh": "浅水与雪脊 摄影作品",
+        "en": "Shallow Water, Snow Ridges photograph"
       }
     }
   ]
