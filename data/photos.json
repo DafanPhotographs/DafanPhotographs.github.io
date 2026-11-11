@@ -16,8 +16,7 @@
   },
   "featured": [
     "bipenggou-cover",
-    "emeishan-cover",
-    "qingdao-cover"
+    "p-mwc9kz2n-06r0"
   ],
   "photos": [
     {
@@ -40,174 +39,22 @@
       }
     },
     {
-      "id": "bipenggou-02",
-      "publicId": "dafan/series/bipenggou/02",
-      "width": 2400,
-      "height": 1600,
+      "id": "p-mwc9kz2n-06r0",
+      "publicId": "dafan/photos/bipenggou/p-mwc9kz2n-06r0",
+      "width": 2600,
+      "height": 1462,
       "location": "bipenggou",
       "title": {
-        "zh": "毕棚沟 · 02",
-        "en": "Bipenggou · 02"
+        "zh": "红枫映水",
+        "en": "Red Maple on Still Water"
       },
       "copy": {
-        "zh": "山谷与林线之间的薄雾与冷色光线。",
-        "en": "Mist and cool light between the valley and the treeline."
+        "zh": "左岸金黄落叶松中夹一棵深红，右侧有矮岛灌丛。峰顶雾雪交叠，湖面几乎无纹。一点红，整幅冷调才有了温度。",
+        "en": "Among golden larches on the left, one deep red crown; a low brushy islet to the right. Mist and snow on the peaks; water nearly glass. One red note warms the whole cool frame."
       },
       "alt": {
-        "zh": "毕棚沟 · 02 摄影作品",
-        "en": "Bipenggou · 02 photograph"
-      }
-    },
-    {
-      "id": "bipenggou-03",
-      "publicId": "dafan/series/bipenggou/03",
-      "width": 2400,
-      "height": 1600,
-      "location": "bipenggou",
-      "title": {
-        "zh": "毕棚沟 · 03",
-        "en": "Bipenggou · 03"
-      },
-      "copy": {
-        "zh": "山谷与林线之间的薄雾与冷色光线。",
-        "en": "Mist and cool light between the valley and the treeline."
-      },
-      "alt": {
-        "zh": "毕棚沟 · 03 摄影作品",
-        "en": "Bipenggou · 03 photograph"
-      }
-    },
-    {
-      "id": "bipenggou-04",
-      "publicId": "dafan/series/bipenggou/04",
-      "width": 2400,
-      "height": 1600,
-      "location": "bipenggou",
-      "title": {
-        "zh": "毕棚沟 · 04",
-        "en": "Bipenggou · 04"
-      },
-      "copy": {
-        "zh": "山谷与林线之间的薄雾与冷色光线。",
-        "en": "Mist and cool light between the valley and the treeline."
-      },
-      "alt": {
-        "zh": "毕棚沟 · 04 摄影作品",
-        "en": "Bipenggou · 04 photograph"
-      }
-    },
-    {
-      "id": "emeishan-cover",
-      "publicId": "dafan/series/emeishan/cover",
-      "width": 2400,
-      "height": 1600,
-      "location": "emeishan",
-      "title": {
-        "zh": "峨眉山 · 01",
-        "en": "Mount Emei · 01"
-      },
-      "copy": {
-        "zh": "山线与云海之间，缓慢攀登的一程。",
-        "en": "Ridgelines and sea of clouds—a slow climb."
-      },
-      "alt": {
-        "zh": "峨眉山 · 01 摄影作品",
-        "en": "Mount Emei · 01 photograph"
-      }
-    },
-    {
-      "id": "emeishan-02",
-      "publicId": "dafan/series/emeishan/02",
-      "width": 2400,
-      "height": 1600,
-      "location": "emeishan",
-      "title": {
-        "zh": "峨眉山 · 02",
-        "en": "Mount Emei · 02"
-      },
-      "copy": {
-        "zh": "山线与云海之间，缓慢攀登的一程。",
-        "en": "Ridgelines and sea of clouds—a slow climb."
-      },
-      "alt": {
-        "zh": "峨眉山 · 02 摄影作品",
-        "en": "Mount Emei · 02 photograph"
-      }
-    },
-    {
-      "id": "qingdao-cover",
-      "publicId": "dafan/series/qingdao/cover",
-      "width": 2400,
-      "height": 1600,
-      "location": "qingdao",
-      "title": {
-        "zh": "青岛 · 01",
-        "en": "Qingdao · 01"
-      },
-      "copy": {
-        "zh": "海风、岸线与城市霓虹交叠的一段路。",
-        "en": "Sea breeze, shoreline, and city light along the route."
-      },
-      "alt": {
-        "zh": "青岛 · 01 摄影作品",
-        "en": "Qingdao · 01 photograph"
-      }
-    },
-    {
-      "id": "qingdao-02",
-      "publicId": "dafan/series/qingdao/02",
-      "width": 2400,
-      "height": 1600,
-      "location": "qingdao",
-      "title": {
-        "zh": "青岛 · 02",
-        "en": "Qingdao · 02"
-      },
-      "copy": {
-        "zh": "海风、岸线与城市霓虹交叠的一段路。",
-        "en": "Sea breeze, shoreline, and city light along the route."
-      },
-      "alt": {
-        "zh": "青岛 · 02 摄影作品",
-        "en": "Qingdao · 02 photograph"
-      }
-    },
-    {
-      "id": "qingdao-03",
-      "publicId": "dafan/series/qingdao/03",
-      "width": 2400,
-      "height": 1600,
-      "location": "qingdao",
-      "title": {
-        "zh": "青岛 · 03",
-        "en": "Qingdao · 03"
-      },
-      "copy": {
-        "zh": "海风、岸线与城市霓虹交叠的一段路。",
-        "en": "Sea breeze, shoreline, and city light along the route."
-      },
-      "alt": {
-        "zh": "青岛 · 03 摄影作品",
-        "en": "Qingdao · 03 photograph"
-      }
-    },
-    {
-      "id": "qingdao-04",
-      "publicId": "dafan/series/qingdao/04",
-      "width": 2400,
-      "height": 1600,
-      "location": "qingdao",
-      "title": {
-        "zh": "青岛 · 04",
-        "en": "Qingdao · 04"
-      },
-      "copy": {
-        "zh": "海风、岸线与城市霓虹交叠的一段路。",
-        "en": "Sea breeze, shoreline, and city light along the route."
-      },
-      "alt": {
-        "zh": "青岛 · 04 摄影作品",
-        "en": "Qingdao · 04 photograph"
+        "zh": "红枫映水 摄影作品",
+        "en": "Red Maple on Still Water photograph"
       }
     }
   ]
