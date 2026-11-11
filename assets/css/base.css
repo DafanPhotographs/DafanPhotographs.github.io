@@ -755,10 +755,6 @@ html[lang="en"] .lang-zh-only {
 /* Cross-document page transition: old page slides up, new page rises from below
    (matches the reference site's tab switch). Unsupported browsers simply
    navigate normally. */
-@view-transition {
-  navigation: auto;
-}
-
 @keyframes page-slide-out {
   to { transform: translateY(-100%); }
 }
