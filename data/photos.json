@@ -135,44 +135,6 @@
       }
     },
     {
-      "id": "emeishan-03",
-      "publicId": "dafan/series/emeishan/03",
-      "width": 2400,
-      "height": 1600,
-      "location": "emeishan",
-      "title": {
-        "zh": "峨眉山 · 03",
-        "en": "Mount Emei · 03"
-      },
-      "copy": {
-        "zh": "山线与云海之间，缓慢攀登的一程。",
-        "en": "Ridgelines and sea of clouds—a slow climb."
-      },
-      "alt": {
-        "zh": "峨眉山 · 03 摄影作品",
-        "en": "Mount Emei · 03 photograph"
-      }
-    },
-    {
-      "id": "emeishan-04",
-      "publicId": "dafan/series/emeishan/04",
-      "width": 2400,
-      "height": 1600,
-      "location": "emeishan",
-      "title": {
-        "zh": "峨眉山 · 04",
-        "en": "Mount Emei · 04"
-      },
-      "copy": {
-        "zh": "山线与云海之间，缓慢攀登的一程。",
-        "en": "Ridgelines and sea of clouds—a slow climb."
-      },
-      "alt": {
-        "zh": "峨眉山 · 04 摄影作品",
-        "en": "Mount Emei · 04 photograph"
-      }
-    },
-    {
       "id": "qingdao-cover",
       "publicId": "dafan/series/qingdao/cover",
       "width": 2400,
