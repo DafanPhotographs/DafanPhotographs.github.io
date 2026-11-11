@@ -19,11 +19,11 @@
     }
   },
   "featured": [
-    "p-mwc9u80f-so8d",
-    "p-mwcaf3ct-iihd",
     "p-mwcafxfv-v7d3",
-    "p-mwcam6ou-cjxf",
-    "p-mwcamk5x-lkub"
+    "p-mwc9qdyi-muy2",
+    "p-mwcamk5x-lkub",
+    "bipenggou-cover",
+    "p-mwcam6ou-cjxf"
   ],
   "photos": [
     {
@@ -271,6 +271,44 @@
       "alt": {
         "zh": "五月的风 摄影作品",
         "en": "May Wind by the Shore photograph"
+      }
+    },
+    {
+      "id": "p-mwcat1bv-l42j",
+      "publicId": "dafan/photos/bipenggou/p-mwcat1bv-l42j",
+      "width": 2600,
+      "height": 1462,
+      "location": "bipenggou",
+      "title": {
+        "zh": "云下湖城",
+        "en": "Town under Clouds by the Lake"
+      },
+      "copy": {
+        "zh": "高处俯看湖湾与沿岸屋舍，白云压在蓝天上。田野与山影交错，光一块暗一块，像风刚吹过云层。",
+        "en": "From high ground, a lake bay and shoreline houses sit under white clouds on blue. Fields and hills patch light and shade—as if wind just moved the cloud."
+      },
+      "alt": {
+        "zh": "云下湖城 摄影作品",
+        "en": "Town under Clouds by the Lake photograph"
+      }
+    },
+    {
+      "id": "p-mwcavjrz-n18o",
+      "publicId": "dafan/photos/western-sichuan/p-mwcavjrz-n18o",
+      "width": 1463,
+      "height": 2600,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "云隙照进谷底",
+        "en": "Light Through Cloud into the Valley"
+      },
+      "copy": {
+        "zh": "头顶厚云，山坡沉在冷蓝阴影里。一束软光忽然落到谷底草场与屋舍，把翠绿托亮。路细细绕过村落，像一场短暂的晴。",
+        "en": "Thick cloud overhead; the slopes stay in cool blue shadow. Soft light falls suddenly on meadows and houses in the valley, lifting the green. A thin road winds past the settlement—a brief spell of clear weather."
+      },
+      "alt": {
+        "zh": "云隙照进谷底 摄影作品",
+        "en": "Light Through Cloud into the Valley photograph"
       }
     }
   ]
