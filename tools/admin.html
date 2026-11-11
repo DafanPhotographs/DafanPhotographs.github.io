@@ -187,7 +187,7 @@
       <div class="panel">
         <h2>新增照片 <small>可一次拖多张，第一张不会自动成为封面；每张都是独立照片</small></h2>
         <div class="dropzone" id="dropzone">
-          把照片拖到这里，或点击选择（JPG / PNG / WebP，建议长边 2400px）
+          把照片拖到这里，或点击选择（JPG / PNG / WebP，建议长边 2400px；超过 10MB 会自动压缩）
           <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple hidden />
         </div>
         <div class="photo-list" id="newList"></div>
@@ -649,6 +649,61 @@
         return btoa(binary);
       }
 
+      function formatMb(bytes) {
+        return (bytes / (1024 * 1024)).toFixed(1) + "MB";
+      }
+
+      // Cloudinary's free plan rejects files over 10MB. Downscale/re-encode
+      // in the browser before upload so a 13MB+ camera JPEG still works.
+      async function prepareUploadFile(file) {
+        var limit = 10 * 1024 * 1024 - 200 * 1024;
+        var maxDim = 2600;
+        var decoded;
+        try {
+          decoded = await createImageBitmap(file, { imageOrientation: "from-image" });
+        } catch (e1) {
+          try {
+            decoded = await createImageBitmap(file);
+          } catch (e2) {
+            decoded = await new Promise(function (resolve, reject) {
+              var url = URL.createObjectURL(file);
+              var img = new Image();
+              img.onload = function () { resolve(img); };
+              img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("图片解码失败")); };
+              img.src = url;
+            });
+          }
+        }
+        var width = decoded.width || decoded.naturalWidth;
+        var height = decoded.height || decoded.naturalHeight;
+        if (!width || !height) return file;
+        if (file.size <= limit && Math.max(width, height) <= maxDim) {
+          if (decoded.close) decoded.close();
+          return file;
+        }
+        var scale = Math.min(1, maxDim / Math.max(width, height));
+        var cw = Math.max(1, Math.round(width * scale));
+        var ch = Math.max(1, Math.round(height * scale));
+        var canvas = document.createElement("canvas");
+        canvas.width = cw;
+        canvas.height = ch;
+        var ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, cw, ch);
+        ctx.drawImage(decoded, 0, 0, cw, ch);
+        if (decoded.close) decoded.close();
+        var quality = 0.9;
+        var blob = await new Promise(function (resolve) { canvas.toBlob(resolve, "image/jpeg", quality); });
+        while (blob && blob.size > limit && quality > 0.65) {
+          quality -= 0.1;
+          var smaller = await new Promise(function (resolve) { canvas.toBlob(resolve, "image/jpeg", quality); });
+          if (smaller) blob = smaller;
+        }
+        if (!blob) return file;
+        log("压缩 " + file.name + "：" + formatMb(file.size) + " → " + formatMb(blob.size) + "（" + cw + "×" + ch + "）");
+        return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
+      }
+
       async function uploadNew() {
         var preset = $("uploadPreset").value.trim();
         var cloud = $("cloudName").value.trim();
@@ -659,8 +714,9 @@
         for (var i = 0; i < state.newPhotos.length; i += 1) {
           var photo = state.newPhotos[i];
           if (!photo.location) throw new Error("新照片请先选择地点");
+          var uploadFile = await prepareUploadFile(photo.file);
           var form = new FormData();
-          form.append("file", photo.file);
+          form.append("file", uploadFile, uploadFile.name || ("photo-" + i + ".jpg"));
           form.append("upload_preset", preset);
           form.append("folder", "dafan/photos/" + photo.location);
           form.append("public_id", photo.id);
