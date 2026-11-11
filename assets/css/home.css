@@ -3,8 +3,6 @@
 .page-home {
   /* 入场"开窗"强度：0.75 ≈ daofor 实测值；0.85 更克制，0.7 更戏剧 */
   --window-scale-from: 0.75;
-  --scene-title-size: 24px;
-  --scene-title-size-mobile: 17px;
 }
 
 .page-home .site-main--home {
@@ -22,48 +20,6 @@
   display: block;
   width: 100%;
   margin: 0;
-}
-
-/* —— Left scene title (photo rail only; difference) —— */
-.page-home .home-scene-chrome {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  padding-inline: clamp(1.25rem, 3vw, 2.5rem);
-  pointer-events: none;
-  /*
-   * The title lives inside the scene's scaled stage, so it grows/moves with the
-   * incoming photo exactly like the reference. Difference blends it against the
-   * image in the same stacking context.
-   */
-  mix-blend-mode: difference;
-}
-
-.page-home.home-past-photo-zone .home-scene-chrome {
-  visibility: hidden !important;
-}
-
-.home-scene-title-blend {
-  color: #fff;
-}
-
-.home-scene-title {
-  margin: 0;
-  font-family: var(--font-sans);
-  font-size: var(--scene-title-size);
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0;
-  max-width: min(42vw, 16rem);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-html[lang="en"] .home-scene-title {
-  letter-spacing: -0.015em;
 }
 
 /* —— Photo scenes (single-image panels) —— */
@@ -396,11 +352,6 @@ html[lang="en"] .home-closing__tagline {
 }
 
 @media (max-width: 1023.98px) {
-  .home-scene-title {
-    font-size: var(--scene-title-size-mobile);
-    max-width: 52vw;
-  }
-
   .home-closing {
     --closing-pad-x: 1.25rem;
     padding-top: calc(var(--header-height) + clamp(1.25rem, 4vw, 2rem));
