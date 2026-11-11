@@ -426,10 +426,7 @@ body.lightbox-open {
 
 .archive-media {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: -10%;
-  height: 120%;
+  inset: -13%;
   display: block;
   will-change: transform;
 }

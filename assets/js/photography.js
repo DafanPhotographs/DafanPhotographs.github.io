@@ -16,13 +16,6 @@
   var activeId = null;
   var lastTrigger = null;
 
-  var AR = [
-    { cls: "ar-45", ar: "4:5", h: 1500 },
-    { cls: "ar-11", ar: "1:1", h: 1200 },
-    { cls: "ar-32", ar: "3:2", h: 800 },
-    { cls: "ar-34", ar: "3:4", h: 1600 }
-  ];
-
   function text(value) {
     if (!value) return "";
     return value[lang] || value.zh || value.en || "";
@@ -189,19 +182,26 @@
       archive.appendChild(column);
       return column;
     });
+    // Keep each photo's own landscape/portrait ratio instead of forcing a
+    // uniform crop, and place it in whichever column is currently shortest
+    // so mixed 4:3 / 16:9 sets still read as a balanced masonry.
+    var columnHeights = [0, 0, 0];
     data.photos.forEach(function (photo, index) {
-      var spec = AR[index % AR.length];
+      var ratio = 3 / 2;
+      if (photo.width && photo.height) ratio = photo.width / photo.height;
+      ratio = Math.min(2.6, Math.max(0.75, ratio));
       var button = document.createElement("button");
       button.type = "button";
-      button.className = "archive-item " + spec.cls;
+      button.className = "archive-item";
+      button.style.aspectRatio = String(ratio);
       button.setAttribute("data-id", photo.id);
       button.setAttribute("data-location", photo.location || "");
       button.setAttribute("aria-label", text(photo.title));
       var img = document.createElement("img");
-      img.src = imageUrl(photo.publicId, "c_fill,g_auto,ar_" + spec.ar + ",w_1200,f_auto,q_auto");
+      img.src = imageUrl(photo.publicId, "c_limit,w_1200,q_auto,f_auto");
       img.alt = "";
       img.width = 1200;
-      img.height = spec.h;
+      img.height = Math.round(1200 / ratio);
       img.loading = index < 3 ? "eager" : "lazy";
       img.decoding = "async";
       var media = document.createElement("span");
@@ -212,7 +212,12 @@
         lastTrigger = button;
         openPhoto(photo.id);
       });
-      columns[index % 3].appendChild(button);
+      var target = 0;
+      for (var i = 1; i < 3; i += 1) {
+        if (columnHeights[i] < columnHeights[target]) target = i;
+      }
+      columns[target].appendChild(button);
+      columnHeights[target] += 1 / ratio + 0.03;
     });
     current = visiblePhotos();
     refreshMotion();
