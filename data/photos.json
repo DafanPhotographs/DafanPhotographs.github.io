@@ -1,12 +1,5 @@
 {
   "cloudName": "no7rdn4w",
-  "featured": [
-    "bipenggou-cover",
-    "p-mwc9kz2n-06r0",
-    "p-mwc9no4d-sreq",
-    "p-mwc9qdyi-muy2",
-    "p-mwc9svol-qeis"
-  ],
   "locations": {
     "bipenggou": {
       "en": "Bipenggou",
@@ -25,6 +18,13 @@
       "zh": "川西"
     }
   },
+  "featured": [
+    "bipenggou-cover",
+    "p-mwc9kz2n-06r0",
+    "p-mwc9no4d-sreq",
+    "p-mwc9qdyi-muy2",
+    "p-mwc9svol-qeis"
+  ],
   "photos": [
     {
       "alt": {
@@ -139,6 +139,139 @@
         "zh": "绿丘望雪峰"
       },
       "width": 2600
+    },
+    {
+      "id": "p-mwcae3qi-ezo1",
+      "publicId": "dafan/photos/western-sichuan/p-mwcae3qi-ezo1",
+      "width": 1463,
+      "height": 2600,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "雪山下的聚落",
+        "en": "Settlement Under Snow Peaks"
+      },
+      "copy": {
+        "zh": "竖构图里，下方是平顶建筑的小聚落，草坡起伏，阳光斑驳。上方岩峰覆厚雪，顶上压着暗云。人影极小，山的体量因此更沉。",
+        "en": "In a vertical frame, flat-roofed buildings sit in a green fold of hills under broken light. Above, rocky peaks hold heavy snow beneath dark cloud. A tiny figure makes the mountain mass feel absolute."
+      },
+      "alt": {
+        "zh": "雪山下的聚落 摄影作品",
+        "en": "Settlement Under Snow Peaks photograph"
+      }
+    },
+    {
+      "id": "p-mwcaf3ct-iihd",
+      "publicId": "dafan/photos/western-sichuan/p-mwcaf3ct-iihd",
+      "width": 2600,
+      "height": 1950,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "白马吃草",
+        "en": "White Horse Grazing"
+      },
+      "copy": {
+        "zh": "一匹浅白马低头吃草，红缰绳拖在地上。背后是起伏绿丘与覆雪岩峰，厚云压顶。马很小，山很大，安静却不冷清。",
+        "en": "A pale horse grazes with its head down, a thin red lead trailing on the grass. Rolling green hills lead to snow-capped crags under heavy cloud. Small horse, large mountain—quiet without emptiness."
+      },
+      "alt": {
+        "zh": "白马吃草 摄影作品",
+        "en": "White Horse Grazing photograph"
+      }
+    },
+    {
+      "id": "p-mwcafxfv-v7d3",
+      "publicId": "dafan/photos/western-sichuan/p-mwcafxfv-v7d3",
+      "width": 2600,
+      "height": 1950,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "牵马过脊",
+        "en": "Leading a Horse Across the Ridge"
+      },
+      "copy": {
+        "zh": "草坡斜切画面，坡顶一人牵着红棕马缓行。黄花点在近处草间，大半幅是白亮的低云。人与马只占一线，旅途被缩成一个剪影。",
+        "en": "A grassy slope cuts diagonally; on the crest a figure leads a reddish-brown horse. Yellow flowers dot the near grass; bright low cloud fills most of the frame. Person and horse become a thin silhouette of the journey."
+      },
+      "alt": {
+        "zh": "牵马过脊 摄影作品",
+        "en": "Leading a Horse Across the Ridge photograph"
+      }
+    },
+    {
+      "id": "p-mwcai1fw-ofk7",
+      "publicId": "dafan/photos/western-sichuan/p-mwcai1fw-ofk7",
+      "width": 1463,
+      "height": 2600,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "盘山长路",
+        "en": "Long Road"
+      },
+      "copy": {
+        "zh": "双车道柏油路呈 S 形爬升，黄线白线清晰，路面有横向减速标线。几辆车疏落地往前开，两侧是绿褐草坡与远山。竖幅把「还要走很久」说得很直白。",
+        "en": "A two-lane road climbs in an S-curve, yellow and white lines clean, rumble strips across the asphalt. A few cars spaced far apart; green-brown slopes and distant peaks on both sides. The vertical frame says plainly: a long way yet."
+      },
+      "alt": {
+        "zh": "盘山长路 摄影作品",
+        "en": "Long Road photograph"
+      }
+    },
+    {
+      "id": "p-mwcal2f4-5mnd",
+      "publicId": "dafan/photos/qingdao/p-mwcal2f4-5mnd",
+      "width": 2600,
+      "height": 1950,
+      "location": "qingdao",
+      "title": {
+        "zh": "桨板与岸线",
+        "en": "Paddleboard Against the Shoreline"
+      },
+      "copy": {
+        "zh": "前景暗礁与青苔，一人立在蓝桨板上。对岸红瓦洋房、白圆建筑与摩天轮、玻璃高楼并排。海城交界，像把休闲写进天际线。",
+        "en": "Dark mossy rocks in front; one figure upright on a blue paddleboard. Across the water: red-tiled villas, a white round building, Ferris wheel, glass towers. Shore and city meeting—leisure written into the skyline."
+      },
+      "alt": {
+        "zh": "桨板与岸线 摄影作品",
+        "en": "Paddleboard Against the Shoreline photograph"
+      }
+    },
+    {
+      "id": "p-mwcam6ou-cjxf",
+      "publicId": "dafan/photos/qingdao/p-mwcam6ou-cjxf",
+      "width": 2600,
+      "height": 1950,
+      "location": "qingdao",
+      "title": {
+        "zh": "红篷小艇",
+        "en": "Red Canopies in Rows"
+      },
+      "copy": {
+        "zh": "俯看港池，红篷白壳小艇排成整齐行列。后方白灰游艇与岸上楼群。深蓝水面映着船体，秩序感干净。",
+        "en": "From above, red-canopy white boats dock in neat rows. Larger yachts and shore towers behind. Deep blue mirrors the hulls—order kept clean."
+      },
+      "alt": {
+        "zh": "红篷小艇 摄影作品",
+        "en": "Red Canopies in Rows photograph"
+      }
+    },
+    {
+      "id": "p-mwcamk5x-lkub",
+      "publicId": "dafan/photos/qingdao/p-mwcamk5x-lkub",
+      "width": 2600,
+      "height": 1950,
+      "location": "qingdao",
+      "title": {
+        "zh": "五月的风",
+        "en": "May Wind by the Shore"
+      },
+      "copy": {
+        "zh": "前景海面飞起一群鸥，岸线绿树与红色螺旋雕塑醒目。玻璃高楼与红顶住宅挤在天际。蓝天干净，像把城市海风写成一张明信片。",
+        "en": "Gulls lift over teal water; green shore and the red May Wind coil clear. Glass towers and red-roof residences on the skyline. Clean blue—city sea breeze as a postcard."
+      },
+      "alt": {
+        "zh": "五月的风 摄影作品",
+        "en": "May Wind by the Shore photograph"
+      }
     }
   ]
 }
