@@ -687,30 +687,67 @@
       async function commitPhotos(jsonText, message) {
         var cfg = ghCfg();
         if (!cfg.token) throw new Error("缺少 GitHub PAT（或下载 JSON 手动提交）");
-        var path = "data/photos.json";
+        if (!cfg.owner || !cfg.repo) throw new Error("缺少 GitHub owner / repo");
         var headers = {
           Authorization: "Bearer " + cfg.token,
           Accept: "application/vnd.github+json",
-          "X-GitHub-Api-Version": "2022-11-28"
+          "X-GitHub-Api-Version": "2022-11-28",
+          "Content-Type": "application/json"
         };
-        var getUrl = API + cfg.owner + "/" + cfg.repo + "/contents/" + path + "?ref=" + encodeURIComponent(cfg.branch);
-        var existing = await fetch(getUrl, { headers: headers });
-        var sha = null;
-        if (existing.ok) sha = (await existing.json()).sha;
-        var body = {
-          message: message,
-          content: toBase64(jsonText),
-          branch: cfg.branch
-        };
-        if (sha) body.sha = sha;
-        var put = await fetch(API + cfg.owner + "/" + cfg.repo + "/contents/" + path, {
-          method: "PUT",
-          headers: headers,
-          body: JSON.stringify(body)
+        var base = API + cfg.owner + "/" + cfg.repo;
+
+        async function call(url, options) {
+          var res = await fetch(url, Object.assign({ headers: headers }, options || {}));
+          var body = await res.json().catch(function () { return {}; });
+          return { ok: res.ok, status: res.status, body: body };
+        }
+
+        // Use the Git Data API (blob → tree → commit → ref) instead of the
+        // Contents API, which requires the current file "sha" and fails with
+        // 422 when that lookup is stale. This path only needs Contents write.
+        var ref = await call(base + "/git/ref/heads/" + encodeURIComponent(cfg.branch));
+        if (!ref.ok) {
+          throw new Error(
+            "读取分支失败（" + ref.status + "）：" + (ref.body.message || "未知错误") +
+            "。请检查 owner / 仓库 / 分支名，以及 PAT 是否有 Contents: Read and write"
+          );
+        }
+        var parentSha = ref.body.object && ref.body.object.sha;
+        if (!parentSha) throw new Error("读取分支失败：返回里没有 commit sha");
+
+        var parent = await call(base + "/git/commits/" + parentSha);
+        if (!parent.ok) throw new Error("读取提交失败（" + parent.status + "）：" + (parent.body.message || "未知错误"));
+        var baseTree = parent.body.tree && parent.body.tree.sha;
+        if (!baseTree) throw new Error("读取提交失败：返回里没有 tree sha");
+
+        var blob = await call(base + "/git/blobs", {
+          method: "POST",
+          body: JSON.stringify({ content: toBase64(jsonText), encoding: "base64" })
         });
-        var result = await put.json().catch(function () { return {}; });
-        if (!put.ok) throw new Error("GitHub 提交失败（" + put.status + "）：" + (result.message || "未知错误"));
-        return result.commit && result.commit.sha ? result.commit.sha : "ok";
+        if (!blob.ok) throw new Error("创建 blob 失败（" + blob.status + "）：" + (blob.body.message || "未知错误"));
+
+        var tree = await call(base + "/git/trees", {
+          method: "POST",
+          body: JSON.stringify({
+            base_tree: baseTree,
+            tree: [{ path: "data/photos.json", mode: "100644", type: "blob", sha: blob.body.sha }]
+          })
+        });
+        if (!tree.ok) throw new Error("创建 tree 失败（" + tree.status + "）：" + (tree.body.message || "未知错误"));
+
+        var commit = await call(base + "/git/commits", {
+          method: "POST",
+          body: JSON.stringify({ message: message, tree: tree.body.sha, parents: [parentSha] })
+        });
+        if (!commit.ok) throw new Error("创建 commit 失败（" + commit.status + "）：" + (commit.body.message || "未知错误"));
+
+        var updated = await call(base + "/git/refs/heads/" + encodeURIComponent(cfg.branch), {
+          method: "PATCH",
+          body: JSON.stringify({ sha: commit.body.sha, force: false })
+        });
+        if (!updated.ok) throw new Error("更新分支失败（" + updated.status + "）：" + (updated.body.message || "未知错误"));
+
+        return commit.body.sha;
       }
 
       function buildFinal(remote, uploaded) {
