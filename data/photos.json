@@ -12,11 +12,16 @@
     "qingdao": {
       "zh": "青岛",
       "en": "Qingdao"
+    },
+    "western-sichuan": {
+      "zh": "川西",
+      "en": "Western SiChuan"
     }
   },
   "featured": [
     "bipenggou-cover",
-    "p-mwc9kz2n-06r0"
+    "p-mwc9kz2n-06r0",
+    "p-mwc9no4d-sreq"
   ],
   "photos": [
     {
@@ -26,12 +31,12 @@
       "height": 1600,
       "location": "bipenggou",
       "title": {
-        "zh": "毕棚沟 · 01",
-        "en": "Bipenggou · 01"
+        "zh": "雾谷映湖",
+        "en": "Mist Valley, Mirror Lake"
       },
       "copy": {
-        "zh": "山谷与林线之间的薄雾与冷色光线。",
-        "en": "Mist and cool light between the valley and the treeline."
+        "zh": "湖面如镜，倒映秋色与雾中山脊。右岸陡壁旁停着一辆绿白巴士，中景有几辆白车。初雪贴着峰线，旅途的痕迹很小，山色很大。",
+        "en": "Glass-calm water mirrors autumn trees and misted ridges. A green-and-white coach sits by the cliff road; a few white cars further in. First snow along the peaks—travel traces small, the mountain large."
       },
       "alt": {
         "zh": "毕棚沟 · 01 摄影作品",
@@ -55,6 +60,82 @@
       "alt": {
         "zh": "红枫映水 摄影作品",
         "en": "Red Maple on Still Water photograph"
+      }
+    },
+    {
+      "id": "p-mwc9no4d-sreq",
+      "publicId": "dafan/photos/bipenggou/p-mwc9no4d-sreq",
+      "width": 2600,
+      "height": 1463,
+      "location": "bipenggou",
+      "title": {
+        "zh": "雪岸红心",
+        "en": "Red Heart on Snow Shore"
+      },
+      "copy": {
+        "zh": "前景新雪与枯草，中景静湖与金黄针叶林。岸左一枚大红心形装置，游人彩色衣点散落。远山入雾，一点红把冷场轻轻点醒。",
+        "en": "Fresh snow and dry grass in front; still lake and golden conifers mid-frame. A large red heart sculpture on the left shore; colorful walkers scattered. Far peaks in mist—one red note waking the cold."
+      },
+      "alt": {
+        "zh": "雪岸红心 摄影作品",
+        "en": "Red Heart on Snow Shore photograph"
+      }
+    },
+    {
+      "id": "p-mwc9qdyi-muy2",
+      "publicId": "dafan/photos/western-sichuan/p-mwc9qdyi-muy2",
+      "width": 2600,
+      "height": 1950,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "黄衣行者",
+        "en": "Walker in Yellow"
+      },
+      "copy": {
+        "zh": "绿坡上一条细土路，左下有穿亮黄外套的行人。后方岩峰与雪线被雾气遮住大半，天色白茫。一点高亮衣色，整幅山才有了尺度。",
+        "en": "A thin dirt path crosses the green slope; lower left, a walker in a bright yellow jacket. Rocky peaks and snow behind dissolve into mist under a white sky. That one high note of color sets the mountain’s scale."
+      },
+      "alt": {
+        "zh": "黄衣行者 摄影作品",
+        "en": "Walker in Yellow photograph"
+      }
+    },
+    {
+      "id": "p-mwc9svol-qeis",
+      "publicId": "dafan/photos/western-sichuan/p-mwc9svol-qeis",
+      "width": 2600,
+      "height": 1950,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "雪峰下的湖与路",
+        "en": "Turquoise Water, Snow Ridges"
+      },
+      "copy": {
+        "zh": "湖面呈淡青，近岸灌丛压在暗影里。对岸草甸窄窄一条，再往后是带雪的岩峰与层积云。风不大，水色静，山体的阴影把高处的冷意写得很清楚。",
+        "en": "Pale turquoise water fills the foreground, scrub dark along the near shore. A thin meadow sits before rocky peaks patched with snow and piled cumulus. Little wind; the quiet surface and mountain shade make the altitude feel sharp and still."
+      },
+      "alt": {
+        "zh": "雪峰下的湖与路 摄影作品",
+        "en": "Turquoise Water, Snow Ridges photograph"
+      }
+    },
+    {
+      "id": "p-mwc9u80f-so8d",
+      "publicId": "dafan/photos/western-sichuan/p-mwc9u80f-so8d",
+      "width": 2600,
+      "height": 1950,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "绿丘望雪峰",
+        "en": "Green Hill Toward Snow"
+      },
+      "copy": {
+        "zh": "前景大片绿丘，小路蜿蜒，几棵矮树点缀。左后方雪峰明亮，白云贴着山腰，头顶蓝天开朗。阴天之后的这一口气，山色一下子透亮。",
+        "en": "A broad green hill fills the front, a faint path winding past a few small trees. Left rear, a snow peak brightens; white cloud hugs the mid-slope under clear blue. After grey weather, the mountain suddenly breathes light."
+      },
+      "alt": {
+        "zh": "绿丘望雪峰 摄影作品",
+        "en": "Green Hill Toward Snow photograph"
       }
     }
   ]
