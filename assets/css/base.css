@@ -751,3 +751,39 @@ html[lang="en"] .lang-zh-only {
 [data-lang-only]:not(.is-shown) {
   display: none !important;
 }
+
+/* Cross-document page transition: old page slides up, new page rises from below
+   (matches the reference site's tab switch). Unsupported browsers simply
+   navigate normally. */
+@view-transition {
+  navigation: auto;
+}
+
+@keyframes page-slide-out {
+  to { transform: translateY(-100%); }
+}
+
+@keyframes page-slide-in {
+  from { transform: translateY(100%); }
+}
+
+::view-transition-old(root) {
+  animation: page-slide-out 1.25s cubic-bezier(0.55, 0.085, 0.68, 0.53) both;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  animation: page-slide-in 1.25s cubic-bezier(0.55, 0.085, 0.68, 0.53) both;
+  mix-blend-mode: normal;
+}
+
+::view-transition-image-pair(root) {
+  isolation: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}

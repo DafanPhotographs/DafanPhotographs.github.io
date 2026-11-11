@@ -199,3 +199,34 @@
 .back-link:hover {
   color: var(--color-text);
 }
+
+/* Subpage headers match the home header metrics (padding + lang type). */
+@media (min-width: 768px) {
+  .page-about .site-header .header-inner,
+  .page-contact .site-header .header-inner {
+    max-width: none;
+    margin: 0;
+    width: 100%;
+    padding: 0 var(--header-pad-x, var(--page-margin));
+  }
+
+  .page-about .site-header .lang-switch,
+  .page-contact .site-header .lang-switch {
+    font-size: var(--type-nav);
+    font-weight: var(--type-nav-weight);
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1199.98px) {
+  .page-about .site-header .header-inner,
+  .page-contact .site-header .header-inner {
+    padding-inline: var(--header-pad-x-md, 2rem);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .page-about .site-header .header-inner,
+  .page-contact .site-header .header-inner {
+    padding-block: 0;
+  }
+}
