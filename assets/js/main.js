@@ -1,15 +1,4 @@
 (function () {
-  function initPageTransition() {
-    // Opt in only for real users: automated browsers (Playwright) skip the
-    // cross-document slide so tests stay fast and deterministic.
-    if (navigator.webdriver) return;
-    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    var style = document.createElement("style");
-    style.setAttribute("data-page-transition", "");
-    style.textContent = "@view-transition { navigation: auto; }";
-    document.head.appendChild(style);
-  }
-
   function initFilters() {
     const root = document.querySelector("[data-filter-root]");
     if (!root) return;
@@ -88,7 +77,6 @@
   }
 
   function init() {
-    initPageTransition();
     initNavRoll();
     initFilters();
     initMailtoForm();
