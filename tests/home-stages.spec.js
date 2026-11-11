@@ -921,18 +921,24 @@ test.describe("Home fullscreen stages", () => {
     expect(innerBlend).toBe("normal");
     // the title layer must live outside the scaled stage and cover the viewport
     const placement = await page.evaluate(() => {
-      const title = document.querySelector('[data-home-scene="1"] .home-scene-title');
-      const chrome = document.querySelector('[data-home-scene="1"] .home-scene-chrome');
+      const scene = document.querySelector('[data-home-scene="0"]');
+      const title = scene.querySelector(".home-scene-title");
+      const chrome = scene.querySelector(".home-scene-chrome");
       const r = chrome.getBoundingClientRect();
+      const sr = scene.getBoundingClientRect();
       return {
         inStage: !!title.closest(".home-scene-stage"),
         chrome: [Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)],
+        scene: [Math.round(sr.x), Math.round(sr.y), Math.round(sr.width), Math.round(sr.height)],
         vw: window.innerWidth,
         vh: window.innerHeight,
       };
     });
     expect(placement.inStage).toBe(false);
-    expect(placement.chrome).toEqual([0, 0, placement.vw, placement.vh]);
+    expect(placement.chrome[0]).toBe(placement.scene[0]);
+    expect(placement.chrome[1]).toBe(placement.scene[1]);
+    expect(placement.chrome[2]).toBe(placement.vw);
+    expect(placement.chrome[3]).toBe(placement.vh);
     const y0 = await page.locator('[data-home-scene="0"] .home-scene-title').evaluate((el) => el.getBoundingClientRect().top);
     await jumpTo(page, 1350);
     await page.waitForTimeout(250);
