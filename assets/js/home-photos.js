@@ -41,11 +41,6 @@
             '</div>' +
           '</div>' +
         '</div>' +
-        '<div class="home-scene-chrome">' +
-          '<div class="home-scene-title-blend">' +
-            '<p class="home-scene-title" data-title-zh="' + escapeAttr(photo.title.zh || "") + '" data-title-en="' + escapeAttr(photo.title.en || photo.title.zh || "") + '">' + escapeHtml(title) + '</p>' +
-          '</div>' +
-        '</div>' +
       '</a>'
     );
   }
@@ -60,16 +55,6 @@
     return escapeHtml(value);
   }
 
-  function refreshTitles() {
-    grid.querySelectorAll(".home-scene").forEach(function (scene) {
-      var title = scene.querySelector(".home-scene-title");
-      if (!title) return;
-      var value = lang === "en" ? title.getAttribute("data-title-en") : title.getAttribute("data-title-zh");
-      if (value) title.textContent = value;
-      scene.setAttribute("aria-label", value || "");
-    });
-  }
-
   function render() {
     var byId = {};
     photosData.photos.forEach(function (photo) { byId[photo.id] = photo; });
@@ -79,7 +64,6 @@
     if (!featured.length) featured = photosData.photos.slice(0, 5);
     featured = featured.slice(0, 5);
     grid.innerHTML = featured.map(sceneMarkup).join("");
-    refreshTitles();
   }
 
   function load() {
@@ -100,10 +84,6 @@
       });
   }
 
-  document.addEventListener("langchange", function () {
-    lang = document.documentElement.lang || "zh";
-    if (photosData) refreshTitles();
-  });
 
   load();
 })();
