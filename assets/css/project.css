@@ -230,3 +230,54 @@
     padding-block: 0;
   }
 }
+
+
+/* Vertical hello/hi marquee — contact page (reference “practice” tab idea,
+   turned vertical). */
+.contact-marquee {
+  position: relative;
+  height: clamp(190px, 30vh, 300px);
+  overflow: hidden;
+  margin: 0 0 var(--space-8);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+}
+
+.contact-marquee__track {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  animation: contact-hello 16s linear infinite;
+  will-change: transform;
+}
+
+.contact-marquee:hover .contact-marquee__track {
+  animation-play-state: paused;
+}
+
+.contact-marquee__group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.contact-marquee__group span {
+  font-family: var(--font-sans);
+  font-size: clamp(64px, 10vw, 132px);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: #000;
+  white-space: nowrap;
+}
+
+@keyframes contact-hello {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-marquee__track {
+    animation: none;
+  }
+}
