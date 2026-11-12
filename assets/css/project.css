@@ -283,12 +283,12 @@
 }
 
 /* Desktop: the hello/hi ticker becomes a tall right-hand rail. */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .page-contact .site-main--contact {
     max-width: none;
     width: 100%;
     display: grid;
-    grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 34rem) minmax(300px, 1fr);
     gap: clamp(2rem, 5vw, 6rem);
     align-items: start;
     padding-right: 0;
@@ -318,7 +318,7 @@
   }
 
   .page-contact .contact-marquee__group span {
-    font-size: clamp(90px, 11.5vw, 210px);
+    font-size: clamp(56px, 11vw, 210px);
     line-height: 0.94;
     letter-spacing: -0.05em;
     text-align: right;
