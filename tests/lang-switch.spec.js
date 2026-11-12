@@ -164,7 +164,9 @@ test.describe("Language switch (inline preview)", () => {
     await page.goto("/photography/");
     await clickLang(page, "en");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(page.locator(".photo-filters .filter-btn").first()).toHaveText("All");
+    await expect(page.locator('[data-i18n="photography.lede"]')).toHaveText(
+      "Landscape and travel, one photograph at a time."
+    );
   });
 
   test("no-JS keeps both inline options", async ({ browser }) => {
