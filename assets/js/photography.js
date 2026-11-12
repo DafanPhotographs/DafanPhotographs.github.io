@@ -2,8 +2,8 @@
   "use strict";
 
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var mobileMql = window.matchMedia("(max-width: 767.98px)");
   var archive = document.querySelector("[data-photography-archive]");
-  var filterBar = document.querySelector("[data-photo-filters]");
   var lightbox = document.querySelector("[data-photo-lightbox]");
   if (!archive) return;
 
@@ -43,13 +43,29 @@
     return value < 0 ? 0 : value > 1 ? 1 : value;
   }
 
+  // Phones skip the scroll-linked entrance entirely: every photo is shown at
+  // full opacity and native scrolling is used.
+  function isStatic() {
+    return reduce || mobileMql.matches;
+  }
+
+  function lenisTick(time) {
+    if (lenis) lenis.raf(time * 1000);
+  }
+
   function initMotion() {
-    if (reduce) return;
+    if (lenis) {
+      if (typeof gsap !== "undefined") gsap.ticker.remove(lenisTick);
+      lenis.destroy();
+      lenis = null;
+      delete window.__lenis;
+    }
+    if (isStatic()) return;
     if (window.Lenis) {
       lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
       window.__lenis = lenis;
       if (typeof gsap !== "undefined") {
-        gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
+        gsap.ticker.add(lenisTick);
         gsap.ticker.lagSmoothing(0);
       } else {
         (function raf(time) {
@@ -59,11 +75,6 @@
       }
       lenis.on("scroll", queuePaint);
     }
-    window.addEventListener("scroll", queuePaint, { passive: true });
-    window.addEventListener("resize", function () {
-      measureItems();
-      paint();
-    });
   }
 
   // Measure once with transforms off, then map every photo's viewport
@@ -87,7 +98,7 @@
   }
 
   function paint() {
-    if (reduce) return;
+    if (isStatic()) return;
     var scroll = window.scrollY || 0;
     itemStates.forEach(function (state) {
       var top = state.docTop - scroll;
@@ -116,7 +127,7 @@
   }
 
   function refreshMotion() {
-    if (reduce) {
+    if (isStatic()) {
       archive.querySelectorAll(".archive-item").forEach(function (el) {
         el.style.opacity = "1";
         el.style.transform = "none";
@@ -127,51 +138,6 @@
     }
     measureItems();
     paint();
-  }
-
-  function renderFilters() {
-    if (!filterBar) return;
-    var currentFilter = filterBar.querySelector(".is-active");
-    var active = currentFilter ? currentFilter.getAttribute("data-location") : "";
-    filterBar.innerHTML = "";
-    var all = document.createElement("button");
-    all.type = "button";
-    all.className = "filter-btn";
-    all.setAttribute("data-location", "");
-    all.textContent = lang === "en" ? "All" : "全部";
-    filterBar.appendChild(all);
-    Object.keys(data.locations || {}).forEach(function (key) {
-      var button = document.createElement("button");
-      button.type = "button";
-      button.className = "filter-btn";
-      button.setAttribute("data-location", key);
-      button.textContent = text(data.locations[key]);
-      filterBar.appendChild(button);
-    });
-    var chosen = filterBar.querySelector('[data-location="' + active + '"]') || all;
-    chosen.classList.add("is-active");
-    filterBar.querySelectorAll("button").forEach(function (button) {
-      button.setAttribute("aria-pressed", button === chosen ? "true" : "false");
-      button.addEventListener("click", function () {
-        setFilter(button.getAttribute("data-location"), button);
-      });
-    });
-  }
-
-  function setFilter(location, button) {
-    filterBar.querySelectorAll("button").forEach(function (item) {
-      var on = item === button;
-      item.classList.toggle("is-active", on);
-      item.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-    archive.querySelectorAll(".archive-item").forEach(function (item) {
-      var hide = !!location && item.getAttribute("data-location") !== location;
-      item.classList.toggle("is-hidden", hide);
-      item.setAttribute("aria-hidden", hide ? "true" : "false");
-      item.tabIndex = hide ? -1 : 0;
-    });
-    current = visiblePhotos();
-    refreshMotion();
   }
 
   function renderArchive() {
@@ -289,7 +255,6 @@
   function applyLang() {
     lang = document.documentElement.lang || "zh";
     if (!data) return;
-    renderFilters();
     renderArchive();
     if (activeId && lightbox && !lightbox.hidden) {
       var photo = photoById(activeId);
@@ -300,6 +265,15 @@
   function boot() {
     initMotion();
     bindLightbox();
+    window.addEventListener("scroll", queuePaint, { passive: true });
+    window.addEventListener("resize", function () {
+      measureItems();
+      paint();
+    });
+    mobileMql.addEventListener("change", function () {
+      initMotion();
+      refreshMotion();
+    });
     fetch(new URL("../data/photos.json", location.href), { cache: "no-store" })
       .then(function (response) {
         if (!response.ok) throw new Error("HTTP " + response.status);
@@ -307,8 +281,7 @@
       })
       .then(function (payload) {
         data = payload;
-        renderFilters();
-        renderArchive();
+            renderArchive();
         requestAnimationFrame(refreshMotion);
         window.addEventListener("load", refreshMotion);
         if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshMotion);

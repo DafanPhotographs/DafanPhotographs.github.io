@@ -19,13 +19,12 @@ async function jump(page, y) {
 }
 
 test.describe("Photography archive (photo-first)", () => {
-  test("desktop: every photo, place filters, 3 columns, no Work nav", async ({ page, request }) => {
+  test("desktop: every photo, 3 columns, no Work nav", async ({ page, request }) => {
     const data = await readData(request);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(PHOTO);
     await page.waitForLoadState("networkidle");
     await expect(page.locator(".archive-item")).toHaveCount(data.photos.length);
-    await expect(page.locator(".photo-filters .filter-btn")).toHaveCount(1 + Object.keys(data.locations).length);
     expect(await page.locator(".photography-hero__word").textContent()).toBe("PHOTOGRAPHY");
     expect(await page.locator('[data-i18n="nav.work"]').count()).toBe(0);
     const cols = await page.locator(".photography-archive .photo-col").count();
@@ -36,25 +35,6 @@ test.describe("Photography archive (photo-first)", () => {
       () => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
     );
     expect(overflow).toBe(true);
-  });
-
-  test("place filter narrows the archive to one location", async ({ page, request }) => {
-    const data = await readData(request);
-    const location = Object.keys(data.locations).find((key) =>
-      data.photos.some((photo) => photo.location === key)
-    );
-    expect(location).toBeTruthy();
-    const expected = data.photos.filter((photo) => photo.location === location).length;
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(PHOTO);
-    await page.waitForLoadState("networkidle");
-    await page.locator(`.photo-filters [data-location="${location}"]`).click();
-    await page.waitForTimeout(400);
-    await expect(page.locator(".archive-item:not(.is-hidden)")).toHaveCount(expected);
-    await expect(page.locator(".archive-item.is-hidden")).toHaveCount(data.photos.length - expected);
-    await page.locator('.photo-filters [data-location=""]').click();
-    await page.waitForTimeout(300);
-    await expect(page.locator(".archive-item:not(.is-hidden)")).toHaveCount(data.photos.length);
   });
 
   test("lightbox shows title, description and place; Escape closes", async ({ page, request }) => {
