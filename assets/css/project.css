@@ -288,7 +288,7 @@
     max-width: none;
     width: 100%;
     display: grid;
-    grid-template-columns: minmax(0, 34rem) minmax(300px, 1fr);
+    grid-template-columns: minmax(0, 34rem) minmax(340px, 1fr);
     gap: clamp(2rem, 5vw, 6rem);
     align-items: start;
     padding-right: 0;
@@ -310,7 +310,7 @@
 
   .page-contact .contact-marquee__track {
     align-items: flex-end;
-    animation-duration: 8s;
+    animation-duration: 10s;
   }
 
   .page-contact .contact-marquee__group {
@@ -318,9 +318,13 @@
   }
 
   .page-contact .contact-marquee__group span {
-    font-size: clamp(56px, 11vw, 210px);
+    font-size: clamp(48px, 9vw, 190px);
     line-height: 0.94;
     letter-spacing: -0.05em;
     text-align: right;
+  }
+
+  .page-contact .contact-marquee__group span.is-long {
+    font-size: clamp(36px, 6.8vw, 150px);
   }
 }
