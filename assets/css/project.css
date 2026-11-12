@@ -236,6 +236,7 @@
    turned vertical). */
 .contact-marquee {
   position: relative;
+  container-type: inline-size;
   height: clamp(190px, 30vh, 300px);
   overflow: hidden;
   margin: 0 0 var(--space-8);
@@ -249,10 +250,6 @@
   align-items: flex-start;
   animation: contact-hello 16s linear infinite;
   will-change: transform;
-}
-
-.contact-marquee:hover .contact-marquee__track {
-  animation-play-state: paused;
 }
 
 .contact-marquee::before,
@@ -351,14 +348,11 @@
   }
 
   .page-contact .contact-marquee__group span {
-    font-size: clamp(48px, 9vw, 190px);
-    line-height: 0.94;
+    font-size: clamp(40px, 6.6vw, 140px);
+    font-size: clamp(32px, 19cqw, 200px);
+    line-height: 1.12;
     letter-spacing: -0.05em;
     text-align: right;
-  }
-
-  .page-contact .contact-marquee__group span.is-long {
-    font-size: clamp(36px, 6.8vw, 150px);
   }
 }
 
@@ -421,13 +415,10 @@
   }
 
   .page-contact .contact-marquee__group span {
-    font-size: clamp(34px, 8.5vw, 58px);
-    line-height: 1;
-    padding-right: 0.45em;
-  }
-
-  .page-contact .contact-marquee__group span.is-long {
-    font-size: clamp(26px, 6.8vw, 46px);
+    font-size: clamp(30px, 8vw, 56px);
+    font-size: clamp(28px, 19cqw, 64px);
+    line-height: 1.1;
+    padding-right: 0.5em;
   }
 }
 
