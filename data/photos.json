@@ -20,6 +20,10 @@
     "sichuan-people-s-park": {
       "zh": "人民公园",
       "en": "SiChuan People's Park"
+    },
+    "yunnan": {
+      "zh": "云南",
+      "en": "Yunnan"
     }
   },
   "featured": [
@@ -579,6 +583,139 @@
       "alt": {
         "zh": "浅水与雪脊 摄影作品",
         "en": "Shallow Water, Snow Ridges photograph"
+      }
+    },
+    {
+      "id": "p-mwgknzmm-xkal",
+      "publicId": "dafan/photos/western-sichuan/p-mwgknzmm-xkal",
+      "width": 1463,
+      "height": 2600,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "山路回转",
+        "en": "Winding Road Through Hills"
+      },
+      "copy": {
+        "zh": "沥青路在密林与村舍间弯折前行，旁侧溪流与石桥相伴。远处高架横过谷地，阴天的光把绿压得很深。一条路，把山里与山外轻轻连上。",
+        "en": "An asphalt road bends between dense woods and village roofs, a stream and stone bridge running alongside. A viaduct crosses the valley far ahead under soft overcast light. One road quietly joins the hills to the world beyond."
+      },
+      "alt": {
+        "zh": "山路回转 摄影作品",
+        "en": "Winding Road Through Hills photograph"
+      }
+    },
+    {
+      "id": "p-mwgkpxr6-l6vt",
+      "publicId": "dafan/photos/yunnan/p-mwgkpxr6-l6vt",
+      "width": 1463,
+      "height": 2600,
+      "location": "yunnan",
+      "title": {
+        "zh": "田野与湖岸",
+        "en": "Fields, Lake, and Cloud Shadow"
+      },
+      "copy": {
+        "zh": "高处俯见棋盘般的田地与聚落，湖面嵌在远山之前。云影在坡上移动，亮处与暗处交替。大地铺开得很大，像一张慢慢翻开的地图。",
+        "en": "From above, fields and a settlement grid the valley; a lake sits before distant ridges. Cloud shadow slides across the slopes, light and dark trading places. The land opens wide—like a map turned slowly."
+      },
+      "alt": {
+        "zh": "田野与湖岸 摄影作品",
+        "en": "Fields, Lake, and Cloud Shadow photograph"
+      }
+    },
+    {
+      "id": "p-mwgkqbaf-b8j9",
+      "publicId": "dafan/photos/yunnan/p-mwgkqbaf-b8j9",
+      "width": 1462,
+      "height": 2600,
+      "location": "yunnan",
+      "title": {
+        "zh": "薄暮山谷城",
+        "en": "Valley Town at Soft Dusk"
+      },
+      "copy": {
+        "zh": "枝叶虚成前景，谷底密密的浅色屋顶铺向远山。天光偏冷，山脊泛一点暖意。城市缩成纹理，山仍是主句。",
+        "en": "Blurred foliage frames a dense carpet of pale roofs filling the valley floor. The light runs cool; a soft warmth touches the nearer ridges. The town becomes texture; the mountains keep the sentence."
+      },
+      "alt": {
+        "zh": "薄暮山谷城 摄影作品",
+        "en": "Valley Town at Soft Dusk photograph"
+      }
+    },
+    {
+      "id": "p-mwgkqt8z-6max",
+      "publicId": "dafan/photos/western-sichuan/p-mwgkqt8z-6max",
+      "width": 1463,
+      "height": 2600,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "溪边伸手",
+        "en": "Fingers to the Stream"
+      },
+      "copy": {
+        "zh": "人蹲在木板栈道旁，指尖刚触到清浅急流。四周绿植与黄花簇拥，水声仿佛能听见。旅途里这样的停顿，往往比远景更难忘。",
+        "en": "Crouched on wooden planks, a hand reaches until fingertips meet the clear, quick stream. Green foliage and yellow flowers crowd the banks. Such a pause on the road often stays longer than any wide vista."
+      },
+      "alt": {
+        "zh": "溪边伸手 摄影作品",
+        "en": "Fingers to the Stream photograph"
+      }
+    },
+    {
+      "id": "p-mwgkuq9a-nacc",
+      "publicId": "dafan/photos/yunnan/p-mwgkuq9a-nacc",
+      "width": 1733,
+      "height": 2600,
+      "location": "yunnan",
+      "title": {
+        "zh": "林间索道",
+        "en": "Chairlift through the Forest"
+      },
+      "copy": {
+        "zh": "两条缆线收向山脊，绿椅一节节穿进针叶林。身后的人背影近在眼前，前方的路却长得看不见尽头。",
+        "en": "Two cables run toward the ridge; green chairs thread a conifer corridor. Passengers sit close behind, while the line ahead disappears into length."
+      },
+      "alt": {
+        "zh": "林间索道 摄影作品",
+        "en": "Chairlift through the Forest photograph"
+      }
+    },
+    {
+      "id": "p-mwgkvbmc-argj",
+      "publicId": "dafan/photos/yunnan/p-mwgkvbmc-argj",
+      "width": 2600,
+      "height": 1463,
+      "location": "yunnan",
+      "title": {
+        "zh": "谷底孤舍",
+        "en": "Lone Shelter in the Valley"
+      },
+      "copy": {
+        "zh": "大山夹出宽谷，坡面绿褐交错。谷底一点红顶小屋，土路绕过，人烟在风景里只占指甲大小。",
+        "en": "Mountains open a wide valley, slopes green and brown. A red-roofed hut on the floor, a dirt track nearby—human life the size of a fingernail."
+      },
+      "alt": {
+        "zh": "谷底孤舍 摄影作品",
+        "en": "Lone Shelter in the Valley photograph"
+      }
+    },
+    {
+      "id": "p-mwgkvme1-kix0",
+      "publicId": "dafan/photos/yunnan/p-mwgkvme1-kix0",
+      "width": 1463,
+      "height": 2600,
+      "location": "yunnan",
+      "title": {
+        "zh": "蛇形河湾",
+        "en": "Serpentine River"
+      },
+      "copy": {
+        "zh": "从高处俯看U形谷，河水一弯弯银色前行。公路贴着谷底远去，云影落在湿地与秋色灌丛上。",
+        "en": "Looking down a U-shaped valley, the river silver-bends ahead. A road follows the floor away; cloud shadow falls on wetland and autumn scrub."
+      },
+      "alt": {
+        "zh": "蛇形河湾 摄影作品",
+        "en": "Serpentine River photograph"
       }
     }
   ]
