@@ -717,6 +717,82 @@
         "zh": "蛇形河湾 摄影作品",
         "en": "Serpentine River photograph"
       }
+    },
+    {
+      "id": "p-mwgkz6z3-ymft",
+      "publicId": "dafan/photos/sichuan-people-s-park/p-mwgkz6z3-ymft",
+      "width": 1462,
+      "height": 2600,
+      "location": "sichuan-people-s-park",
+      "title": {
+        "zh": "毽子腾空",
+        "en": "Shuttlecock in Midair"
+      },
+      "copy": {
+        "zh": "老人单腿踢毽，羽毛刚离脚。前景孩童虚影看着，三角梅与绿植围着广场，活力落在平常天。",
+        "en": "An elder kicks a shuttlecock on one leg; feathers just leave the foot. A child’s blur watches; bougainvillea and greenery ring the plaza—vitality on an ordinary day."
+      },
+      "alt": {
+        "zh": "毽子腾空 摄影作品",
+        "en": "Shuttlecock in Midair photograph"
+      }
+    },
+    {
+      "id": "p-mwgkzgjh-kugl",
+      "publicId": "dafan/photos/sichuan-people-s-park/p-mwgkzgjh-kugl",
+      "width": 1463,
+      "height": 2600,
+      "location": "sichuan-people-s-park",
+      "title": {
+        "zh": "彩球与孩童",
+        "en": "Pom-Poms and a Child"
+      },
+      "copy": {
+        "zh": "老人抛起粉绿彩球，女孩抬眼追着看。竹叶与砖墙围着小院，玩耍把时间变得很短。",
+        "en": "An elder tosses pink-and-green pom-poms; a girl looks up to follow. Bamboo and brick enclose a small yard—play making time feel short."
+      },
+      "alt": {
+        "zh": "彩球与孩童 摄影作品",
+        "en": "Pom-Poms and a Child photograph"
+      }
+    },
+    {
+      "id": "p-mwgl23y5-0jfa",
+      "publicId": "dafan/photos/western-sichuan/p-mwgl23y5-0jfa",
+      "width": 2600,
+      "height": 1950,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "马队歇脚",
+        "en": "Horses at Rest"
+      },
+      "copy": {
+        "zh": "花草坡上，几匹鞍马低头吃草，两个人影一立一蹲。远山被低云罩住，色调灰绿。旅途里的停顿，不喧哗，只留下皮具与织毯的一点颜色。",
+        "en": "On a flowered slope, saddled horses graze while two figures stand and crouch. Distant ridges sit under low cloud in muted greens. A pause on the trail—quiet, with only saddle cloths for color."
+      },
+      "alt": {
+        "zh": "马队歇脚 摄影作品",
+        "en": "Horses at Rest photograph"
+      }
+    },
+    {
+      "id": "p-mwgl2q44-z14h",
+      "publicId": "dafan/photos/western-sichuan/p-mwgl2q44-z14h",
+      "width": 1463,
+      "height": 2600,
+      "location": "western-sichuan",
+      "title": {
+        "zh": "两人看山",
+        "en": "Two Looking Out"
+      },
+      "copy": {
+        "zh": "右下两人，一立一坐，望向层层绿谷与远山。谷中有小聚落，土路蜿蜒。云很厚，绿很满，人只是尺码。",
+        "en": "Lower right, two figures—one standing, one seated—face layered green valleys and far ridges. A small settlement, winding tracks. Heavy cloud, full green; people only for scale."
+      },
+      "alt": {
+        "zh": "两人看山 摄影作品",
+        "en": "Two Looking Out photograph"
+      }
     }
   ]
 }
