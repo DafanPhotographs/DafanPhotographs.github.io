@@ -37,22 +37,26 @@ test.describe("Photography archive (photo-first)", () => {
     expect(overflow).toBe(true);
   });
 
-  test("lightbox shows title, description and place; Escape closes", async ({ page, request }) => {
+  test("PhotoSwipe shows title, description and place; closes", async ({ page, request }) => {
     const data = await readData(request);
     const first = data.photos[0];
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(PHOTO);
     await page.waitForLoadState("networkidle");
     await page.locator(".archive-item").first().click();
-    const box = page.locator("[data-photo-lightbox]");
+    const box = page.locator(".pswp");
     await expect(box).toBeVisible();
-    await expect(page.locator("[data-lightbox-title]")).toHaveText(first.title.zh);
-    await expect(page.locator("[data-lightbox-location]")).toHaveText(data.locations[first.location].zh);
+    await expect(page.locator(".pswp-photo-caption [data-caption-title]")).toHaveText(first.title.zh);
+    await expect(page.locator(".pswp-photo-caption [data-caption-location]")).toHaveText(
+      data.locations[first.location].zh
+    );
     if (first.copy && first.copy.zh) {
-      await expect(page.locator("[data-lightbox-copy]")).toHaveText(first.copy.zh);
+      await expect(page.locator(".pswp-photo-caption [data-caption-copy]")).toHaveText(first.copy.zh);
     }
-    await page.keyboard.press("Escape");
-    await expect(box).toHaveAttribute("hidden", "");
+    await expect(page.locator(".pswp__button--close")).toBeVisible();
+    await page.waitForTimeout(800);
+    await page.locator(".pswp__button--close").click();
+    await expect(box).toBeHidden();
   });
 
   test("photos rise 400px and fade in as they enter the viewport", async ({ page }) => {

@@ -676,17 +676,19 @@ test.describe("Home fullscreen stages", () => {
     }
   });
 
-  test("hash deep link focuses featured scene in document", async ({ page }) => {
+  test("hash deep link focuses featured scene in document", async ({ page, request }) => {
+    const data = await (await request.get("/data/photos.json")).json();
+    const id = data.featured[0];
     await page.setViewportSize(NARROW);
-    await page.goto("/#home-scene-bipenggou-cover");
+    await page.goto(`/#home-scene-${id}`);
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(600);
-    const inView = await page.evaluate(() => {
-      const el = document.getElementById("home-scene-bipenggou-cover");
+    const inView = await page.evaluate((sceneId) => {
+      const el = document.getElementById(`home-scene-${sceneId}`);
       if (!el) return false;
       const r = el.getBoundingClientRect();
       return r.top < window.innerHeight * 0.85 && r.bottom > 100;
-    });
+    }, id);
     expect(inView).toBe(true);
   });
 
