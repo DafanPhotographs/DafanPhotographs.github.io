@@ -74,12 +74,12 @@
 
 .photography-hero__word {
   margin: 0;
-  font-family: var(--font-sans);
-  font-size: clamp(58px, 17.2vw, 260px);
-  font-weight: 700;
-  line-height: 0.76;
-  letter-spacing: -0.08em;
-  transform: scaleX(0.80) scaleY(1.35);
+  font-family: "Archivo Black", var(--font-sans);
+  font-size: clamp(40px, 11vw, 240px);
+  font-weight: 400;
+  line-height: 0.82;
+  letter-spacing: -0.03em;
+  transform: scaleX(1) scaleY(1.5);
   transform-origin: left center;
   margin-bottom: 0.18em;
   color: #000;
@@ -193,10 +193,10 @@ html[lang="en"] .photography-hero__lede {
   }
 
   .photography-hero__word {
-    font-size: clamp(52px, 17.2vw, 84px);
-    font-weight: 700;
-    letter-spacing: -0.08em;
-    transform: scaleX(0.79) scaleY(1.24);
+    font-size: clamp(40px, 11vw, 84px);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    transform: scaleX(1) scaleY(1.5);
     margin-bottom: 0.12em;
   }
 
