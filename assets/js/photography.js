@@ -4,7 +4,6 @@
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var mobileMql = window.matchMedia("(max-width: 767.98px)");
   var archive = document.querySelector("[data-photography-archive]");
-  var lightbox = document.querySelector("[data-photo-lightbox]");
   if (!archive) return;
 
   var data = null;
@@ -223,83 +222,136 @@
     refreshMotion();
   }
 
-  function renderCaption(photo) {
-    var title = text(photo.title);
-    var copy = text(photo.copy);
+  var galleryItems = [];
+  var pswp = null;
+
+  function buildGalleryItems() {
+    galleryItems = data.photos.map(function (photo) {
+      var ratio = 3 / 2;
+      if (photo.width && photo.height) ratio = photo.width / photo.height;
+      ratio = Math.min(2.6, Math.max(0.75, ratio));
+      return {
+        src: imageUrl(photo.publicId, "c_limit,w_2400,q_auto,f_auto"),
+        msrc: imageUrl(photo.publicId, "c_limit,w_400,q_auto,f_auto"),
+        width: photo.width || 2400,
+        height: photo.height || Math.round(2400 / ratio),
+        alt: text(photo.alt) || text(photo.title),
+        photo: photo
+      };
+    });
+  }
+
+  function captionMarkup() {
+    return '<div class="pswp-photo-caption">' +
+      '<span class="pswp-photo-caption__location" data-caption-location></span>' +
+      '<h2 class="pswp-photo-caption__title" data-caption-title></h2>' +
+      '<p class="pswp-photo-caption__copy" data-caption-copy></p>' +
+      '</div>';
+  }
+
+  function updateCaptionFor(el, instance) {
+    if (!el || !data) return;
+    var item = galleryItems[instance.currIndex];
+    if (!item) return;
+    var photo = item.photo;
+    var box = el.querySelector(".pswp-photo-caption");
+    if (!box) return;
     var location = data.locations && data.locations[photo.location] ? text(data.locations[photo.location]) : "";
-    lightbox.querySelector("[data-lightbox-title]").textContent = title;
-    lightbox.querySelector("[data-lightbox-copy]").textContent = copy;
-    lightbox.querySelector("[data-lightbox-location]").textContent = location;
-    var img = lightbox.querySelector("[data-lightbox-img]");
-    img.src = imageUrl(photo.publicId, "c_limit,w_2400,q_auto,f_auto");
-    img.alt = text(photo.alt) || title;
+    var locEl = box.querySelector("[data-caption-location]");
+    locEl.textContent = location;
+    locEl.hidden = !location;
+    box.querySelector("[data-caption-title]").textContent = text(photo.title);
+    box.querySelector("[data-caption-copy]").textContent = text(photo.copy);
+  }
+
+  function syncHash(instance) {
+    if (instance !== pswp) return;
+    var item = galleryItems[instance.currIndex];
+    if (!item) return;
+    activeId = item.photo.id;
+    history.replaceState(null, "", "#" + activeId);
   }
 
   function openPhoto(id, updateHash) {
-    if (!lightbox) return;
-    var photo = photoById(id);
-    if (!photo) return;
-    activeId = id;
-    current = visiblePhotos();
-    renderCaption(photo);
-    lightbox.hidden = false;
-    document.body.classList.add("lightbox-open");
-    if (lenis) lenis.stop();
-    lightbox.querySelector("[data-lightbox-close]").focus();
-    if (updateHash !== false) {
-      history.replaceState(null, "", "#" + id);
+    if (!data) return;
+    var PS = window.PhotoSwipe && (window.PhotoSwipe.default || window.PhotoSwipe);
+    if (!PS) return;
+    buildGalleryItems();
+    var index = -1;
+    for (var i = 0; i < galleryItems.length; i += 1) {
+      if (galleryItems[i].photo.id === id) { index = i; break; }
     }
-  }
-
-  function closeLightbox() {
-    if (!lightbox || lightbox.hidden) return;
-    lightbox.hidden = true;
-    document.body.classList.remove("lightbox-open");
-    if (lenis) lenis.start();
-    activeId = null;
-    history.replaceState(null, "", location.pathname + location.search);
-    if (lastTrigger) lastTrigger.focus();
-  }
-
-  function step(delta) {
-    if (!activeId) return;
-    current = visiblePhotos();
-    var index = current.map(function (photo) { return photo.id; }).indexOf(activeId);
     if (index < 0) return;
-    var next = current[(index + delta + current.length) % current.length];
-    if (next) openPhoto(next.id);
-  }
-
-  function bindLightbox() {
-    if (!lightbox) return;
-    lightbox.querySelector("[data-lightbox-close]").addEventListener("click", closeLightbox);
-    lightbox.querySelector("[data-lightbox-prev]").addEventListener("click", function () { step(-1); });
-    lightbox.querySelector("[data-lightbox-next]").addEventListener("click", function () { step(1); });
-    lightbox.addEventListener("click", function (event) {
-      if (event.target === lightbox) closeLightbox();
+    activeId = id;
+    if (lenis) lenis.stop();
+    document.body.classList.add("lightbox-open");
+    var instance = new PS({
+      dataSource: galleryItems,
+      index: index,
+      pswpModule: PS,
+      showHideAnimationType: "fade",
+      bgOpacity: 0.94,
+      paddingFn: function (viewportSize) {
+        var narrow = viewportSize.x < 768;
+        return {
+          top: narrow ? 46 : 58,
+          bottom: narrow ? 132 : 156,
+          left: narrow ? 8 : 18,
+          right: narrow ? 8 : 18
+        };
+      },
+      loop: true,
+      counter: false,
+      close: true,
+      arrowKeys: true,
+      returnFocus: true,
+      trapFocus: true
     });
-    document.addEventListener("keydown", function (event) {
-      if (lightbox.hidden) return;
-      if (event.key === "Escape") closeLightbox();
-      if (event.key === "ArrowLeft") step(-1);
-      if (event.key === "ArrowRight") step(1);
+    pswp = instance;
+    instance.on("uiRegister", function () {
+      instance.ui.registerElement({
+        name: "photo-caption",
+        className: "pswp-photo-caption-host",
+        appendTo: "root",
+        order: 9,
+        isButton: false,
+        html: captionMarkup(),
+        onInit: function (el, pswpInstance) {
+          updateCaptionFor(el, pswpInstance);
+          pswpInstance.on("change", function () { updateCaptionFor(el, pswpInstance); });
+        }
+      });
     });
+    instance.on("change", function () { syncHash(instance); });
+    instance.on("close", function () {
+      if (instance !== pswp) return;
+      pswp = null;
+      activeId = null;
+      document.body.classList.remove("lightbox-open");
+      if (lenis) lenis.start();
+      history.replaceState(null, "", location.pathname + location.search);
+      if (lastTrigger) {
+        lastTrigger.focus();
+        lastTrigger = null;
+      }
+    });
+    instance.init();
+    if (updateHash !== false) history.replaceState(null, "", "#" + id);
   }
 
   function applyLang() {
     lang = document.documentElement.lang || "zh";
     if (!data) return;
     renderArchive();
-    if (activeId && lightbox && !lightbox.hidden) {
-      var photo = photoById(activeId);
-      if (photo) renderCaption(photo);
+    if (pswp) {
+      var caption = pswp.element.querySelector(".pswp-photo-caption-host");
+      if (caption) updateCaptionFor(caption, pswp);
     }
   }
 
   function boot() {
     initWordIntro();
     initMotion();
-    bindLightbox();
     window.addEventListener("scroll", queuePaint, { passive: true });
     window.addEventListener("resize", function () {
       measureItems();
