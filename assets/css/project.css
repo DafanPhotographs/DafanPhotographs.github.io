@@ -232,66 +232,88 @@
 }
 
 
-/* Vertical hello/hi marquee — contact page (reference “practice” tab idea,
-   turned vertical). */
+/* Contact page: multilingual hello ticker above the title. */
+.page-contact .site-main--contact {
+  max-width: 1280px;
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: clamp(24px, 4vw, 64px);
+}
+
 .contact-marquee {
   position: relative;
   container-type: inline-size;
-  height: clamp(190px, 30vh, 300px);
-  overflow: hidden;
-  margin: 0 0 var(--space-8);
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
-}
-
-.contact-marquee__track {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  animation: contact-hello 16s linear infinite;
-  will-change: transform;
+  align-items: center;
+  width: 100%;
+  height: clamp(96px, 16vh, 156px);
+  overflow: hidden;
+  margin: 0 0 clamp(32px, 5vw, 64px);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
 }
 
 .contact-marquee::before,
 .contact-marquee::after {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 12%;
+  top: 0;
+  bottom: 0;
+  width: 10%;
   z-index: 3;
   pointer-events: none;
 }
 
 .contact-marquee::before {
-  top: 0;
-  background: linear-gradient(#fff, rgba(255, 255, 255, 0));
+  left: 0;
+  background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0));
 }
 
 .contact-marquee::after {
-  bottom: 0;
-  background: linear-gradient(rgba(255, 255, 255, 0), #fff);
+  right: 0;
+  background: linear-gradient(270deg, #fff, rgba(255, 255, 255, 0));
+}
+
+.contact-marquee__track {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: max-content;
+  animation: contact-hello-x 16s linear infinite;
+  will-change: transform;
 }
 
 .contact-marquee__group {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: row;
+  align-items: center;
 }
 
 .contact-marquee__group span {
+  display: block;
   font-family: var(--font-sans);
-  font-size: clamp(64px, 10vw, 132px);
+  font-size: clamp(40px, 8vw, 120px);
+  font-size: clamp(32px, 12cqw, 120px);
   font-weight: 700;
-  line-height: 0.9;
+  line-height: 1;
   letter-spacing: -0.04em;
   color: #000;
   white-space: nowrap;
+  padding-right: 0.5em;
 }
 
-@keyframes contact-hello {
-  from { transform: translateY(0); }
-  to { transform: translateY(-50%); }
+.page-contact .contact-copy {
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+.page-contact .contact-title {
+  margin: 0 0 var(--space-6);
+}
+
+@keyframes contact-hello-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -300,129 +322,18 @@
   }
 }
 
-/* Desktop/tablet: centered page, contact copy left, ticker rail right. */
-@media (min-width: 768px) {
-  .page-contact .site-main--contact {
-    max-width: 1440px;
-    width: 100%;
-    margin-inline: auto;
-    display: grid;
-    grid-template-columns: minmax(0, 34rem) minmax(300px, 1fr);
-    grid-template-areas:
-      "title marquee"
-      "copy marquee";
-    column-gap: clamp(2rem, 5vw, 6rem);
-    row-gap: var(--space-6);
-    align-items: start;
-    padding-inline: clamp(24px, 4vw, 64px);
-  }
-
-  .page-contact .contact-title {
-    grid-area: title;
-    margin: 0;
-  }
-
-  .page-contact .contact-copy {
-    grid-area: copy;
-    max-width: 34rem;
-    min-width: 0;
-  }
-
-  .page-contact .contact-marquee {
-    grid-area: marquee;
-    position: sticky;
-    top: calc(var(--header-height) + clamp(1.5rem, 4vh, 3rem));
-    height: calc(100vh - var(--header-height) - clamp(3rem, 8vh, 6rem));
-    width: 100%;
-    margin: 0;
-    padding: 0;
-  }
-
-  .page-contact .contact-marquee__track {
-    align-items: flex-end;
-    animation-duration: 10s;
-  }
-
-  .page-contact .contact-marquee__group {
-    align-items: flex-end;
-  }
-
-  .page-contact .contact-marquee__group span {
-    font-size: clamp(40px, 6.6vw, 140px);
-    font-size: clamp(32px, 19cqw, 200px);
-    line-height: 1.12;
-    letter-spacing: -0.05em;
-    text-align: right;
-  }
-}
-
-/* Phones: the ticker becomes a horizontal strip between the title and details. */
 @media (max-width: 767.98px) {
-  .page-contact .site-main--contact {
-    display: flex;
-    flex-direction: column;
+  .contact-marquee {
+    height: clamp(64px, 9vh, 88px);
+    margin-bottom: 28px;
   }
 
-  .page-contact .contact-title {
-    order: 0;
-    margin-bottom: 0;
+  .contact-marquee__group span {
+    font-size: clamp(30px, 11cqw, 56px);
   }
 
-  .page-contact .contact-marquee {
-    order: 1;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    height: clamp(58px, 9vh, 88px);
-    margin: var(--space-5) 0 var(--space-6);
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  .contact-copy {
+    max-width: none;
+    margin-inline: 0;
   }
-
-  .page-contact .contact-copy {
-    order: 2;
-  }
-
-  .page-contact .contact-marquee::before,
-  .page-contact .contact-marquee::after {
-    top: 0;
-    bottom: 0;
-    height: auto;
-    width: 10%;
-  }
-
-  .page-contact .contact-marquee::before {
-    right: auto;
-    background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0));
-  }
-
-  .page-contact .contact-marquee::after {
-    left: auto;
-    background: linear-gradient(270deg, #fff, rgba(255, 255, 255, 0));
-  }
-
-  .page-contact .contact-marquee__track {
-    flex-direction: row;
-    align-items: center;
-    width: max-content;
-    animation-name: contact-hello-x;
-    animation-duration: 16s;
-  }
-
-  .page-contact .contact-marquee__group {
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .page-contact .contact-marquee__group span {
-    font-size: clamp(30px, 8vw, 56px);
-    font-size: clamp(28px, 19cqw, 64px);
-    line-height: 1.1;
-    padding-right: 0.5em;
-  }
-}
-
-@keyframes contact-hello-x {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
 }
