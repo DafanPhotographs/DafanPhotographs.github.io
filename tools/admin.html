@@ -86,6 +86,8 @@
     .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     details.config summary { cursor: pointer; font-size: 13px; font-weight: 600; }
     details.config[open] summary { margin-bottom: 12px; }
+    .copy-import { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0 0 10px; }
+    .copy-import .hint { margin: 0; }
     .dropzone {
       border: 1px dashed #cfc9bd;
       border-radius: 8px;
@@ -188,6 +190,11 @@
 
       <div class="panel">
         <h2>新增照片 <small>可一次拖多张，第一张不会自动成为封面；每张都是独立照片</small></h2>
+        <div class="copy-import">
+          <button id="importCopyBtn" type="button">导入照片文案 CSV</button>
+          <input type="file" id="copyFileInput" accept=".csv,text/csv" hidden />
+          <span class="hint" id="copyStatus">未导入文案 CSV；拖入照片只会用文件名作标题。</span>
+        </div>
         <div class="dropzone" id="dropzone">
           把照片拖到这里，或点击选择（JPG / PNG / WebP，建议长边 2400px；超过 10MB 会自动压缩）
           <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple hidden />
@@ -643,6 +650,166 @@
         });
       }
 
+      var copyMap = {};
+      var copyBase = {};
+      var copyRowCount = 0;
+
+      function parseCSV(text) {
+        if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+        var rows = [];
+        var row = [];
+        var field = "";
+        var quoted = false;
+        for (var i = 0; i < text.length; i += 1) {
+          var ch = text[i];
+          if (quoted) {
+            if (ch === '"') {
+              if (text[i + 1] === '"') { field += '"'; i += 1; }
+              else quoted = false;
+            } else {
+              field += ch;
+            }
+          } else if (ch === '"') {
+            quoted = true;
+          } else if (ch === ",") {
+            row.push(field); field = "";
+          } else if (ch === "\n") {
+            row.push(field); rows.push(row); row = []; field = "";
+          } else if (ch !== "\r") {
+            field += ch;
+          }
+        }
+        if (field.length || row.length) { row.push(field); rows.push(row); }
+        return rows;
+      }
+
+      function rebuildCopyIndex() {
+        copyBase = {};
+        Object.keys(copyMap).forEach(function (name) {
+          copyBase[name.replace(/\.[^.]+$/, "")] = copyMap[name];
+        });
+        copyRowCount = Object.keys(copyMap).length;
+      }
+
+      function updateCopyStatus() {
+        var el = $("copyStatus");
+        if (!el) return;
+        el.textContent = copyRowCount
+          ? "已导入 " + copyRowCount + " 条文案；拖入照片会自动填标题/描述。"
+          : "未导入文案 CSV；拖入照片只会用文件名作标题。";
+      }
+
+      function loadCopyMap() {
+        try {
+          copyMap = JSON.parse(lsGet("copyMap", "{}")) || {};
+        } catch (e) {
+          copyMap = {};
+        }
+        rebuildCopyIndex();
+        updateCopyStatus();
+      }
+
+      function copyEntryForFile(fileName) {
+        var lower = String(fileName || "").toLowerCase();
+        return copyMap[lower] || copyBase[lower.replace(/\.[^.]+$/, "")] || null;
+      }
+
+      function locationForSection(section) {
+        if (!section) return "";
+        var keys = Object.keys(state.locations || {});
+        for (var i = 0; i < keys.length; i += 1) {
+          var loc = state.locations[keys[i]];
+          if (loc && (loc.zh === section || loc.en === section)) return keys[i];
+        }
+        return "";
+      }
+
+      function fillStagedFromCopy() {
+        if (!copyRowCount || !state.newPhotos.length) return;
+        var matched = 0;
+        state.newPhotos.forEach(function (photo) {
+          var entry = copyEntryForFile(photo.file && photo.file.name);
+          if (!entry) return;
+          photo.title = {
+            zh: entry.title_zh || photo.title.zh,
+            en: entry.title_en || photo.title.en
+          };
+          photo.copy = { zh: entry.desc_zh || "", en: entry.desc_en || "" };
+          var loc = locationForSection(entry.section);
+          if (loc) photo.location = loc;
+          matched += 1;
+        });
+        if (matched) {
+          renderNew();
+          renderPreview();
+          log("已按文件名自动填充 " + matched + " 张照片的标题/描述");
+        }
+      }
+
+      function applyCopyText(text, manual) {
+        var rows = parseCSV(String(text || ""));
+        if (rows.length < 2) throw new Error("CSV 内容为空");
+        var header = rows[0].map(function (h) { return h.trim(); });
+        var index = {};
+        ["filename", "section", "title_zh", "title_en", "desc_zh", "desc_en"].forEach(function (key) {
+          index[key] = header.indexOf(key);
+        });
+        if (index.filename < 0) throw new Error("CSV 缺少 filename 列");
+        var map = {};
+        for (var i = 1; i < rows.length; i += 1) {
+          var row = rows[i];
+          var name = (row[index.filename] || "").trim().toLowerCase();
+          if (!name) continue;
+          map[name] = {
+            section: index.section >= 0 ? (row[index.section] || "").trim() : "",
+            title_zh: index.title_zh >= 0 ? (row[index.title_zh] || "").trim() : "",
+            title_en: index.title_en >= 0 ? (row[index.title_en] || "").trim() : "",
+            desc_zh: index.desc_zh >= 0 ? (row[index.desc_zh] || "").trim() : "",
+            desc_en: index.desc_en >= 0 ? (row[index.desc_en] || "").trim() : ""
+          };
+        }
+        copyMap = map;
+        rebuildCopyIndex();
+        lsSet("copyMap", JSON.stringify(copyMap));
+        updateCopyStatus();
+        fillStagedFromCopy();
+        setStatus(
+          (manual ? "已导入 " : "已自动加载 ") + copyRowCount +
+          " 条照片文案，拖入照片会自动填充标题和描述。",
+          "ok"
+        );
+        return copyRowCount;
+      }
+
+      function importCopyFile(file) {
+        var reader = new FileReader();
+        reader.onload = function () {
+          try {
+            applyCopyText(reader.result, true);
+          } catch (error) {
+            setStatus("导入文案失败：" + error.message, "err");
+          }
+        };
+        reader.onerror = function () {
+          setStatus("导入文案失败：无法读取文件", "err");
+        };
+        reader.readAsText(file, "utf-8");
+      }
+
+      function autoLoadCopyText() {
+        fetch(new URL("./photo-copy.csv", location.href), { cache: "no-store" })
+          .then(function (res) {
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            return res.text();
+          })
+          .then(function (text) {
+            try { applyCopyText(text, false); } catch (e) { /* keep local copy */ }
+          })
+          .catch(function () {
+            // No bundled CSV: keep the localStorage copy if present.
+          });
+      }
+
       function addFiles(files) {
         var list = Array.prototype.slice.call(files || []).filter(function (file) {
           return /^image\//.test(file.type) || /\.(jpe?g|png|webp)$/i.test(file.name);
@@ -653,15 +820,21 @@
           return readImage(file).then(function (dataUrl) {
             return imageSize(dataUrl).then(function (size) {
               var base = file.name.replace(/\.[^.]+$/, "");
+              var entry = copyEntryForFile(file.name);
+              var autoLocation = entry ? locationForSection(entry.section) : "";
               return {
                 id: "p-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6),
                 file: file,
                 dataUrl: dataUrl,
                 width: size.width || null,
                 height: size.height || null,
-                title: { zh: base, en: base },
-                copy: { zh: "", en: "" },
-                location: defaultLocation
+                title: entry
+                  ? { zh: entry.title_zh || base, en: entry.title_en || base }
+                  : { zh: base, en: base },
+                copy: entry
+                  ? { zh: entry.desc_zh || "", en: entry.desc_en || "" }
+                  : { zh: "", en: "" },
+                location: autoLocation || defaultLocation
               };
             });
           });
@@ -916,6 +1089,12 @@
         $("publishBtn").addEventListener("click", publish);
         $("downloadBtn").addEventListener("click", downloadJson);
         $("addLocBtn").addEventListener("click", addLocation);
+        $("importCopyBtn").addEventListener("click", function () { $("copyFileInput").click(); });
+        $("copyFileInput").addEventListener("change", function () {
+          var file = $("copyFileInput").files[0];
+          if (file) importCopyFile(file);
+          $("copyFileInput").value = "";
+        });
         var dropzone = $("dropzone");
         var fileInput = $("fileInput");
         dropzone.addEventListener("click", function () { fileInput.click(); });
@@ -945,6 +1124,8 @@
       }
 
       loadConfig();
+      loadCopyMap();
+      autoLoadCopyText();
       bind();
       loadData();
     })();

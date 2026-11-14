@@ -39,7 +39,7 @@
 
 1. 打开 `https://dafanphotographs.github.io/tools/admin.html`（或双击 `start-admin.command`）。
 2. 「配置」里填 Cloudinary **unsigned preset** 和 GitHub **fine-grained PAT**（Contents: Read and write），保存。
-3. 「新增照片」拖入照片（可多张），逐张填标题/描述/地点。
+3. 「新增照片」拖入照片（可多张）；后台会按文件名自动匹配 `tools/photo-copy.csv` 里的中英标题和描述，匹配不到才需要手填。
 4. 「现有照片」可直接改文字/地点，或删除。
 5. 「首页精选」选 1–5 张（至少 1 张）。
 6. 点「上传并发布」：上传 Cloudinary + 提交 `data/photos.json`，1–2 分钟后线上生效。
@@ -51,3 +51,15 @@
 - 上传需要 unsigned preset；没有配置时发布会先报错，不会产生半成品。
 - 首页/摄影页是读取 `data/photos.json` 动态渲染的，所以发布只需要更新这一个 JSON，不需要再生成 HTML。
 - 旧版系列页 `/works/<slug>/` 已删除，`/works/` 会重定向到 `/photography/`。
+
+## 照片文案自动匹配
+
+`tools/photo-copy.csv` 是照片文案表，列包括：
+
+`filename, section, title_zh, title_en, desc_zh, desc_en`
+
+后台打开时会自动加载这个文件；拖入照片后按 `filename`（不区分大小写）匹配，自动填入中英标题、描述。`section` 与「地点」的中英文名一致时，也会自动选中对应地点。
+
+- 更新文案：替换 `tools/photo-copy.csv` 后重新发布；
+- 临时更新：后台点「导入照片文案 CSV」选择新文件，映射会存到本机浏览器；
+- 匹配不到的照片会保留文件名作标题，描述留空，可手动填写。
