@@ -49,6 +49,40 @@
     return reduce || mobileMql.matches;
   }
 
+  // The oversized word is split into spans so each letter can rise into
+  // place. Keep the full word on the h1 for screen readers and no-JS.
+  function initWordIntro() {
+    var word = document.querySelector(".photography-hero__word");
+    if (!word || reduce || typeof gsap === "undefined") return;
+    var label = word.textContent.trim();
+    if (!label) return;
+    word.setAttribute("aria-label", label);
+    word.textContent = "";
+    var chars = [];
+    label.split("").forEach(function (ch) {
+      var span = document.createElement("span");
+      span.className = "word-char";
+      span.setAttribute("aria-hidden", "true");
+      span.textContent = ch;
+      word.appendChild(span);
+      chars.push(span);
+    });
+    word.classList.add("is-split");
+    gsap.fromTo(
+      chars,
+      { yPercent: 70, opacity: 0 },
+      {
+        yPercent: 0,
+        opacity: 1,
+        duration: 0.85,
+        ease: "power3.out",
+        stagger: 0.055,
+        delay: 0.08,
+        clearProps: "transform"
+      }
+    );
+  }
+
   function lenisTick(time) {
     if (lenis) lenis.raf(time * 1000);
   }
@@ -263,6 +297,7 @@
   }
 
   function boot() {
+    initWordIntro();
     initMotion();
     bindLightbox();
     window.addEventListener("scroll", queuePaint, { passive: true });

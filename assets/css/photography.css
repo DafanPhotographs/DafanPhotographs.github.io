@@ -84,18 +84,18 @@
   margin-bottom: 0.18em;
   color: #000;
   transition: color 0.35s ease;
-  animation: photography-word-in 1.05s ease both;
   white-space: nowrap;
+}
+
+.photography-hero__word .word-char {
+  display: inline-block;
+  will-change: transform, opacity;
 }
 
 .photography-hero__word:hover {
   color: #ececec;
 }
 
-@keyframes photography-word-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 
 .photography-hero__meta {
   display: flex;
