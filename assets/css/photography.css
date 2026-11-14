@@ -408,17 +408,31 @@ body.lightbox-open {
   background: transparent;
 }
 
-.pswp__button--close {
+.pswp__button--close,
+.pswp__button--zoom {
   width: 44px;
   height: 44px;
-  margin: 18px;
+  margin: 8px 0 8px 4px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.08);
   transition: background 0.2s ease;
 }
 
-.pswp__button--close:hover {
+.pswp__button--close {
+  margin: 8px 12px 8px 4px;
+}
+
+.pswp__button--close:hover,
+.pswp__button--zoom:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+.pswp__button--close .pswp__icn,
+.pswp__button--zoom .pswp__icn {
+  top: 6px;
+  left: 6px;
+  width: 32px;
+  height: 32px;
 }
 
 .pswp__button--arrow {
@@ -467,7 +481,7 @@ body.lightbox-open {
 
 @media (max-width: 767.98px) {
   .pswp__button--close {
-    margin: 10px;
+    margin: 8px 10px 8px 4px;
   }
 
   .pswp-photo-caption {
