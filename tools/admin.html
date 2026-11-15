@@ -721,6 +721,11 @@
           var loc = state.locations[keys[i]];
           if (loc && (loc.zh === section || loc.en === section)) return keys[i];
         }
+        // "川西胶片" should still land in the existing "川西" location.
+        for (var j = 0; j < keys.length; j += 1) {
+          var loose = state.locations[keys[j]];
+          if (loose && loose.zh && section.indexOf(loose.zh) !== -1) return keys[j];
+        }
         return "";
       }
 
@@ -797,7 +802,7 @@
       }
 
       function autoLoadCopyText() {
-        fetch(new URL("./photo-copy.csv", location.href), { cache: "no-store" })
+        fetch(new URL("./photo-copy.csv?t=" + Date.now(), location.href), { cache: "no-store" })
           .then(function (res) {
             if (!res.ok) throw new Error("HTTP " + res.status);
             return res.text();
@@ -834,7 +839,8 @@
                 copy: entry
                   ? { zh: entry.desc_zh || "", en: entry.desc_en || "" }
                   : { zh: "", en: "" },
-                location: autoLocation || defaultLocation
+                location: autoLocation || defaultLocation,
+                _autoMatched: !!entry
               };
             });
           });
@@ -842,6 +848,22 @@
           state.newPhotos = state.newPhotos.concat(photos);
           renderNew();
           renderPreview();
+          var matched = photos.filter(function (photo) { return photo._autoMatched; }).length;
+          var missing = photos.length - matched;
+          if (missing) {
+            setStatus(
+              "已加入 " + photos.length + " 张照片：自动匹配 " + matched +
+              " 张文案，另外 " + missing + " 张没有文案，请手动填写标题/描述。",
+              "warn"
+            );
+            log("未匹配文案：" + photos.filter(function (photo) {
+              return !photo._autoMatched;
+            }).map(function (photo) {
+              return photo.file && photo.file.name;
+            }).join("、"));
+          } else {
+            setStatus("已加入 " + photos.length + " 张照片，全部自动匹配到文案。", "ok");
+          }
         });
       }
 
